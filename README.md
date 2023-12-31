@@ -2,6 +2,10 @@
 
 ![Turshell Logo](turshell.png)
 
+<div align="center">
+  <img src="turshell.png" alt="Turshell Logo" width="200">
+</div>
+
 ## Introduction
 
 Welcome to Turshell, a powerful and intuitive programming language inspired by the elegance and efficiency of turtles. Turshell combines simplicity with versatility, making it suitable for a wide range of applications, from scripting to software development.
