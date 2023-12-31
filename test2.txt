@@ -1,4 +1,13 @@
-int a = (3 + 2) * 3;
-a = a + 2;
 
-print(4 + 2);
+int a = 4;
+
+if(a == 3){
+  print(5);
+}
+
+int b = 0;
+
+while(b < 10){
+  print(b);
+  b = b + 1;
+}

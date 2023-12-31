@@ -1,6 +1,8 @@
 
 #include "include/Interpretor.h"
 #include "include/Enviorment.h"
+#include "include/Runtime.h"
+
 
 
     void Interpreter::visit(ProgramNode& node) {
@@ -31,6 +33,33 @@
         }
 
 
+        if(node.op == "=="){
+          if(left.getInt() == right.getInt()){
+            return evaluationStack.push(RuntimeVal(true));
+          } else {
+            return evaluationStack.push(RuntimeVal(false));
+          }
+        }
+
+        if(node.op == ">"){
+          if(left.getInt() > right.getInt()){
+            return evaluationStack.push(RuntimeVal(true));
+          } else {
+            return evaluationStack.push(RuntimeVal(false));
+          }
+        }
+
+
+        if(node.op == "<"){
+          /* std::cout << "<<< " << right.getInt() << " " <<  left.getInt() << "\n"; */
+          if(left.getInt() < right.getInt()){
+            return evaluationStack.push(RuntimeVal(true));
+          } else {
+            return evaluationStack.push(RuntimeVal(false));
+          }
+        }
+
+
     }
 
     void Interpreter::visit(IntLiteralNode& node) {
@@ -40,21 +69,43 @@
 
     void Interpreter::visit(VariableDeclarationNode& node) {
       RuntimeVal value = evaluateExpression(node.initializer);
-      currentScope()->setVariable(node.variableName, value);
+      currentScope()->setVariable(node.variableName, value, VariableSettings::Declaration);
     }
 
     // VariableAssignmentNode
     void Interpreter::visit(VariableAssignmentNode& node) {
       RuntimeVal value = evaluateExpression(node.value);
-      currentScope()->setVariable(node.variableName, value);
+
+      currentScope()->setVariable(node.variableName, value, VariableSettings::Assignment);
+      
     }
 
     void Interpreter::visit(WhileStatementNode& node) {
         // Implement while loop logic
+
+        RuntimeVal condition = evaluateExpression(node.condition);
+        std::cout << "While Cond: " << condition.getBool() << "\n";
+
+        while(condition.getBool()  == true){
+          
+          //Run code inside of {}
+          evaluateExpression(node.body);
+
+          //Recheck condition
+          condition = evaluateExpression(node.condition);
+          
+        }
     }
 
     void Interpreter::visit(IfStatementNode& node) {
         // Implement if statement logic
+        RuntimeVal condition = evaluateExpression(node.condition);
+
+        //Run code inside {}
+        if(condition.getBool() == true){
+          evaluateExpression(node.thenBranch);
+        }
+
     }
 
     void Interpreter::visit(FunctionDeclarationNode& node) {
@@ -77,7 +128,16 @@
     }
 
     void Interpreter::visit(BlockNode& node) {
-        // Implement block logic
+
+      enterNewScope();
+
+      for (auto& stmt : node.statements) {
+          stmt->accept(*this);
+      }
+
+
+      exitCurrentScope();
+
     }
 
     void Interpreter::visit(VariableExpressionNode& node) {
@@ -94,11 +154,11 @@
         return envStack.top();
     }
 
-    void Interpreter::enterScope() {
+    void Interpreter::enterNewScope() {
       envStack.push(std::make_shared<Environment>(currentScope()));
     }
 
-    void Interpreter::exitScope() {
+    void Interpreter::exitCurrentScope() {
       if (!envStack.empty()) {
          envStack.pop();
       } else {
@@ -108,8 +168,21 @@
 
   RuntimeVal Interpreter::evaluateExpression(ASTNode* node) {
       node->accept(*this);
-      RuntimeVal result = evaluationStack.top();
-      evaluationStack.pop();
+
+      RuntimeVal result;
+
+      if(!evaluationStack.empty()){
+
+        result = evaluationStack.top();
+      }
+
+
+
+      if(!evaluationStack.empty()){
+
+        evaluationStack.pop();
+      }
+
       return result;
   }
 
@@ -134,5 +207,10 @@ void Interpreter::printStack() {
     }
 }
 
+void Interpreter::printEnv(){
+  for (const auto& pair : currentScope()->variables) {
+        std::cout << "Var: " << pair.first << ", Value: " << pair.second.getInt() << std::endl;
+    }
+}
 
 

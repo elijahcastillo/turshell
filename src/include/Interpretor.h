@@ -49,9 +49,9 @@ public:
 
     std::shared_ptr<Environment> currentScope();
 
-    void enterScope();
+    void enterNewScope();
 
-    void exitScope();
+    void exitCurrentScope();
     // Helper methods
     RuntimeVal evaluateExpression(ASTNode* node); 
 
@@ -59,6 +59,8 @@ public:
     void runtimeError(const std::string& message);
 
     void printStack(); // Method to print the stack contents
+    void printEnv(); // Method to print the stack contents
+                       //
 
     // Add more helper and utility methods as needed...
 };

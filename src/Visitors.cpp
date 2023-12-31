@@ -48,8 +48,17 @@ void PrintVisitor::visit(IfStatementNode& node){
     std::cout << " }\n";
 };
 
-void PrintVisitor::visit(WhileStatementNode& node){
 
+
+
+void PrintVisitor::visit(WhileStatementNode& node){
+    std::cout << "WhileStmt: while( ";
+    node.condition->accept(*this); 
+    std::cout << " ){\n";
+
+    node.body->accept(*this); 
+
+    std::cout << " }\n";
 };
 
 void PrintVisitor::visit(BlockNode& node){

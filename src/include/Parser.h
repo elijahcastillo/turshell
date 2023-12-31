@@ -220,7 +220,6 @@ private:
 
         std::string functionName = advance().value;
         
-        std::cout << "CC " << tokens[current].value << "\n";;
         consume(TokenType::LParen, "Expected '(' after Identifier");
         std::vector<ASTNode*> arguments;
 
@@ -233,7 +232,6 @@ private:
         }
 
 
-        std::cout << "CC2 " << tokens[current].value << "\n";;
         consume(TokenType::RParen, "Expected ')' after arguments");
         consume(TokenType::Semicolon, "Expected ';' after arguments");
 
@@ -269,7 +267,6 @@ private:
         // Handle Identifiers (e.g., variable names or function calls)
        if (check(TokenType::Identifier)) {
 
-         std::cout << "WOWOW " << tokens[current].value << "\n";;
 
           // Check for function call (identifier followed by '(')
           if (tokens[current+1].type == TokenType::LParen) {
