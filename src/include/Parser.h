@@ -207,10 +207,10 @@ private:
 
 
         Token currentToken = tokens[current];
-        while (check(TokenType::Asterik) || check(TokenType::Division)) {
+        while (check(TokenType::Asterik) || check(TokenType::Division) || check(TokenType::Modulo)) {
             Token op = advance();
             ASTNode* right = parsePrimary();
-            node = new  BinaryExpressionNode(node, op.value, right);
+            node = new BinaryExpressionNode(node, op.value, right);
         }
 
         return node;

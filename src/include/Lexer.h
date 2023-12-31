@@ -17,6 +17,7 @@ enum TokenType {
     Asterik,              // *
     Minus,                // -
     Division,             // /
+    Modulo,                // %
     Operator,             // + - / *
     NumberLiteral,       // Numeric literals. Example: "123", "3.14"
     StringLiteral,       // String literals. Example: "\"Hello, world!\""
@@ -51,6 +52,7 @@ std::string tokenTypeToString(TokenType type) {
         case Asterik:            return "Asterik";
         case Minus:              return "Minus";
         case Division:           return "Division";
+        case Modulo:           return "Modulo";
         case Operator:           return "Operator";
         case NumberLiteral:      return "NumberLiteral";
         case StringLiteral:      return "StringLiteral";
@@ -222,6 +224,16 @@ Token consumeSingleCharacterToken() {
       return {ComparisonOperator, "==", lineNumber};
     }
 
+    if(currentChar == '>' && nextChar == '='){
+      position++; //Skip second '='
+      return {ComparisonOperator, ">=", lineNumber};
+    }
+
+    if(currentChar == '<' && nextChar == '='){
+      position++; //Skip second '='
+      return {ComparisonOperator, "<=", lineNumber};
+    }
+
 
     switch (currentChar) {
         case '=': type = Equals; break;
@@ -229,6 +241,7 @@ Token consumeSingleCharacterToken() {
         case '-': type = Minus; break;
         case '*': type = Asterik; break;
         case '/': type = Division; break;
+        case '%': type = Modulo; break;
         case '>': type = ComparisonOperator; break;
         case '<': type = ComparisonOperator; break;
         case '(': type = LParen; break;

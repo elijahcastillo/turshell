@@ -86,8 +86,8 @@ int main(int argc, char* argv[]) {
         ASTNode* ast = parser.parse();
 
         // Print the AST (for debugging or verification)
-        PrintVisitor printer;
-        ast->accept(printer);
+        /* PrintVisitor printer; */
+        /* ast->accept(printer); */
 
         // Interpretation
         Interpreter interpreter;

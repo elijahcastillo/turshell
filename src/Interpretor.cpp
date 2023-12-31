@@ -22,14 +22,13 @@
         if(node.op == "+"){
           evaluationStack.push(RuntimeVal(left.getInt() + right.getInt()));
         } else if (node.op == "-"){
-
           evaluationStack.push(RuntimeVal(left.getInt() - right.getInt()));
         } else if (node.op == "*"){
-
           evaluationStack.push(RuntimeVal(left.getInt() * right.getInt()));
         } else if (node.op == "/"){
-
           evaluationStack.push(RuntimeVal(left.getInt() / right.getInt()));
+        } else if (node.op == "%"){
+          evaluationStack.push(RuntimeVal(left.getInt() % right.getInt()));
         }
 
 
@@ -49,10 +48,29 @@
           }
         }
 
-
         if(node.op == "<"){
           /* std::cout << "<<< " << right.getInt() << " " <<  left.getInt() << "\n"; */
           if(left.getInt() < right.getInt()){
+            return evaluationStack.push(RuntimeVal(true));
+          } else {
+            return evaluationStack.push(RuntimeVal(false));
+          }
+        }
+
+
+        if(node.op == "<="){
+          /* std::cout << "<<< " << right.getInt() << " " <<  left.getInt() << "\n"; */
+          if(left.getInt() <= right.getInt()){
+            return evaluationStack.push(RuntimeVal(true));
+          } else {
+            return evaluationStack.push(RuntimeVal(false));
+          }
+        }
+
+
+        if(node.op == ">="){
+          /* std::cout << "<<< " << right.getInt() << " " <<  left.getInt() << "\n"; */
+          if(left.getInt() >= right.getInt()){
             return evaluationStack.push(RuntimeVal(true));
           } else {
             return evaluationStack.push(RuntimeVal(false));
@@ -84,7 +102,6 @@
         // Implement while loop logic
 
         RuntimeVal condition = evaluateExpression(node.condition);
-        std::cout << "While Cond: " << condition.getBool() << "\n";
 
         while(condition.getBool()  == true){
           
