@@ -1,6 +1,5 @@
 # Turshell Programming Language
 
-![Turshell Logo]()
 
 <div align="center">
   <img src="turshell.png" alt="Turshell Logo" width="500">
