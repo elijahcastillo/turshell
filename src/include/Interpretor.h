@@ -11,6 +11,7 @@ class Interpreter : public Visitor {
     // Environment to store variable values, function definitions, etc.
 
     std::stack<std::shared_ptr<Environment>> envStack;
+    std::unordered_map<std::string, FunctionDeclarationNode*> functionTable;
     std::stack<RuntimeVal> evaluationStack;
 
 

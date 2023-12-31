@@ -2,6 +2,7 @@
 #include "include/Interpretor.h"
 #include "include/Enviorment.h"
 #include "include/Runtime.h"
+#include <string>
 
 
 
@@ -126,7 +127,11 @@
     }
 
     void Interpreter::visit(FunctionDeclarationNode& node) {
-        // Implement function declaration logic
+        if (functionTable.find(node.functionName) != functionTable.end()) {
+            // Function with the same name already exists
+            runtimeError("Function '" + node.functionName + "' is already declared.");
+        }
+        functionTable[node.functionName] = &node;
     }
 
     void Interpreter::visit(ParameterNode& node){
@@ -136,12 +141,63 @@
 
     void Interpreter::visit(FunctionCallNode& node){
 
+      //Handle STD functions
       if(node.functionName == "print"){
-        
         //Eval first argument
         RuntimeVal value = evaluateExpression(node.arguments[0]);
         std::cout << value.getInt() << "\n";
+        return;
       }
+
+
+        // Check if the function is declared
+        if (functionTable.find(node.functionName) == functionTable.end()) {
+            runtimeError("Function '" + node.functionName + "' is not declared.");
+        }
+
+        // Get the function declaration
+        FunctionDeclarationNode* functionDecl = functionTable[node.functionName];
+
+        // Check the number of arguments
+        if (node.arguments.size() != functionDecl->parameters.size()) {
+            runtimeError("Function '" + node.functionName + "' called with the wrong number of arguments. Got " + std::to_string(node.arguments.size()) + "expected " + std::to_string(functionDecl->parameters.size()));
+        }
+
+
+        // Create a new local scope for the function call parameters, since visit block node creates its own scope
+        std::shared_ptr<Environment> localScope = std::make_shared<Environment>(currentScope());
+
+        std::cout << "Func call Size: " << node.arguments.size() << "\n";
+        std::cout << "Func decl Size: " << functionDecl->parameters.size() << "\n";
+        // Bind arguments to parameters in the local scope
+        for (size_t i = 0; i < node.arguments.size(); ++i) {
+            
+            ParameterNode* declParam = dynamic_cast<ParameterNode*>(functionDecl->parameters[i]);
+            ParameterNode* callParam = dynamic_cast<ParameterNode*>(node.arguments[i]);
+
+            std::cout << "Decl Name: " << declParam->name << "\n";
+            std::cout << "call v: " << evaluateExpression(node.arguments[i]).getInt() << "\n";
+
+            std::string paramName = declParam->name;
+            RuntimeVal argValue = evaluateExpression(node.arguments[i]);
+            localScope->setVariable(paramName, argValue, VariableSettings::Declaration);
+        }
+
+
+        // Push the local scope onto the stack
+        // When the function tried to use a paramerter variable
+        // It will find it in the parent scope
+        envStack.push(localScope);
+
+        printEnv();
+
+        //Evalute body of function
+        evaluateExpression(functionDecl->body);
+
+        //Pushed return value to stack, check if right type????
+        //
+        // Pop the local scope from the stack
+        envStack.pop();
     }
 
     void Interpreter::visit(BlockNode& node) {
