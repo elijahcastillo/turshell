@@ -1,9 +1,9 @@
 # Turshell Programming Language
 
-![Turshell Logo](turshell.png)
+![Turshell Logo]()
 
 <div align="center">
-  <img src="turshell.png" alt="Turshell Logo" width="200">
+  <img src="turshell.png" alt="Turshell Logo" width="500">
 </div>
 
 ## Introduction
