@@ -233,7 +233,11 @@ private:
 
 
         consume(TokenType::RParen, "Expected ')' after arguments");
-        consume(TokenType::Semicolon, "Expected ';' after arguments");
+
+        /* std::cout << peek().value << "\n"; */
+
+        //If function call is part of statmet int a = add(3,2); then it would look for another ;
+        /* consume(TokenType::Semicolon, "Expected ';' after arguments"); */
 
         return new FunctionCallNode(functionName, arguments);
     }

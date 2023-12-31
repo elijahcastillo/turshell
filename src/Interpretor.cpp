@@ -50,7 +50,6 @@
         }
 
         if(node.op == "<"){
-          /* std::cout << "<<< " << right.getInt() << " " <<  left.getInt() << "\n"; */
           if(left.getInt() < right.getInt()){
             return evaluationStack.push(RuntimeVal(true));
           } else {
@@ -60,7 +59,6 @@
 
 
         if(node.op == "<="){
-          /* std::cout << "<<< " << right.getInt() << " " <<  left.getInt() << "\n"; */
           if(left.getInt() <= right.getInt()){
             return evaluationStack.push(RuntimeVal(true));
           } else {
@@ -70,7 +68,6 @@
 
 
         if(node.op == ">="){
-          /* std::cout << "<<< " << right.getInt() << " " <<  left.getInt() << "\n"; */
           if(left.getInt() >= right.getInt()){
             return evaluationStack.push(RuntimeVal(true));
           } else {
@@ -139,6 +136,21 @@
         throw std::runtime_error("visit(ParameterNode&) is not implemented");
     }
 
+
+
+    class TurshellReturn : public std::exception {
+
+        public:
+        RuntimeVal returnVal;
+        const char* msg;
+
+        TurshellReturn(RuntimeVal returnVal, const char* msg) : returnVal(returnVal), msg(msg) {};
+
+        const char * what () {
+            return msg;
+        }
+    };
+
     void Interpreter::visit(FunctionCallNode& node){
 
       //Handle STD functions
@@ -192,20 +204,37 @@
         printEnv();
 
         //Evalute body of function
-        evaluateExpression(functionDecl->body);
+        RuntimeVal returnValue;
+          try{
 
-        //Pushed return value to stack, check if right type????
-        //
+            evaluateExpression(functionDecl->body);
+
+          } catch(TurshellReturn e) {
+            //End Body execution early
+            returnValue = e.returnVal;
+
+          }
+
+
         // Pop the local scope from the stack
         envStack.pop();
+
+
+        std::cout << "Returned call: " << returnValue.getInt() << "\n";
+        // Push the return value onto the stack
+        evaluationStack.push(returnValue);
     }
+
+
 
     void Interpreter::visit(BlockNode& node) {
 
       enterNewScope();
 
+
       for (auto& stmt : node.statements) {
-          stmt->accept(*this);
+
+            stmt->accept(*this);
       }
 
 
@@ -219,7 +248,18 @@
     }
 
     void Interpreter::visit(ReturnStatementNode& node) {
-        // Implement return statement logic
+           // Evaluate the expression to be returned
+        RuntimeVal returnValue;
+        if (node.expression) {
+            returnValue = evaluateExpression(node.expression);
+        }
+
+        // Set the return value in the current scope
+        /* currentScope()->setReturnValue(returnValue); */
+
+        // Exit the current function early, use tryCatch to stop execution in NodeBlock
+        // try stmt->accept(*this) catch(custom Return error) return no more execuation
+        throw TurshellReturn(returnValue, "TurshellReturn"); // Define a custom exception type if needed
     }
 
 

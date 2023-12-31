@@ -1,10 +1,19 @@
 
 
 func add(int num) int {
-   print(num + num); 
+   int res = num + num;
+   return res;
 }
 
-int a = 3;
-add(3);
+func isEven(int n) int {
+  if(n % 2 == 0){
+    return 1;
+  }
+
+  return 0;
+}
+
+int a = 20;
+print(add(a))
 
 
