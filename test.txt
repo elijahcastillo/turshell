@@ -1,0 +1,13 @@
+int a = (3 + 2) * 5;
+a = 3 / 2;
+
+if(a == 3){
+  int b = 4;
+}
+
+
+func add(int num) int {
+   return num + num; 
+
+
+}
