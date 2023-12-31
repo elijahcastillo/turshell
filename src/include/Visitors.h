@@ -13,6 +13,7 @@ public:
     virtual void visit(ProgramNode& node) = 0;
     virtual void visit(BinaryExpressionNode& node) = 0;
     virtual void visit(IntLiteralNode& node) = 0;
+    virtual void visit(StringLiteralNode& node) = 0;
     virtual void visit(VariableDeclarationNode& node) = 0;
     virtual void visit(VariableAssignmentNode& node) = 0;
     virtual void visit(IfStatementNode& node) = 0;
@@ -34,6 +35,7 @@ public:
     void visit(BinaryExpressionNode& node) override; 
 
     void visit(IntLiteralNode& node) override; 
+    void visit(StringLiteralNode& node) override; 
     void visit(VariableDeclarationNode& node) override; 
     void visit(VariableAssignmentNode& node) override; 
 

@@ -21,7 +21,9 @@ void PrintVisitor::visit(IntLiteralNode& node) {
         std::cout << node.value;
 }
 
-
+void PrintVisitor::visit(StringLiteralNode& node) {
+        std::cout << node.value;
+}
 
 void PrintVisitor::visit(VariableDeclarationNode& node){
   std::cout << "Variable Declaration: " << node.variableType << " " << node.variableName << " = " ;

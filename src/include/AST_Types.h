@@ -1,4 +1,5 @@
 #pragma once
+#include "Lexer.h"
 #include <string>
 #include <vector>
 
@@ -58,6 +59,14 @@ struct IntLiteralNode : public ExpressionNode {
     int value;
 
     IntLiteralNode(const int value) : value(value) {}
+
+    void accept(Visitor &v) override;
+};
+
+struct StringLiteralNode : public ExpressionNode {
+    std::string value;
+
+    StringLiteralNode(const std::string& value) : value(value) {}
 
     void accept(Visitor &v) override;
 };

@@ -268,6 +268,11 @@ private:
             return new IntLiteralNode(value);
         }
 
+        if (check(TokenType::StringLiteral)) {
+            std::string str_value = advance().value;
+            return new StringLiteralNode(str_value);
+        }
+
         // Handle Identifiers (e.g., variable names or function calls)
        if (check(TokenType::Identifier)) {
 

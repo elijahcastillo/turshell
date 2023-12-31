@@ -83,6 +83,11 @@
 
     }
 
+    void Interpreter::visit(StringLiteralNode& node) {
+      evaluationStack.push(RuntimeVal(node.value));
+
+    }
+
     void Interpreter::visit(VariableDeclarationNode& node) {
       RuntimeVal value = evaluateExpression(node.initializer);
       currentScope()->setVariable(node.variableName, value, VariableSettings::Declaration);

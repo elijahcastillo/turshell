@@ -27,6 +27,7 @@ public:
     void visit(BinaryExpressionNode& node) override;
 
     void visit(IntLiteralNode& node) override ;
+    void visit(StringLiteralNode& node) override ;
 
     void visit(VariableDeclarationNode& node) override;
 
