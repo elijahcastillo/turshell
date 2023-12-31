@@ -26,7 +26,12 @@ To get started with Turshell, you'll need to install the Turshell interpreter an
 
 ## Example Code
 
-'''
+```
 int a = 3;
 print(a + 2); //5
-'''
+
+if(a == 3){
+    int b = 1;
+    a = 2;
+}
+```
