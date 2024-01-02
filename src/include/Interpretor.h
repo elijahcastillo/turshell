@@ -33,6 +33,7 @@ public:
 
     void visit(BinaryExpressionNode& node) override;
     void visit(UnaryExpressionNode& node) override;
+    void visit(LogicalOperatorNode& node) override;
 
     void visit(IntLiteralNode& node) override ;
     void visit(StringLiteralNode& node) override;

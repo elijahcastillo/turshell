@@ -167,6 +167,47 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
     }
 
 
+    //&& ||
+    void Interpreter::visit(LogicalOperatorNode& node) {
+      
+      RuntimeVal left = evaluateExpression(node.left);
+      RuntimeVal right = evaluateExpression(node.right);
+
+
+      if(left.isBool() && right.isBool()){
+
+        if(node.op == "&&"){
+
+          if(left.getBool() && right.getBool()){
+              return evaluationStack.push(RuntimeVal(true));
+          } else  {
+              return evaluationStack.push(RuntimeVal(false));
+
+          }
+
+        }
+
+
+        if(node.op == "||"){
+
+          if(left.getBool() || right.getBool()){
+              return evaluationStack.push(RuntimeVal(true));
+          } else  {
+              return evaluationStack.push(RuntimeVal(false));
+
+          }
+
+        }
+
+      }
+
+
+      runtimeError("Unsuporrted Logical Expression");
+
+
+    }
+
+
 
     void Interpreter::visit(UnaryExpressionNode& node) {
       RuntimeVal right = evaluateExpression(node.right);

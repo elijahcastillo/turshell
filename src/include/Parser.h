@@ -202,11 +202,23 @@ private:
 
 
 
-        return parseComparison();
+        return parseLogical();
     }
 
 
 
+
+    ASTNode* parseLogical() {
+        ASTNode* node = parseComparison();
+
+        while (check(TokenType::LogicalOperator)) {
+            std::string op = advance().value;
+            ASTNode* right = parseComparison();
+            node = new LogicalOperatorNode(node, op, right);
+        }
+
+        return node;
+    }
 
     ASTNode* parseComparison() {
         ASTNode* node = parseAddition();
@@ -230,6 +242,7 @@ private:
         TokenType nextType = peek().type;
         return nextType == TokenType::NumberLiteral || 
                nextType == TokenType::StringLiteral || 
+               nextType == TokenType::BooleanLiteral ||
                nextType == TokenType::Identifier || 
                nextType == TokenType::LParen;
     }

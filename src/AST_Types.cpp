@@ -5,6 +5,12 @@ void BinaryExpressionNode::accept(Visitor& v){
   v.visit(*this);
 }
 
+
+void LogicalOperatorNode::accept(Visitor& v){
+  v.visit(*this);
+  
+}
+
 void UnaryExpressionNode::accept(Visitor& v){
   v.visit(*this);
 }

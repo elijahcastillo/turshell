@@ -19,6 +19,15 @@ void PrintVisitor::visit(BinaryExpressionNode& node){
 }
 
 
+void PrintVisitor::visit(LogicalOperatorNode& node){
+        std::cout << "(";
+        node.left->accept(*this);
+        std::cout << " " << node.op << " ";
+        node.right->accept(*this);
+        std::cout << ")";
+}
+
+
 void PrintVisitor::visit(UnaryExpressionNode& node){
         std::cout << "(";
         std::cout << node.op;

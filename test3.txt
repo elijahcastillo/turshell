@@ -1,5 +1,6 @@
 bool a = true;
+int b = 3;
 
-if(!a){
-  print(2)
+if(a || b > 3){
+  print(5)
 }
