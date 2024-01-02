@@ -9,6 +9,7 @@
 #include "include/Parser.h"
 #include "include/Visitors.h"
 #include "include/Interpretor.h"
+#include "include/NativeFunctions.h"
 
 std::vector<char> readFileToVector(const std::string& filepath) {
     // Open file in binary mode
@@ -92,11 +93,13 @@ int main(int argc, char* argv[]) {
 
         // Interpretation
         Interpreter interpreter;
-        ast->accept(interpreter); // Execute the AST
-        /* interpreter.printStack(); */
+        interpreter.registerNativeFunction("print", nativePrint);
+        interpreter.registerNativeFunction("input", input);
 
-        // Handle interpretation results or errors
-        // (Depends on your interpreter design and language features)
+        ast->accept(interpreter); // Execute the AST
+        interpreter.printStack();
+
+
 
     } catch (const std::exception& e) {
         std::cerr << "(trushell error) " << e.what() << std::endl;

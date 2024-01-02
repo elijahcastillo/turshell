@@ -33,14 +33,33 @@ bool checkType(std::string type, RuntimeVal value) {
 }
 
 
+//======== Native Functions ==========
+void Interpreter::registerNativeFunction(const std::string& name, std::function<RuntimeVal(Interpreter&, std::vector<RuntimeVal>&)> func) {
+    nativeFunctions[name] = func;
+}
+
+RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<RuntimeVal>& args) {
+    auto it = nativeFunctions.find(name);
+    if (it != nativeFunctions.end()) {
+        return it->second(*this, args);
+    }
+    runtimeError("Native function not found: " + name);
+}
+//======= End Native FUnctions ========
+
+
 
     void Interpreter::visit(ProgramNode& node) {
         for (auto& stmt : node.statements) {
             stmt->accept(*this);
+            while(!evaluationStack.empty()){
+              evaluationStack.pop();
+            }
         }
     }
 
     void Interpreter::visit(BinaryExpressionNode& node) {
+        currentContext = Context::Expression;
         node.left->accept(*this);
         node.right->accept(*this);
 
@@ -155,6 +174,7 @@ bool checkType(std::string type, RuntimeVal value) {
           return;
       }
 
+
         currentScope()->setVariable(node.variableName, value, VariableSettings::Declaration);
     }
 
@@ -167,6 +187,8 @@ bool checkType(std::string type, RuntimeVal value) {
         runtimeError("Cannot assign value of type '" + value.typeToString() + "' to variable '" + node.variableName + "' of type '" + assignTo.typeToString() + "'");
         return;
       }
+
+
 
       currentScope()->setVariable(node.variableName, value, VariableSettings::Assignment);
       
@@ -219,39 +241,33 @@ bool checkType(std::string type, RuntimeVal value) {
 
 
 
+
+
     void Interpreter::visit(FunctionCallNode& node){
 
-      //Handle STD functions
-      if(node.functionName == "print"){
-        //Eval first argument
-        RuntimeVal value = evaluateExpression(node.arguments[0]);
 
-        if(value.isInt()){
-          std::cout << value.getInt() << "\n";
-          return;
-        }
-
-        if (value.isString()){
-          std::cout << value.getString() << "\n";
-          return;
-        }
-
-        runtimeError("Cannot print out vairable of unknown type");
-
-
-      }
-
-
-        // Check if the function is declared
-        if (functionTable.find(node.functionName) == functionTable.end()) {
-            runtimeError("Function '" + node.functionName + "' is not declared.");
-        }
 
         // Get the function declaration
-        FunctionDeclarationNode* functionDecl = functionTable[node.functionName];
+        FunctionDeclarationNode* functionDecl = nullptr;
+        bool isNativeFunction = false;
+
+        // Check if the function is declared by user
+        if (functionTable.find(node.functionName) != functionTable.end()) {
+          functionDecl = functionTable[node.functionName];
+        }
+
+        // Check if the function is a native function
+        if (nativeFunctions.find(node.functionName) != nativeFunctions.end()) {
+          isNativeFunction = true;
+        }
+
+        //No function
+        if(functionDecl == nullptr && isNativeFunction == false){
+          runtimeError("Function '" + node.functionName + "' is not declared.");
+        }
 
         // Check the number of arguments
-        if (node.arguments.size() != functionDecl->parameters.size()) {
+        if (!isNativeFunction && node.arguments.size() != functionDecl->parameters.size()) {
             runtimeError("Function '" + node.functionName + "' called with the wrong number of arguments. Got " + std::to_string(node.arguments.size()) + " expected " + std::to_string(functionDecl->parameters.size()));
         }
 
@@ -259,7 +275,24 @@ bool checkType(std::string type, RuntimeVal value) {
         // Create a new local scope for the function call parameters, since visit block node creates its own scope
 
 
+
+
+        if(isNativeFunction){
+          std::vector<RuntimeVal> arguments;
+          for(int i = 0; i < node.arguments.size(); i++){
+            arguments.push_back(evaluateExpression(node.arguments[i]));
+          }
+          RuntimeVal returnValue = callNativeFunction(node.functionName, arguments);
+
+          evaluationStack.push(returnValue);
+          return;
+        }
+
+
         enterNewScope();
+
+
+
 
         // Bind arguments to parameters in the new local scope
         for (size_t i = 0; i < node.arguments.size(); ++i) {
@@ -297,8 +330,6 @@ bool checkType(std::string type, RuntimeVal value) {
 
 
         if(didReturn){
-          std::cout << "Returned call: " << returnValue.getInt() << "\n";
-
           // Push the return value onto the stack
           evaluationStack.push(returnValue);
         }
@@ -397,7 +428,7 @@ void Interpreter::printStack() {
     while (!tempStack.empty()) {
         RuntimeVal val = tempStack.top();
         tempStack.pop();
-        std::cout << val.getInt() << std::endl; // Assuming RuntimeVal has toString
+        std::cout << val.toString() << std::endl; // Assuming RuntimeVal has toString
     }
 }
 

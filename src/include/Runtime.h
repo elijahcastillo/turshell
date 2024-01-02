@@ -5,13 +5,13 @@
 
 struct RuntimeVal {
     // Define a variant type that can hold an int, bool, or string
-    std::variant<int, bool, std::string> value;
+    std::variant<std::monostate, int, bool, std::string> value;
 
     // Constructors for different types
     RuntimeVal(int intValue) : value(intValue) {}
     RuntimeVal(bool boolValue) : value(boolValue) {}
     RuntimeVal(const std::string& stringValue) : value(stringValue) {}
-    RuntimeVal() {}
+    RuntimeVal() : value(std::monostate()) {}
 
     // Helper methods to get the value
     int getInt() const {
@@ -37,6 +37,7 @@ struct RuntimeVal {
 
 
     // Type checking methods
+    bool isNull() const { return std::holds_alternative<std::monostate>(value); }
     bool isInt() const { return std::holds_alternative<int>(value); }
     bool isBool() const { return std::holds_alternative<bool>(value); }
     bool isString() const { return std::holds_alternative<std::string>(value); }
@@ -44,6 +45,7 @@ struct RuntimeVal {
 
     // Conversion to string for printing or concatenation
     std::string toString() const {
+        if (isNull()) return "null";
         if (isInt()) return std::to_string(getInt());
         if (isBool()) return getBool() ? "true" : "false";
         if (isString()) return getString();
@@ -51,6 +53,7 @@ struct RuntimeVal {
     }
 
     std::string typeToString(){
+        if (isNull()) return "null";
         if (isInt()) return "int";
         if (isBool()) return "bool";
         if (isString()) return "string";

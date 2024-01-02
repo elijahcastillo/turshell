@@ -24,4 +24,3 @@ int a = 20;
 print(a)
 test()
 print(a)
-

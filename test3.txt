@@ -1,2 +1,7 @@
-string a = 3;
-print(a)
+
+
+string name = input("Whats your name: ");
+print(name)
+
+int age = input("Whats your age: ");
+print(age)

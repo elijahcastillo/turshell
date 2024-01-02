@@ -29,6 +29,7 @@ class Environment {
 
       if(setting == Assignment){
         
+
         //In current scope
         if(variables.find(name) != variables.end()){
           variables[name] = value;
