@@ -1,2 +1,5 @@
 bool a = true;
-print(!a)
+
+if(!a){
+  print(2)
+}

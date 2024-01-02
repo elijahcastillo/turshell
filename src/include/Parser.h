@@ -37,7 +37,7 @@ private:
         }
 
         if(token.value == "false"){
-          return new BinaryLiteralNode(true);
+          return new BinaryLiteralNode(false);
         }
 
         //Parse if statment Ex: if(a == 3){}
@@ -186,17 +186,7 @@ private:
     ASTNode* parseExpression() {
 
 
-      if(check(TokenType::Keyword)){
-        Token token = advance();
 
-        if(token.value == "true"){
-          return new BinaryLiteralNode(true);
-        }
-
-        if(token.value == "false"){
-          return new BinaryLiteralNode(true);
-        }
-      }
 
 
       //Parse variable assignment Ex: a = 3;
@@ -331,7 +321,18 @@ private:
 
         }
 
+        //True and False
+      if(check(TokenType::Keyword)){
+        Token token = advance();
 
+        if(token.value == "true"){
+          return new BinaryLiteralNode(true);
+        }
+
+        if(token.value == "false"){
+          return new BinaryLiteralNode(false);
+        }
+      }
 
         // Unary Negation like (-2) or !variable
         if (check(TokenType::Minus) || (check(TokenType::LogicalOperator) && peek().value == "!")) {

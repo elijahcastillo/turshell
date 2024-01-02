@@ -115,6 +115,17 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
             }
           }
 
+          if(left.isBool() && right.isBool()){
+            if(left.getBool() == right.getBool()){
+
+              /* std::cout << left.getBool() << " == " << right.getBool() << "\n"; */
+              return evaluationStack.push(RuntimeVal(true));
+            } else {
+
+              return evaluationStack.push(RuntimeVal(false));
+            }
+          }
+
         }
 
         if(node.op == ">"){
@@ -190,8 +201,9 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
     }
 
     void Interpreter::visit(BinaryLiteralNode& node) {
+      /* std::cout << "BL " << node.value << "\n"; */
 
-      evaluationStack.push(RuntimeVal(node.value));
+      evaluationStack.push(node.value ? RuntimeVal(true) : RuntimeVal(false));
 
     }
 
@@ -244,6 +256,8 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
     void Interpreter::visit(IfStatementNode& node) {
         // Implement if statement logic
         RuntimeVal condition = evaluateExpression(node.condition);
+
+        std::cout << "If " << condition.getBool() << "\n";
 
         //Run code inside {}
         if(condition.getBool() == true){
