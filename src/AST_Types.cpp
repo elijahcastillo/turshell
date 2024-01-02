@@ -5,11 +5,19 @@ void BinaryExpressionNode::accept(Visitor& v){
   v.visit(*this);
 }
 
+void UnaryExpressionNode::accept(Visitor& v){
+  v.visit(*this);
+}
+
 void IntLiteralNode::accept(Visitor& v){
   v.visit(*this);
 }
 
 void StringLiteralNode::accept(Visitor& v){
+  v.visit(*this);
+}
+
+void BinaryLiteralNode::accept(Visitor& v){
   v.visit(*this);
 }
 

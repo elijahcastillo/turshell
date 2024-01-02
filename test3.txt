@@ -1,7 +1,2 @@
-
-
-string name = input("Whats your name: ");
-print(name)
-
-int age = input("Whats your age: ");
-print(age)
+bool a = true;
+print(!a)

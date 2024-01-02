@@ -42,17 +42,30 @@ struct BinaryExpressionNode : public ExpressionNode {
 };
 
 
-/* struct LogicalOperatorNode : public ExpressionNode { */
-/*     // Represents a binary expression, like addition or subtraction. */
-/*     ASTNode* left; */
-/*     ASTNode* right; */
-/*     std::string op; */
-/*  */
-/*     LogicalOperatorNode(ASTNode* left, std::string& op, ASTNode* right) */
-/*         : left(left), right(right), op(op) {} */
-/*  */
-/*     void accept(Visitor &v) override;  */
-/* }; */
+struct LogicalOperatorNode : public ExpressionNode {
+    // Represents a binary expression, like addition or subtraction.
+    ASTNode* left;
+    ASTNode* right;
+    std::string op;
+
+    LogicalOperatorNode(ASTNode* left, std::string& op, ASTNode* right)
+        : left(left), right(right), op(op) {}
+
+    void accept(Visitor &v) override; 
+};
+
+
+struct UnaryExpressionNode : public ASTNode {
+    std::string op;
+    ASTNode* right;
+
+    UnaryExpressionNode(std::string op, ASTNode* right) : op(op), right(right) {}
+
+
+    void accept(Visitor &v) override;
+
+    // Implement other necessary methods and destructor
+};
 
 
 struct IntLiteralNode : public ExpressionNode {
@@ -67,6 +80,14 @@ struct StringLiteralNode : public ExpressionNode {
     std::string value;
 
     StringLiteralNode(const std::string& value) : value(value) {}
+
+    void accept(Visitor &v) override;
+};
+
+struct BinaryLiteralNode: public ExpressionNode {
+    bool value;
+
+    BinaryLiteralNode(bool value) : value(value) {}
 
     void accept(Visitor &v) override;
 };

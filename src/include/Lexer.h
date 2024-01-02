@@ -132,13 +132,13 @@ public:
   }
 
 bool isKeyword(const std::string& identifier) {
-    static const std::set<std::string> keywords = {"if", "while", "return", "func"};
+    static const std::set<std::string> keywords = {"true", "false", "if", "while", "return", "func", "struct"};
     return keywords.find(identifier) != keywords.end();  
 }
 
 
 bool isType(const std::string& identifier) {
-    static const std::set<std::string> types = {"int", "string"};
+    static const std::set<std::string> types = {"int", "string", "bool"};
     return types.find(identifier) != types.end();  
 }
 
@@ -201,6 +201,17 @@ Token consumeSingleCharacterToken() {
       return {ComparisonOperator, "<=", lineNumber};
     }
 
+    if(currentChar == '&' && nextChar == '&'){
+      position++; //Skip second '&'
+      return {LogicalOperator, "&&", lineNumber};
+    }
+
+    if(currentChar == '|' && nextChar == '|'){
+      position++; //Skip second '&'
+      return {LogicalOperator, "||", lineNumber};
+    }
+
+
 
     switch (currentChar) {
         case '=': type = Equals; break;
@@ -209,6 +220,7 @@ Token consumeSingleCharacterToken() {
         case '*': type = Asterik; break;
         case '/': type = Division; break;
         case '%': type = Modulo; break;
+        case '!': type = LogicalOperator; break;
         case '>': type = ComparisonOperator; break;
         case '<': type = ComparisonOperator; break;
         case '(': type = LParen; break;

@@ -17,12 +17,6 @@ class Interpreter : public Visitor {
     std::unordered_map<std::string, std::function<RuntimeVal(Interpreter&, std::vector<RuntimeVal>&)>> nativeFunctions;
 
 
-    enum class Context {
-        Expression,
-        Statement
-    };
-
-    Context currentContext;
 
 
 
@@ -38,9 +32,11 @@ public:
     void visit(ProgramNode& node) override;
 
     void visit(BinaryExpressionNode& node) override;
+    void visit(UnaryExpressionNode& node) override;
 
     void visit(IntLiteralNode& node) override ;
-    void visit(StringLiteralNode& node) override ;
+    void visit(StringLiteralNode& node) override;
+    void visit(BinaryLiteralNode& node) override;
 
     void visit(VariableDeclarationNode& node) override;
 

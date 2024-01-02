@@ -18,12 +18,24 @@ void PrintVisitor::visit(BinaryExpressionNode& node){
         std::cout << ")";
 }
 
+
+void PrintVisitor::visit(UnaryExpressionNode& node){
+        std::cout << "(";
+        std::cout << node.op;
+        node.right->accept(*this);
+        std::cout << ")";
+}
+
 void PrintVisitor::visit(IntLiteralNode& node) {
         std::cout << node.value;
 }
 
 void PrintVisitor::visit(StringLiteralNode& node) {
         std::cout << node.value;
+}
+
+void PrintVisitor::visit(BinaryLiteralNode& node) {
+        std::cout << (node.value ? "true" : "false");
 }
 
 void PrintVisitor::visit(VariableDeclarationNode& node){

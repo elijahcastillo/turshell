@@ -32,6 +32,14 @@ private:
       if(check(TokenType::Keyword)){
         Token token = advance();
 
+        if(token.value == "true"){
+          return new BinaryLiteralNode(true);
+        }
+
+        if(token.value == "false"){
+          return new BinaryLiteralNode(true);
+        }
+
         //Parse if statment Ex: if(a == 3){}
         if(token.value == "if"){
           return parseIfStatement();
@@ -178,6 +186,19 @@ private:
     ASTNode* parseExpression() {
 
 
+      if(check(TokenType::Keyword)){
+        Token token = advance();
+
+        if(token.value == "true"){
+          return new BinaryLiteralNode(true);
+        }
+
+        if(token.value == "false"){
+          return new BinaryLiteralNode(true);
+        }
+      }
+
+
       //Parse variable assignment Ex: a = 3;
       if(check(TokenType::Identifier) && peekNext().type == TokenType::Equals){
         std::string varName = consume(TokenType::Identifier, "Expected Name of variable").value;
@@ -310,9 +331,18 @@ private:
 
         }
 
+
+
+        // Unary Negation like (-2) or !variable
+        if (check(TokenType::Minus) || (check(TokenType::LogicalOperator) && peek().value == "!")) {
+          std::string op = advance().value; // Consume the '-'
+            ASTNode* right = parsePrimary(); // Recursively parse the right-hand side
+            return new UnaryExpressionNode(op, right); // Create a node for the unary negation
+        }
+
+        //Positive Numbers
         if (check(TokenType::NumberLiteral)) {
             std::string str_value = advance().value;
-            /* std::cout << "LIT: " << str_value << "\n"; */
             int value = std::stoi(str_value);
             return new IntLiteralNode(value);
         }

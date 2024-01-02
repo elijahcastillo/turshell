@@ -59,7 +59,6 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
     }
 
     void Interpreter::visit(BinaryExpressionNode& node) {
-        currentContext = Context::Expression;
         node.left->accept(*this);
         node.right->accept(*this);
 
@@ -156,12 +155,42 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
 
     }
 
+
+
+    void Interpreter::visit(UnaryExpressionNode& node) {
+      RuntimeVal right = evaluateExpression(node.right);
+
+      if(node.op == "-"){
+        if(right.isInt()){
+          evaluationStack.push(RuntimeVal(right.getInt() * -1));
+          return;
+        }
+      }
+
+      if(node.op == "!"){
+        if(right.isBool()){
+          evaluationStack.push(right.getBool() ? RuntimeVal(false) : RuntimeVal(true));
+          return;
+        }
+      }
+
+
+      runtimeError("Unsuporrted Unary Expression");
+
+    }
+
     void Interpreter::visit(IntLiteralNode& node) {
       evaluationStack.push(RuntimeVal(node.value));
 
     }
 
     void Interpreter::visit(StringLiteralNode& node) {
+      evaluationStack.push(RuntimeVal(node.value));
+
+    }
+
+    void Interpreter::visit(BinaryLiteralNode& node) {
+
       evaluationStack.push(RuntimeVal(node.value));
 
     }
