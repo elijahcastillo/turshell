@@ -2,6 +2,7 @@
 #include "include/Interpretor.h"
 #include "include/Enviorment.h"
 #include "include/Runtime.h"
+#include <stdexcept>
 #include <string>
 
 
@@ -51,21 +52,27 @@ bool checkType(std::string type, RuntimeVal value) {
           //String Concat
           if(left.isString() && right.isString()){
             evaluationStack.push(RuntimeVal(left.getString() + right.getString()));
+            return;
           }
 
           //Integer
           if(left.isInt() && right.isInt()){
             evaluationStack.push(RuntimeVal(left.getInt() + right.getInt()));
+            return;
           }
 
         } else if (node.op == "-"){
           evaluationStack.push(RuntimeVal(left.getInt() - right.getInt()));
+          return;
         } else if (node.op == "*"){
           evaluationStack.push(RuntimeVal(left.getInt() * right.getInt()));
+          return;
         } else if (node.op == "/"){
           evaluationStack.push(RuntimeVal(left.getInt() / right.getInt()));
+          return;
         } else if (node.op == "%"){
           evaluationStack.push(RuntimeVal(left.getInt() % right.getInt()));
+          return;
         }
 
 
@@ -126,6 +133,7 @@ bool checkType(std::string type, RuntimeVal value) {
           }
         }
 
+      runtimeError("Unsuporrted Binary Expression");
 
     }
 
@@ -142,7 +150,7 @@ bool checkType(std::string type, RuntimeVal value) {
     void Interpreter::visit(VariableDeclarationNode& node) {
       RuntimeVal value = evaluateExpression(node.initializer);
 
-      if(!checkType(node.variableType, value)){
+      if(!(node.variableType == value.typeToString())){
           runtimeError("Type mismatch in variable declaration for " + node.variableName);
           return;
       }
@@ -153,8 +161,13 @@ bool checkType(std::string type, RuntimeVal value) {
     // VariableAssignmentNode
     void Interpreter::visit(VariableAssignmentNode& node) {
       RuntimeVal value = evaluateExpression(node.value);
+      RuntimeVal assignTo = currentScope()->getVariable(node.variableName);
 
-      /* std::cout << "Setting variable " << node.variableName << " to " << value.getInt() << "\n"; */
+      if(!(value.typeToString() == assignTo.typeToString())){
+        runtimeError("Cannot assign value of type '" + value.typeToString() + "' to variable '" + node.variableName + "' of type '" + assignTo.typeToString() + "'");
+        return;
+      }
+
       currentScope()->setVariable(node.variableName, value, VariableSettings::Assignment);
       
     }
@@ -372,7 +385,7 @@ bool checkType(std::string type, RuntimeVal value) {
     // Error handling methods
     void Interpreter::runtimeError(const std::string& message) {
         // Implement error handling
-        std::cerr << "Runtime Error: " << message << std::endl;
+        throw std::invalid_argument("Runtime Error: " + message);
         // You can throw an exception or handle it in another way
     }
 

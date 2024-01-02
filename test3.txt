@@ -1,2 +1,2 @@
-int a = 3 + 2;
+string a = 3;
 print(a)

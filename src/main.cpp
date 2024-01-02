@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
         // (Depends on your interpreter design and language features)
 
     } catch (const std::exception& e) {
-        std::cerr << "trushell Error: " << e.what() << std::endl;
+        std::cerr << "(trushell error) " << e.what() << std::endl;
         return 1;
     }
 

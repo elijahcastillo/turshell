@@ -49,4 +49,11 @@ struct RuntimeVal {
         if (isString()) return getString();
         throw std::runtime_error("Unsupported type for toString");
     }
+
+    std::string typeToString(){
+        if (isInt()) return "int";
+        if (isBool()) return "bool";
+        if (isString()) return "string";
+        throw std::runtime_error("Unsupported type for typeToString");
+    }
 };

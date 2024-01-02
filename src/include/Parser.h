@@ -218,6 +218,7 @@ private:
 
         TokenType nextType = peek().type;
         return nextType == TokenType::NumberLiteral || 
+               nextType == TokenType::StringLiteral || 
                nextType == TokenType::Identifier || 
                nextType == TokenType::LParen;
     }
