@@ -5,6 +5,7 @@
 
 void PrintVisitor::visit(ProgramNode& node) {
       for(auto stmt: node.statements){
+
         stmt->accept(*this);
       }
 }

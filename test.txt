@@ -1,6 +1,6 @@
 
 
-func add(int num) int {
+func add() int {
    int res = num + num;
    return res;
 }
@@ -13,7 +13,15 @@ func isEven(int n) int {
   return 0;
 }
 
-int a = 20;
-print(add(a))
+func test() int {
+  a = a + 2;
+  if(a == 22){
+    print(a + 20)
+  }
+}
 
+int a = 20;
+print(a)
+test()
+print(a)
 

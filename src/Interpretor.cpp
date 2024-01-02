@@ -6,6 +6,33 @@
 
 
 
+//HelperFunctions and Classes
+class TurshellReturn : public std::exception {
+
+    public:
+    RuntimeVal returnVal;
+    const char* msg;
+
+    TurshellReturn(RuntimeVal returnVal, const char* msg) : returnVal(returnVal), msg(msg) {};
+
+    const char * what () {
+        return msg;
+    }
+};
+
+
+bool checkType(std::string type, RuntimeVal value) {
+    if ((type == "int" && !value.isInt()) ||
+        (type == "bool" && !value.isBool()) ||
+        (type == "string" && !value.isString())) {
+      return false;
+    }
+
+    return true;
+}
+
+
+
     void Interpreter::visit(ProgramNode& node) {
         for (auto& stmt : node.statements) {
             stmt->accept(*this);
@@ -21,7 +48,16 @@
 
 
         if(node.op == "+"){
-          evaluationStack.push(RuntimeVal(left.getInt() + right.getInt()));
+          //String Concat
+          if(left.isString() && right.isString()){
+            evaluationStack.push(RuntimeVal(left.getString() + right.getString()));
+          }
+
+          //Integer
+          if(left.isInt() && right.isInt()){
+            evaluationStack.push(RuntimeVal(left.getInt() + right.getInt()));
+          }
+
         } else if (node.op == "-"){
           evaluationStack.push(RuntimeVal(left.getInt() - right.getInt()));
         } else if (node.op == "*"){
@@ -34,11 +70,26 @@
 
 
         if(node.op == "=="){
-          if(left.getInt() == right.getInt()){
-            return evaluationStack.push(RuntimeVal(true));
-          } else {
-            return evaluationStack.push(RuntimeVal(false));
+
+          if(left.isString() && right.isString()){
+            if(left.getString() == right.getString()){
+              return evaluationStack.push(RuntimeVal(true));
+            } else {
+
+              return evaluationStack.push(RuntimeVal(false));
+            }
+
           }
+
+          if(left.isInt() && right.isInt()){
+            //Integer
+            if(left.getInt() == right.getInt()){
+              return evaluationStack.push(RuntimeVal(true));
+            } else {
+              return evaluationStack.push(RuntimeVal(false));
+            }
+          }
+
         }
 
         if(node.op == ">"){
@@ -90,13 +141,20 @@
 
     void Interpreter::visit(VariableDeclarationNode& node) {
       RuntimeVal value = evaluateExpression(node.initializer);
-      currentScope()->setVariable(node.variableName, value, VariableSettings::Declaration);
+
+      if(!checkType(node.variableType, value)){
+          runtimeError("Type mismatch in variable declaration for " + node.variableName);
+          return;
+      }
+
+        currentScope()->setVariable(node.variableName, value, VariableSettings::Declaration);
     }
 
     // VariableAssignmentNode
     void Interpreter::visit(VariableAssignmentNode& node) {
       RuntimeVal value = evaluateExpression(node.value);
 
+      /* std::cout << "Setting variable " << node.variableName << " to " << value.getInt() << "\n"; */
       currentScope()->setVariable(node.variableName, value, VariableSettings::Assignment);
       
     }
@@ -109,7 +167,9 @@
         while(condition.getBool()  == true){
           
           //Run code inside of {}
+          enterNewScope();
           evaluateExpression(node.body);
+          exitCurrentScope();
 
           //Recheck condition
           condition = evaluateExpression(node.condition);
@@ -123,7 +183,9 @@
 
         //Run code inside {}
         if(condition.getBool() == true){
+          enterNewScope();
           evaluateExpression(node.thenBranch);
+          exitCurrentScope();
         }
 
     }
@@ -143,18 +205,6 @@
 
 
 
-    class TurshellReturn : public std::exception {
-
-        public:
-        RuntimeVal returnVal;
-        const char* msg;
-
-        TurshellReturn(RuntimeVal returnVal, const char* msg) : returnVal(returnVal), msg(msg) {};
-
-        const char * what () {
-            return msg;
-        }
-    };
 
     void Interpreter::visit(FunctionCallNode& node){
 
@@ -162,8 +212,20 @@
       if(node.functionName == "print"){
         //Eval first argument
         RuntimeVal value = evaluateExpression(node.arguments[0]);
-        std::cout << value.getInt() << "\n";
-        return;
+
+        if(value.isInt()){
+          std::cout << value.getInt() << "\n";
+          return;
+        }
+
+        if (value.isString()){
+          std::cout << value.getString() << "\n";
+          return;
+        }
+
+        runtimeError("Cannot print out vairable of unknown type");
+
+
       }
 
 
@@ -177,16 +239,16 @@
 
         // Check the number of arguments
         if (node.arguments.size() != functionDecl->parameters.size()) {
-            runtimeError("Function '" + node.functionName + "' called with the wrong number of arguments. Got " + std::to_string(node.arguments.size()) + "expected " + std::to_string(functionDecl->parameters.size()));
+            runtimeError("Function '" + node.functionName + "' called with the wrong number of arguments. Got " + std::to_string(node.arguments.size()) + " expected " + std::to_string(functionDecl->parameters.size()));
         }
 
 
         // Create a new local scope for the function call parameters, since visit block node creates its own scope
-        std::shared_ptr<Environment> localScope = std::make_shared<Environment>(currentScope());
 
-        std::cout << "Func call Size: " << node.arguments.size() << "\n";
-        std::cout << "Func decl Size: " << functionDecl->parameters.size() << "\n";
-        // Bind arguments to parameters in the local scope
+
+        enterNewScope();
+
+        // Bind arguments to parameters in the new local scope
         for (size_t i = 0; i < node.arguments.size(); ++i) {
             
             ParameterNode* declParam = dynamic_cast<ParameterNode*>(functionDecl->parameters[i]);
@@ -197,19 +259,14 @@
 
             std::string paramName = declParam->name;
             RuntimeVal argValue = evaluateExpression(node.arguments[i]);
-            localScope->setVariable(paramName, argValue, VariableSettings::Declaration);
+            currentScope()->setVariable(paramName, argValue, VariableSettings::Declaration);
         }
 
 
-        // Push the local scope onto the stack
-        // When the function tried to use a paramerter variable
-        // It will find it in the parent scope
-        envStack.push(localScope);
-
-        printEnv();
-
         //Evalute body of function
+        bool didReturn = false;
         RuntimeVal returnValue;
+
           try{
 
             evaluateExpression(functionDecl->body);
@@ -217,24 +274,31 @@
           } catch(TurshellReturn e) {
             //End Body execution early
             returnValue = e.returnVal;
+            didReturn = true;
 
           }
 
 
         // Pop the local scope from the stack
-        envStack.pop();
+        exitCurrentScope();
 
 
-        std::cout << "Returned call: " << returnValue.getInt() << "\n";
-        // Push the return value onto the stack
-        evaluationStack.push(returnValue);
+        if(didReturn){
+          std::cout << "Returned call: " << returnValue.getInt() << "\n";
+
+          // Push the return value onto the stack
+          evaluationStack.push(returnValue);
+        }
+
+
+
     }
 
 
 
     void Interpreter::visit(BlockNode& node) {
 
-      enterNewScope();
+      /* enterNewScope(); */
 
 
       for (auto& stmt : node.statements) {
@@ -243,7 +307,7 @@
       }
 
 
-      exitCurrentScope();
+      /* exitCurrentScope(); */
 
     }
 
@@ -259,12 +323,11 @@
             returnValue = evaluateExpression(node.expression);
         }
 
-        // Set the return value in the current scope
-        /* currentScope()->setReturnValue(returnValue); */
 
-        // Exit the current function early, use tryCatch to stop execution in NodeBlock
-        // try stmt->accept(*this) catch(custom Return error) return no more execuation
-        throw TurshellReturn(returnValue, "TurshellReturn"); // Define a custom exception type if needed
+
+        // Exit the current function early, use tryCatch to stop execution in FuncCall
+        // If error not caught my FuncCall Visitor then its not in a function
+        throw TurshellReturn(returnValue, "Return Error - Can only use return inside of function");
     }
 
 

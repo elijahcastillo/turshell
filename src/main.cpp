@@ -88,11 +88,12 @@ int main(int argc, char* argv[]) {
         // Print the AST (for debugging or verification)
         PrintVisitor printer;
         ast->accept(printer);
+        std::cout << "========= End of Parser =========\n\n";
 
         // Interpretation
         Interpreter interpreter;
         ast->accept(interpreter); // Execute the AST
-        interpreter.printStack();
+        /* interpreter.printStack(); */
 
         // Handle interpretation results or errors
         // (Depends on your interpreter design and language features)

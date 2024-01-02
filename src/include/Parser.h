@@ -60,8 +60,34 @@ private:
      if(check(TokenType::TypeIdentifier)){
         std::string varType = consume(TokenType::TypeIdentifier, "Expected Type").value;
         std::string varName = consume(TokenType::Identifier, "Expected Name for variable").value;
+        return parseVariableDeclaration(varType, varName);
+     } 
 
-        //Maybe depening on the type we set it to a Literal value depening on the vartype Ex: int = 0, string = ""
+
+    //Parse Variable with non-primtive type
+      if (check(TokenType::Identifier)) {
+          std::string potentialType = peek().value;
+
+          // Assume an identifier at the start of a statement could be a type name, user defined
+          advance(); // Move past the identifier
+
+          if (check(TokenType::Identifier)) {
+              std::string varName = consume(TokenType::Identifier, "Expected variable name").value;
+
+              return parseVariableDeclaration(potentialType, varName);
+          } else {
+              // If the next token is not an Identifier, backtrack and parse it as a regular expression/statement
+              current--; // Move back to the potential type identifier
+              return parseExpression();
+          }
+      }
+
+
+     return parseExpression();
+    }
+
+
+    ASTNode* parseVariableDeclaration(std::string& varType, std::string& varName){
         ASTNode* varInitializer = nullptr;
 
         if(match(TokenType::Equals)){
@@ -72,13 +98,10 @@ private:
         consume(TokenType::Semicolon, "Expect ';' after variable declaration");
 
         if(varInitializer == nullptr){
-          throw std::invalid_argument("Varaible " + varName + " must be initialized: line " + std::to_string(previous().lineNumber));
+          throw std::invalid_argument("Varaible " +varName+" must be initialized: line "+std::to_string(previous().lineNumber));
         }
 
         return new VariableDeclarationNode(varName, varType, varInitializer);
-     } 
-
-     return parseExpression();
     }
 
 
@@ -186,6 +209,19 @@ private:
         return node;
     }
 
+
+    // Implement logic to check if the next token is valid after an operator
+    // For example, after a '+' token, you expect a number, an identifier, or a '('
+    // Return true if the next token is valid, false otherwise
+    bool isNextTokenValidAfterOperator() {
+        if (isAtEnd()) return false;
+
+        TokenType nextType = peek().type;
+        return nextType == TokenType::NumberLiteral || 
+               nextType == TokenType::Identifier || 
+               nextType == TokenType::LParen;
+    }
+
     ASTNode* parseAddition() {
 
 
@@ -194,6 +230,11 @@ private:
 
         while (check(TokenType::Plus) || check(TokenType::Minus)) {
             Token op = advance();
+
+            if (isAtEnd() || !isNextTokenValidAfterOperator()) {
+                throw std::invalid_argument("Syntax Error: Incomplete expression at line " + std::to_string(op.lineNumber));
+            }
+
             ASTNode* right = parseMultiplication();
 
             node = new BinaryExpressionNode(node, op.value, right);
@@ -209,6 +250,11 @@ private:
         Token currentToken = tokens[current];
         while (check(TokenType::Asterik) || check(TokenType::Division) || check(TokenType::Modulo)) {
             Token op = advance();
+
+            if (isAtEnd() || !isNextTokenValidAfterOperator()) {
+                throw std::invalid_argument("Syntax Error: Incomplete expression at line " + std::to_string(op.lineNumber));
+            }
+
             ASTNode* right = parsePrimary();
             node = new BinaryExpressionNode(node, op.value, right);
         }
@@ -223,8 +269,10 @@ private:
         consume(TokenType::LParen, "Expected '(' after Identifier");
         std::vector<ASTNode*> arguments;
 
+
         // Check if argument list is not empty
         if (!check(TokenType::RParen)) {
+            
             do {
                 arguments.push_back(parseExpression());
             } while (match(TokenType::Comma));
@@ -287,8 +335,14 @@ private:
           return new VariableExpressionNode(varName); // You need to create this node type
       }
 
-        return nullptr;
 
+
+       if(peek().type == TokenType::EndOfFile){
+       
+           return nullptr;
+       }
+       
+        throw std::invalid_argument("Cannot Parse Token: " + peek().value );
         // Handle other primary types (like parentheses) here
     }
 
