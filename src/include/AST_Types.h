@@ -102,6 +102,16 @@ struct StructDeclarationNode: public ExpressionNode {
     void accept(Visitor &v) override;
 };
 
+struct StructInitalizerListNode : public ExpressionNode {
+  std::vector<ASTNode*> properties; //Variable Assignment Nodes
+
+  StructInitalizerListNode(std::vector<ASTNode*>& properties): properties(properties) {};
+
+  void accept(Visitor &v) override;
+};
+
+
+
 //Ex: int a = 3 + 2;
 struct VariableDeclarationNode : public StatementNode {
     std::string variableName;

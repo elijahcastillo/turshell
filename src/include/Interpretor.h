@@ -8,12 +8,33 @@
 #include <functional>
 #include <stack>
 
+
+
+struct StructDeclInfo{
+  std::string structName;
+  size_t numProperties;
+  std::unordered_map<std::string, std::string> properties;
+
+  StructDeclInfo(std::string structName, size_t numProperties): structName(structName), numProperties(numProperties) {
+    std::cout << "STRUCTTTTT" << std::endl;
+  };
+
+  StructDeclInfo(){
+    std::cout << "BADVERYBAD\n";
+  }
+
+  void addProperty(std::string propName, std::string propType){
+    properties[propName] = propType;
+  }
+};
+
 class Interpreter : public Visitor {
     // Environment to store variable values, function definitions, etc.
 
     std::stack<std::shared_ptr<Environment>> envStack; //Stack of Enviornment scopes
     std::stack<std::shared_ptr<RuntimeVal>> evaluationStack; //Stack to help durring calculations
     std::unordered_map<std::string, FunctionDeclarationNode*> functionTable; //User defined functions
+    std::unordered_map<std::string, StructDeclInfo> structTable;
     std::unordered_map<std::string, std::function<std::shared_ptr<RuntimeVal>(Interpreter&, std::vector<std::shared_ptr<RuntimeVal>>&)>> nativeFunctions;
 
 
@@ -29,6 +50,8 @@ public:
     void registerNativeFunction(const std::string& name, std::function<  std::shared_ptr<RuntimeVal>(  Interpreter&, std::vector<std::shared_ptr<RuntimeVal>>&  )  > func); 
     std::shared_ptr<RuntimeVal> callNativeFunction(const std::string& name, std::vector<std::shared_ptr<RuntimeVal>>& args); 
 
+  bool isStructType(const std::string& name); 
+
     void visit(ProgramNode& node) override;
 
     void visit(BinaryExpressionNode& node) override;
@@ -40,6 +63,7 @@ public:
     void visit(BinaryLiteralNode& node) override;
 
     void visit(StructDeclarationNode& node) override;
+    void visit(StructInitalizerListNode& node) override;
     void visit(VariableDeclarationNode& node) override;
 
     void visit(VariableAssignmentNode& node) override;

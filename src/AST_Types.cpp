@@ -32,6 +32,10 @@ void StructDeclarationNode::accept(Visitor& v){
   v.visit(*this);
 }
 
+void StructInitalizerListNode::accept(Visitor& v){
+  v.visit(*this);
+}
+
 void ProgramNode::accept(Visitor& v){
   v.visit(*this);
 }

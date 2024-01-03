@@ -1,5 +1,6 @@
 
 #include "include/Interpretor.h"
+#include "include/AST_Types.h"
 #include "include/Enviorment.h"
 #include "include/Runtime.h"
 #include <memory>
@@ -22,7 +23,13 @@ class TurshellReturn : public std::exception {
     }
 };
 
-
+  bool Interpreter::isStructType(const std::string& name) {
+      auto it = structTable.find(name);
+      if (it != structTable.end()) {
+          return true;
+      }
+      return false;
+  }
 
 
 
@@ -37,6 +44,7 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
         return it->second(*this, args);
     }
     runtimeError("Native function not found: " + name);
+    return nullptr;
 }
 //======= End Native FUnctions ========
 
@@ -206,6 +214,68 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
     }
 
     void Interpreter::visit(VariableDeclarationNode& node) {
+
+      if(isStructType(node.variableType)){
+
+        /* StructDeclInfo declInfo = structTable[node.variableType]; */
+        auto it = structTable.find(node.variableType);
+        if (it == structTable.end()) {
+            runtimeError("Internal error: Struct type '" + node.variableType + "' should exist but was not found in structTable");
+            return;
+        }
+
+        StructDeclInfo& declInfo = it->second;
+        /* std::cout << "Found struct declaration: " << declInfo.structName << std::endl; */
+        
+        StructInitalizerListNode* initList = dynamic_cast<StructInitalizerListNode*>(node.initializer);
+
+        if(initList == nullptr){
+          runtimeError("Can only initalize type of struct '" + node.variableName + "' with struct initializer list");
+        }
+
+        if(declInfo.numProperties != initList->properties.size()){
+          runtimeError("Size of struct initilizer list must match # of properties in type defintion");
+        }
+
+
+        //Runtime Value
+        auto structValue = std::make_shared<StructValue>();
+        /* std::cout << "Initializing struct Runtime: " << declInfo.structName << std::endl; */
+
+        for(int i = 0; i < declInfo.numProperties; i++){
+            VariableAssignmentNode* param = static_cast<VariableAssignmentNode*>(initList->properties[i]);
+            /* std::cout << "Processing property InitList: " << param->variableName << std::endl; */
+            
+            //Check if propery exists on struct
+            auto it = declInfo.properties.find(param->variableName);
+            if(it == declInfo.properties.end()){
+              runtimeError("Property '" + param->variableName +"' does not exist on '" + declInfo.structName +"'");
+              return;
+            }
+
+            std::shared_ptr<RuntimeVal> paramValue = evaluateExpression(param->value);
+/* std::cout << "Init List Evaluated property value for " << param->variableName << ": " << paramValue->toString() << std::endl; */
+            
+              
+            //Type Checking
+            if(paramValue->getType() != declInfo.properties[param->variableName]){
+              runtimeError("Initializer list type must match struct property type");
+            }
+
+            //Add property to struct
+            structValue->setProperty(param->variableName, paramValue);
+              /* std::cout << "Property set: " << param->variableName << std::endl; */
+        }
+
+
+        currentScope()->setVariable(node.variableName, structValue, VariableSettings::Declaration);
+        return;
+      }
+       
+
+
+
+
       std::shared_ptr<RuntimeVal> value = evaluateExpression(node.initializer);
 
       if(!(node.variableType == value->getType())){
@@ -287,6 +357,22 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
 
 
     void Interpreter::visit(StructDeclarationNode& node) {
+      //Do something Here not sure yet, its a user defined type
+        if (structTable.find(node.structName) != structTable.end()) {
+            // Function with the same name already exists
+            runtimeError("Struct '" + node.structName + "' is already declared.");
+        }
+        StructDeclInfo info(node.structName, node.properties.size());
+        for (auto& prop : node.properties) {
+          ParameterNode* declParam = static_cast<ParameterNode*>(prop);
+
+            info.addProperty(declParam->name, declParam->type);
+        }
+
+        structTable[node.structName] = info;
+    }
+
+    void Interpreter::visit(StructInitalizerListNode& node) {
       //Do something Here not sure yet, its a user defined type
     }
 

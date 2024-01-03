@@ -27,6 +27,7 @@ enum TokenType {
     RParen,              // ) 
     LBracket,            // { 
     RBracket,            // } 
+    Colon,                // :
     Comma,               // Comma for separation. Example: ","
     Semicolon,           // Semicolon as a statement terminator. Example: ";"
     Dot,                 // Dot for object property access. Example: "."
@@ -227,6 +228,7 @@ Token consumeSingleCharacterToken() {
         case ')': type = RParen; break;
         case '{': type = LBracket; break;
         case '}': type = RBracket; break;
+        case ':': type = Colon; break;
         case ',': type = Comma; break;
         case ';': type = Semicolon; break;
         case '.': type = Dot; break;

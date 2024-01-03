@@ -70,10 +70,14 @@ private:
 
       //Parse Variable Declaration Ex: int a = 3 + 2;
      if(check(TokenType::TypeIdentifier)){
+       std::cout << "VAR DECL" << std::endl;
         std::string varType = consume(TokenType::TypeIdentifier, "Expected Type").value;
         std::string varName = consume(TokenType::Identifier, "Expected Name for variable").value;
+
+        std::cout << "currdecl" << peek().value << " " << varType << " " << varName << "\n";
         return parseVariableDeclaration(varType, varName);
      } 
+
 
 
     //Parse Variable with non-primtive type
@@ -108,6 +112,7 @@ private:
           varInitializer = parseExpression();
         }
 
+
         consume(TokenType::Semicolon, "Expect ';' after variable declaration");
 
         if(varInitializer == nullptr){
@@ -116,6 +121,7 @@ private:
 
         return new VariableDeclarationNode(varName, varType, varInitializer);
     }
+
 
 
     //struct Point {
@@ -134,6 +140,7 @@ private:
         do{
 
           if(peek().type == TokenType::RBracket) break;
+
           std::string paramType;
           if(check(TokenType::Identifier) || check(TokenType::TypeIdentifier)){
             paramType = advance().value;
@@ -144,6 +151,10 @@ private:
           properties.push_back(new ParameterNode(paramType, paramName));
         } while(match(TokenType::Semicolon));
 
+      }
+
+      if(properties.size() == 0){
+        throw std::invalid_argument("Struct must have atleast one property");
       }
 
       consume(TokenType::RBracket, "Expected '}' after struct");
@@ -222,10 +233,31 @@ private:
         return new BlockNode(statements);
     }
 
+    ASTNode* parseStructInitializerList() {
+        consume(TokenType::LBracket, "Expected '{' at the beginning of struct initializer list");
+        std::vector<ASTNode*> initializers;
+
+        do {
+            std::string propertyName = consume(TokenType::Identifier, "Expected property name").value;
+            consume(TokenType::Colon, "Expected ':' after property name");
+            ASTNode* initializer = parseExpression();
+            initializers.push_back(new VariableAssignmentNode(propertyName, initializer));
+        } while (match(TokenType::Comma));
+
+        consume(TokenType::RBracket, "Expected '}' at the end of struct initializer list");
+        return new StructInitalizerListNode(initializers);
+    }
+
 
     ASTNode* parseExpression() {
 
+      std::cout << "Parse Expr: " << peek().value << "\n";
 
+      //Struct Initializer list: Ex -  {x: 1+2, y: 5}
+      if(check(TokenType::LBracket) && peekNext().type == TokenType::Identifier){
+        std::cout << "HERE" << std::endl;
+        return parseStructInitializerList();
+      }
 
 
 

@@ -2,65 +2,10 @@
 #include <variant>
 #include <string>
 #include <stdexcept>
+#include <memory>
+#include <map>
 
-/* struct RuntimeVal { */
-/*     // Define a variant type that can hold an int, bool, or string */
-/*     std::variant<std::monostate, int, bool, std::string> value; */
-/*  */
-/*     // Constructors for different types */
-/*     RuntimeVal(int intValue) : value(intValue) {} */
-/*     RuntimeVal(bool boolValue) : value(boolValue) {} */
-/*     RuntimeVal(const std::string& stringValue) : value(stringValue) {} */
-/*     RuntimeVal() : value(std::monostate()) {} */
-/*  */
-/*     // Helper methods to get the value */
-/*     int getInt() const { */
-/*         if (std::holds_alternative<int>(value)) { */
-/*             return std::get<int>(value); */
-/*         } */
-/*         throw std::runtime_error("RuntimeVal does not hold an int"); */
-/*     } */
-/*  */
-/*     bool getBool() const { */
-/*         if (std::holds_alternative<bool>(value)) { */
-/*             return std::get<bool>(value); */
-/*         } */
-/*         throw std::runtime_error("RuntimeVal does not hold a bool"); */
-/*     } */
-/*  */
-/*     std::string getString() const { */
-/*         if (std::holds_alternative<std::string>(value)) { */
-/*             return std::get<std::string>(value); */
-/*         } */
-/*         throw std::runtime_error("RuntimeVal does not hold a string"); */
-/*     } */
-/*  */
-/*  */
-/*     // Type checking methods */
-/*     bool isNull() const { return std::holds_alternative<std::monostate>(value); } */
-/*     bool isInt() const { return std::holds_alternative<int>(value); } */
-/*     bool isBool() const { return std::holds_alternative<bool>(value); } */
-/*     bool isString() const { return std::holds_alternative<std::string>(value); } */
-/*  */
-/*  */
-/*     // Conversion to string for printing or concatenation */
-/*     std::string toString() const { */
-/*         if (isNull()) return "null"; */
-/*         if (isInt()) return std::to_string(getInt()); */
-/*         if (isBool()) return getBool() ? "true" : "false"; */
-/*         if (isString()) return getString(); */
-/*         throw std::runtime_error("Unsupported type for toString"); */
-/*     } */
-/*  */
-/*     std::string typeToString(){ */
-/*         if (isNull()) return "null"; */
-/*         if (isInt()) return "int"; */
-/*         if (isBool()) return "bool"; */
-/*         if (isString()) return "string"; */
-/*         throw std::runtime_error("Unsupported type for typeToString"); */
-/*     } */
-/* }; */
-/*  */
+
 
 
 
@@ -70,6 +15,13 @@ struct RuntimeVal {
   RuntimeVal(std::string typeStr): type(typeStr){};
   virtual ~RuntimeVal() = default;
   virtual std::string toString() = 0;
+    virtual std::shared_ptr<RuntimeVal> getProperty(const std::string& name) {
+        throw std::runtime_error("Not a struct type");
+    }
+
+    virtual void setProperty(const std::string& name, std::shared_ptr<RuntimeVal> value) {
+        throw std::runtime_error("Not a struct type");
+    }
   std::string getType() { return type; };
 };
 
@@ -101,4 +53,44 @@ struct BoolValue : public RuntimeVal {
     BoolValue(bool value) : RuntimeVal("bool"), value(value) {};
     std::string toString() override { return value ? "true" : "false"; };
     bool getValue() { return value; };
+};
+
+
+struct StructValue : public RuntimeVal {
+    std::map<std::string, std::shared_ptr<RuntimeVal>> properties;
+
+    StructValue() : RuntimeVal("struct") {}
+
+    std::shared_ptr<RuntimeVal> getProperty(const std::string& name) override {
+        auto it = properties.find(name);
+        if (it != properties.end()) {
+            return it->second;
+        }
+        throw std::runtime_error("Property not found: " + name);
+    }
+
+    void setProperty(const std::string& name, std::shared_ptr<RuntimeVal> value) override {
+        properties[name] = value;
+    }
+
+std::string toString() override {
+    std::string result = "Struct{";
+    bool first = true;
+    for (const auto& pair : properties) {
+        if (!first) {
+            result += ", ";
+        }
+        first = false;
+        result += pair.first + ": ";
+        if (pair.second) {
+            result += pair.second->toString();
+        } else {
+            result += "null";
+        }
+    }
+    result += "}";
+    return result;
+}
+
+    // toString implementation...
 };

@@ -57,6 +57,16 @@ void PrintVisitor::visit(StructDeclarationNode& node){
 
 };
 
+
+void PrintVisitor::visit(StructInitalizerListNode& node){
+  std::cout << "StructInit{ ";
+  for(auto prop: node.properties){
+        prop->accept(*this);
+  }
+  std::cout << "}\n";
+
+};
+
 void PrintVisitor::visit(VariableDeclarationNode& node){
   std::cout << "Variable Declaration: " << node.variableType << " " << node.variableName << " = " ;
     node.initializer->accept(*this);
