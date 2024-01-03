@@ -12,9 +12,9 @@ class Interpreter : public Visitor {
     // Environment to store variable values, function definitions, etc.
 
     std::stack<std::shared_ptr<Environment>> envStack; //Stack of Enviornment scopes
-    std::stack<RuntimeVal> evaluationStack; //Stack to help durring calculations
+    std::stack<std::shared_ptr<RuntimeVal>> evaluationStack; //Stack to help durring calculations
     std::unordered_map<std::string, FunctionDeclarationNode*> functionTable; //User defined functions
-    std::unordered_map<std::string, std::function<RuntimeVal(Interpreter&, std::vector<RuntimeVal>&)>> nativeFunctions;
+    std::unordered_map<std::string, std::function<std::shared_ptr<RuntimeVal>(Interpreter&, std::vector<std::shared_ptr<RuntimeVal>>&)>> nativeFunctions;
 
 
 
@@ -26,8 +26,8 @@ public:
       envStack.push(std::make_shared<Environment>());
     }
 
-    void registerNativeFunction(const std::string& name, std::function<RuntimeVal(Interpreter&, std::vector<RuntimeVal>&)> func); 
-    RuntimeVal callNativeFunction(const std::string& name, std::vector<RuntimeVal>& args); 
+    void registerNativeFunction(const std::string& name, std::function<  std::shared_ptr<RuntimeVal>(  Interpreter&, std::vector<std::shared_ptr<RuntimeVal>>&  )  > func); 
+    std::shared_ptr<RuntimeVal> callNativeFunction(const std::string& name, std::vector<std::shared_ptr<RuntimeVal>>& args); 
 
     void visit(ProgramNode& node) override;
 
@@ -66,7 +66,7 @@ public:
 
     void exitCurrentScope();
     // Helper methods
-    RuntimeVal evaluateExpression(ASTNode* node); 
+    std::shared_ptr<RuntimeVal> evaluateExpression(ASTNode* node); 
 
     // Error handling methods
     void runtimeError(const std::string& message);

@@ -2,6 +2,7 @@
 #include "include/Interpretor.h"
 #include "include/Enviorment.h"
 #include "include/Runtime.h"
+#include <memory>
 #include <stdexcept>
 #include <string>
 
@@ -11,10 +12,10 @@
 class TurshellReturn : public std::exception {
 
     public:
-    RuntimeVal returnVal;
+    std::shared_ptr<RuntimeVal> returnVal;
     const char* msg;
 
-    TurshellReturn(RuntimeVal returnVal, const char* msg) : returnVal(returnVal), msg(msg) {};
+    TurshellReturn(std::shared_ptr<RuntimeVal> returnVal, const char* msg) : returnVal(returnVal), msg(msg) {};
 
     const char * what () {
         return msg;
@@ -22,23 +23,15 @@ class TurshellReturn : public std::exception {
 };
 
 
-bool checkType(std::string type, RuntimeVal value) {
-    if ((type == "int" && !value.isInt()) ||
-        (type == "bool" && !value.isBool()) ||
-        (type == "string" && !value.isString())) {
-      return false;
-    }
 
-    return true;
-}
 
 
 //======== Native Functions ==========
-void Interpreter::registerNativeFunction(const std::string& name, std::function<RuntimeVal(Interpreter&, std::vector<RuntimeVal>&)> func) {
+void Interpreter::registerNativeFunction(const std::string& name, std::function<std::shared_ptr<RuntimeVal>(Interpreter&, std::vector<std::shared_ptr<RuntimeVal>>&)> func) {
     nativeFunctions[name] = func;
 }
 
-RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<RuntimeVal>& args) {
+std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& name, std::vector<std::shared_ptr<RuntimeVal>>& args) {
     auto it = nativeFunctions.find(name);
     if (it != nativeFunctions.end()) {
         return it->second(*this, args);
@@ -62,105 +55,74 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
         node.left->accept(*this);
         node.right->accept(*this);
 
-        RuntimeVal right = evaluationStack.top(); evaluationStack.pop();
-        RuntimeVal left = evaluationStack.top(); evaluationStack.pop();
+        std::shared_ptr<RuntimeVal> right = evaluationStack.top(); evaluationStack.pop();
+        std::shared_ptr<RuntimeVal> left = evaluationStack.top(); evaluationStack.pop();
 
 
-        if(node.op == "+"){
-          //String Concat
-          if(left.isString() && right.isString()){
-            evaluationStack.push(RuntimeVal(left.getString() + right.getString()));
-            return;
+        if(left->getType() == "int" && right->getType() == "int"){
+          auto leftInt = static_cast<IntValue*>(left.get());
+          auto rightInt = static_cast<IntValue*>(right.get());
+
+          if(node.op == "+"){
+
+            /* std::cout << "Adding " << leftInt->getValue() << " to " << rightInt->getValue() << std::endl; */
+            return evaluationStack.push(std::make_shared<IntValue>(leftInt->getValue() + rightInt->getValue()));
           }
-
-          //Integer
-          if(left.isInt() && right.isInt()){
-            evaluationStack.push(RuntimeVal(left.getInt() + right.getInt()));
-            return;
+          if(node.op == "-"){
+            return evaluationStack.push(std::make_shared<IntValue>(leftInt->getValue() - rightInt->getValue()));
           }
-
-        } else if (node.op == "-"){
-          evaluationStack.push(RuntimeVal(left.getInt() - right.getInt()));
-          return;
-        } else if (node.op == "*"){
-          evaluationStack.push(RuntimeVal(left.getInt() * right.getInt()));
-          return;
-        } else if (node.op == "/"){
-          evaluationStack.push(RuntimeVal(left.getInt() / right.getInt()));
-          return;
-        } else if (node.op == "%"){
-          evaluationStack.push(RuntimeVal(left.getInt() % right.getInt()));
-          return;
-        }
-
-
-        if(node.op == "=="){
-
-          if(left.isString() && right.isString()){
-            if(left.getString() == right.getString()){
-              return evaluationStack.push(RuntimeVal(true));
-            } else {
-
-              return evaluationStack.push(RuntimeVal(false));
-            }
-
+          if(node.op == "*"){
+            return evaluationStack.push(std::make_shared<IntValue>(leftInt->getValue() * rightInt->getValue()));
           }
-
-          if(left.isInt() && right.isInt()){
-            //Integer
-            if(left.getInt() == right.getInt()){
-              return evaluationStack.push(RuntimeVal(true));
-            } else {
-              return evaluationStack.push(RuntimeVal(false));
-            }
+          if(node.op == "/"){
+            return evaluationStack.push(std::make_shared<IntValue>(leftInt->getValue() / rightInt->getValue()));
           }
-
-          if(left.isBool() && right.isBool()){
-            if(left.getBool() == right.getBool()){
-
-              /* std::cout << left.getBool() << " == " << right.getBool() << "\n"; */
-              return evaluationStack.push(RuntimeVal(true));
-            } else {
-
-              return evaluationStack.push(RuntimeVal(false));
-            }
+          if(node.op == "%"){
+            return evaluationStack.push(std::make_shared<IntValue>(leftInt->getValue() % rightInt->getValue()));
+          }
+          if(node.op == "=="){
+            return evaluationStack.push(std::make_shared<BoolValue>(leftInt->getValue() == rightInt->getValue() ? true : false));
+          }
+          if(node.op == ">"){
+            return evaluationStack.push(std::make_shared<BoolValue>(leftInt->getValue() > rightInt->getValue() ? true : false));
+          }
+          if(node.op == "<"){
+            return evaluationStack.push(std::make_shared<BoolValue>(leftInt->getValue() < rightInt->getValue() ? true : false));
+          }
+          if(node.op == ">="){
+            return evaluationStack.push(std::make_shared<BoolValue>(leftInt->getValue() >= rightInt->getValue() ? true : false));
+          }
+          if(node.op == "<="){
+            /* std::cout << "Comparing " << leftInt->getValue() << " <= " << rightInt->getValue() << std::endl; */
+            return evaluationStack.push(std::make_shared<BoolValue>(leftInt->getValue() <= rightInt->getValue() ? true : false));
           }
 
         }
 
-        if(node.op == ">"){
-          if(left.getInt() > right.getInt()){
-            return evaluationStack.push(RuntimeVal(true));
-          } else {
-            return evaluationStack.push(RuntimeVal(false));
+
+        if(left->getType() == "string" && right->getType() == "string"){
+          auto leftStr = static_cast<StringValue*>(left.get());
+          auto rightStr = static_cast<StringValue*>(right.get());
+
+          if(node.op == "+"){
+            return evaluationStack.push(std::make_shared<StringValue>(leftStr->getValue() + rightStr->getValue()));
           }
-        }
-
-        if(node.op == "<"){
-          if(left.getInt() < right.getInt()){
-            return evaluationStack.push(RuntimeVal(true));
-          } else {
-            return evaluationStack.push(RuntimeVal(false));
-          }
-        }
-
-
-        if(node.op == "<="){
-          if(left.getInt() <= right.getInt()){
-            return evaluationStack.push(RuntimeVal(true));
-          } else {
-            return evaluationStack.push(RuntimeVal(false));
+          if(node.op == "=="){
+            return evaluationStack.push(std::make_shared<BoolValue>(leftStr->getValue() == rightStr->getValue()));
           }
         }
 
 
-        if(node.op == ">="){
-          if(left.getInt() >= right.getInt()){
-            return evaluationStack.push(RuntimeVal(true));
-          } else {
-            return evaluationStack.push(RuntimeVal(false));
+        if(left->getType() == "bool" && right->getType() == "bool"){
+          auto leftBool = static_cast<BoolValue*>(left.get());
+          auto rightBool = static_cast<BoolValue*>(right.get());
+
+          if(node.op == "=="){
+            return evaluationStack.push(std::make_shared<BoolValue>(leftBool->getValue() == rightBool->getValue()));
           }
         }
+
+
 
       runtimeError("Unsuporrted Binary Expression");
 
@@ -170,32 +132,21 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
     //&& ||
     void Interpreter::visit(LogicalOperatorNode& node) {
       
-      RuntimeVal left = evaluateExpression(node.left);
-      RuntimeVal right = evaluateExpression(node.right);
+      std::shared_ptr<RuntimeVal> left = evaluateExpression(node.left);
+      std::shared_ptr<RuntimeVal> right = evaluateExpression(node.right);
 
 
-      if(left.isBool() && right.isBool()){
+      if(left->getType() == "bool" && right->getType() == "bool"){
+          auto leftBool = static_cast<BoolValue*>(left.get());
+          auto rightBool = static_cast<BoolValue*>(right.get());
+
 
         if(node.op == "&&"){
-
-          if(left.getBool() && right.getBool()){
-              return evaluationStack.push(RuntimeVal(true));
-          } else  {
-              return evaluationStack.push(RuntimeVal(false));
-
-          }
-
+          return evaluationStack.push(std::make_shared<BoolValue>(leftBool->getValue() && rightBool->getValue()));
         }
 
-
         if(node.op == "||"){
-
-          if(left.getBool() || right.getBool()){
-              return evaluationStack.push(RuntimeVal(true));
-          } else  {
-              return evaluationStack.push(RuntimeVal(false));
-
-          }
+          return evaluationStack.push(std::make_shared<BoolValue>(leftBool->getValue() || rightBool->getValue()));
 
         }
 
@@ -210,19 +161,27 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
 
 
     void Interpreter::visit(UnaryExpressionNode& node) {
-      RuntimeVal right = evaluateExpression(node.right);
+      std::shared_ptr<RuntimeVal> right = evaluateExpression(node.right);
 
-      if(node.op == "-"){
-        if(right.isInt()){
-          evaluationStack.push(RuntimeVal(right.getInt() * -1));
-          return;
+      if(right->getType() == "int"){
+        auto rightInt = static_cast<IntValue*>(right.get());
+
+        if(node.op == "-"){
+          return evaluationStack.push(std::make_shared<IntValue>(rightInt->getValue() * -1));
         }
       }
 
-      if(node.op == "!"){
-        if(right.isBool()){
-          evaluationStack.push(right.getBool() ? RuntimeVal(false) : RuntimeVal(true));
-          return;
+      if(right->getType() == "bool"){
+        auto rightBool = static_cast<BoolValue*>(right.get());
+
+        if(node.op == "!"){
+          if(rightBool->getValue() == true){
+            return evaluationStack.push(std::make_shared<BoolValue>(false));
+          } else {
+
+            return evaluationStack.push(std::make_shared<BoolValue>(true));
+          }
+
         }
       }
 
@@ -232,26 +191,24 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
     }
 
     void Interpreter::visit(IntLiteralNode& node) {
-      evaluationStack.push(RuntimeVal(node.value));
+      evaluationStack.push(std::make_shared<IntValue>(node.value));
 
     }
 
     void Interpreter::visit(StringLiteralNode& node) {
-      evaluationStack.push(RuntimeVal(node.value));
+      evaluationStack.push(std::make_shared<StringValue>(node.value));
 
     }
 
     void Interpreter::visit(BinaryLiteralNode& node) {
-      /* std::cout << "BL " << node.value << "\n"; */
-
-      evaluationStack.push(node.value ? RuntimeVal(true) : RuntimeVal(false));
+      evaluationStack.push(node.value ? std::make_shared<BoolValue>(true) : std::make_shared<BoolValue>(false));
 
     }
 
     void Interpreter::visit(VariableDeclarationNode& node) {
-      RuntimeVal value = evaluateExpression(node.initializer);
+      std::shared_ptr<RuntimeVal> value = evaluateExpression(node.initializer);
 
-      if(!(node.variableType == value.typeToString())){
+      if(!(node.variableType == value->getType())){
           runtimeError("Type mismatch in variable declaration for " + node.variableName);
           return;
       }
@@ -262,11 +219,11 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
 
     // VariableAssignmentNode
     void Interpreter::visit(VariableAssignmentNode& node) {
-      RuntimeVal value = evaluateExpression(node.value);
-      RuntimeVal assignTo = currentScope()->getVariable(node.variableName);
+      std::shared_ptr<RuntimeVal> value = evaluateExpression(node.value);
+      std::shared_ptr<RuntimeVal> assignTo = currentScope()->getVariable(node.variableName);
 
-      if(!(value.typeToString() == assignTo.typeToString())){
-        runtimeError("Cannot assign value of type '" + value.typeToString() + "' to variable '" + node.variableName + "' of type '" + assignTo.typeToString() + "'");
+      if(value->getType() != assignTo->getType()){
+        runtimeError("Cannot assign value of type '" + value->getType() + "' to variable '" + node.variableName + "' of type '" + assignTo->getType() + "'");
         return;
       }
 
@@ -279,9 +236,16 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
     void Interpreter::visit(WhileStatementNode& node) {
         // Implement while loop logic
 
-        RuntimeVal condition = evaluateExpression(node.condition);
+      std::shared_ptr<RuntimeVal> condition = evaluateExpression(node.condition);
 
-        while(condition.getBool()  == true){
+      if(condition->getType() != "bool"){
+        runtimeError("Cannot evaluate 'while' condition of on boolean type");
+      }
+
+      auto conditionValue = static_cast<BoolValue*>(condition.get());
+
+
+        while(conditionValue->getValue()  == true){
           
           //Run code inside of {}
           enterNewScope();
@@ -290,18 +254,29 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
 
           //Recheck condition
           condition = evaluateExpression(node.condition);
+
+          if(condition->getType() != "bool"){
+            runtimeError("Cannot evaluate 'while' condition of on boolean type");
+          }
+
+          conditionValue = static_cast<BoolValue*>(condition.get());
           
         }
     }
 
     void Interpreter::visit(IfStatementNode& node) {
         // Implement if statement logic
-        RuntimeVal condition = evaluateExpression(node.condition);
+      std::shared_ptr<RuntimeVal> condition = evaluateExpression(node.condition);
 
-        std::cout << "If " << condition.getBool() << "\n";
+      if(condition->getType() != "bool"){
+        runtimeError("Cannot evaluate 'if' condition of on boolean type");
+      }
+
+
+      auto conditionValue = static_cast<BoolValue*>(condition.get());
 
         //Run code inside {}
-        if(condition.getBool() == true){
+        if(conditionValue->getValue() == true){
           enterNewScope();
           evaluateExpression(node.thenBranch);
           exitCurrentScope();
@@ -369,11 +344,11 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
 
 
         if(isNativeFunction){
-          std::vector<RuntimeVal> arguments;
+          std::vector<std::shared_ptr<RuntimeVal>> arguments;
           for(int i = 0; i < node.arguments.size(); i++){
             arguments.push_back(evaluateExpression(node.arguments[i]));
           }
-          RuntimeVal returnValue = callNativeFunction(node.functionName, arguments);
+          std::shared_ptr<RuntimeVal> returnValue = callNativeFunction(node.functionName, arguments);
 
           evaluationStack.push(returnValue);
           return;
@@ -391,18 +366,25 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
             ParameterNode* declParam = dynamic_cast<ParameterNode*>(functionDecl->parameters[i]);
             ParameterNode* callParam = dynamic_cast<ParameterNode*>(node.arguments[i]);
 
-            std::cout << "Decl Name: " << declParam->name << "\n";
-            std::cout << "call v: " << evaluateExpression(node.arguments[i]).getInt() << "\n";
+            
+
 
             std::string paramName = declParam->name;
-            RuntimeVal argValue = evaluateExpression(node.arguments[i]);
+            std::shared_ptr<RuntimeVal> argValue = evaluateExpression(node.arguments[i]);
+
+            //Check type of parameters to fuction declaration
+            if(argValue->getType() != declParam->type){
+              runtimeError("Invalid function parameter type of '" + argValue->getType() + "' expected '" + declParam->type + "' in function '" + functionDecl->functionName + "'");
+              return;
+            }
+
             currentScope()->setVariable(paramName, argValue, VariableSettings::Declaration);
         }
 
 
         //Evalute body of function
         bool didReturn = false;
-        RuntimeVal returnValue;
+        std::shared_ptr<RuntimeVal> returnValue;
 
           try{
 
@@ -421,6 +403,13 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
 
 
         if(didReturn){
+
+          if(returnValue->getType() != functionDecl->returnType){
+            runtimeError("Invalid return type of '" + returnValue->getType() + "' expected '" + functionDecl->returnType + "' in function '" + functionDecl->functionName + "'" );
+            return;
+          }
+
+
           // Push the return value onto the stack
           evaluationStack.push(returnValue);
         }
@@ -447,13 +436,14 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
     }
 
     void Interpreter::visit(VariableExpressionNode& node) {
-      RuntimeVal value = currentScope()->getVariable(node.variableName);
+      std::shared_ptr<RuntimeVal> value = currentScope()->getVariable(node.variableName);
+      /* std::cout << "Varaible Expression Node pushed: " << value->getType() << "  " << value->toString() << "\n"; */
       evaluationStack.push(value);
     }
 
     void Interpreter::visit(ReturnStatementNode& node) {
            // Evaluate the expression to be returned
-        RuntimeVal returnValue;
+      std::shared_ptr<RuntimeVal> returnValue;
         if (node.expression) {
             returnValue = evaluateExpression(node.expression);
         }
@@ -482,22 +472,25 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
       }
     }
 
-  RuntimeVal Interpreter::evaluateExpression(ASTNode* node) {
+std::shared_ptr<RuntimeVal> Interpreter::evaluateExpression(ASTNode* node) {
       node->accept(*this);
 
-      RuntimeVal result;
+      std::shared_ptr<RuntimeVal> result;
 
       if(!evaluationStack.empty()){
 
         result = evaluationStack.top();
-      }
-
-
-
-      if(!evaluationStack.empty()){
 
         evaluationStack.pop();
       }
+
+
+/* if (result) { */
+/*     std::cout << "EVAL EXPR: " << result->getType() << "  " << result->toString() << "\n"; */
+/* } else { */
+/*     std::cout << "EVAL EXPR: null\n"; */
+/* } */
+
 
       return result;
   }
@@ -513,19 +506,21 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
 
 
 void Interpreter::printStack() {
-    std::stack<RuntimeVal> tempStack = evaluationStack; // Make a copy to iterate
+    std::stack<std::shared_ptr<RuntimeVal>> tempStack = evaluationStack; // Make a copy to iterate
 
     std::cout << "\nStack contents:" << std::endl;
     while (!tempStack.empty()) {
-        RuntimeVal val = tempStack.top();
+      std::shared_ptr<RuntimeVal> val = tempStack.top();
         tempStack.pop();
-        std::cout << val.toString() << std::endl; // Assuming RuntimeVal has toString
+        std::cout << val->toString() << std::endl; // Assuming RuntimeVal has toString
     }
+
+    std::cout << "\nEND Stack contents\n" << std::endl;
 }
 
 void Interpreter::printEnv(){
   for (const auto& pair : currentScope()->variables) {
-        std::cout << "Var: " << pair.first << ", Value: " << pair.second.getInt() << std::endl;
+        std::cout << "Var: " << pair.first << ", Value: " << pair.second->toString() << std::endl;
     }
 }
 

@@ -14,13 +14,13 @@ enum VariableSettings{
 class Environment {
 
   public:
-    std::unordered_map<std::string, RuntimeVal> variables;
+    std::unordered_map<std::string, std::shared_ptr<RuntimeVal>> variables;
     std::shared_ptr<Environment> parent;
 
     Environment(std::shared_ptr<Environment> parent = nullptr) : parent(parent) {}
 
-    void setVariable(const std::string& name, RuntimeVal value, VariableSettings setting) {
-
+    void setVariable(const std::string& name, std::shared_ptr<RuntimeVal> value, VariableSettings setting) {
+      /* std::cout << "Setting variable '" << name << "' to " << value->toString() << " with setting " << setting << std::endl; */
 
       if(setting == Declaration){
         variables[name] = value;
@@ -48,7 +48,8 @@ class Environment {
 
     }
 
-    RuntimeVal getVariable(const std::string& name) {
+    std::shared_ptr<RuntimeVal> getVariable(const std::string& name) {
+/* std::cout << "Getting variable '" << name << "'" << std::endl; */
         if (variables.find(name) != variables.end()) {
             return variables[name];
         } else if (parent != nullptr) {
