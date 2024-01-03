@@ -27,6 +27,11 @@ void BinaryLiteralNode::accept(Visitor& v){
   v.visit(*this);
 }
 
+
+void StructDeclarationNode::accept(Visitor& v){
+  v.visit(*this);
+}
+
 void ProgramNode::accept(Visitor& v){
   v.visit(*this);
 }

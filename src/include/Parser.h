@@ -53,6 +53,10 @@ private:
           return parseFunctionDeclaration();
         }
 
+        if(token.value == "struct"){
+          return parseStruct();
+        }
+
         // Parse return statements
         if (token.value == "return") {
             ASTNode* expression = nullptr;
@@ -95,6 +99,7 @@ private:
     }
 
 
+
     ASTNode* parseVariableDeclaration(std::string& varType, std::string& varName){
         ASTNode* varInitializer = nullptr;
 
@@ -110,6 +115,41 @@ private:
         }
 
         return new VariableDeclarationNode(varName, varType, varInitializer);
+    }
+
+
+    //struct Point {
+    //  int x;
+    //  int y;
+    //};
+    ASTNode* parseStruct(){
+      std::string structName = consume(TokenType::Identifier, "Expected identifer after struct keyword").value;
+      consume(TokenType::LBracket, "Expected '{' after struct identifier");
+
+      //Parse properties of the struct
+      std::vector<ASTNode*> properties;
+
+      if(!check(TokenType::LBracket)){
+
+        do{
+
+          if(peek().type == TokenType::RBracket) break;
+          std::string paramType;
+          if(check(TokenType::Identifier) || check(TokenType::TypeIdentifier)){
+            paramType = advance().value;
+          } else {
+              throw std::invalid_argument("Expected struct property type");
+          }
+          std::string paramName = consume(TokenType::Identifier, "Expected struct property name").value;
+          properties.push_back(new ParameterNode(paramType, paramName));
+        } while(match(TokenType::Semicolon));
+
+      }
+
+      consume(TokenType::RBracket, "Expected '}' after struct");
+      consume(TokenType::Semicolon, "Expected ';' after struct");
+      return new StructDeclarationNode(structName, properties);
+
     }
 
 

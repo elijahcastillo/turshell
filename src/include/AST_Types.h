@@ -93,6 +93,15 @@ struct BinaryLiteralNode: public ExpressionNode {
 };
 
 
+struct StructDeclarationNode: public ExpressionNode {
+  std::string structName;
+  std::vector<ASTNode*> properties;
+
+  StructDeclarationNode(std::string& structName, std::vector<ASTNode*> properties) : structName(structName), properties(properties) {}
+
+    void accept(Visitor &v) override;
+};
+
 //Ex: int a = 3 + 2;
 struct VariableDeclarationNode : public StatementNode {
     std::string variableName;

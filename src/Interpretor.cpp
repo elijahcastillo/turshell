@@ -309,6 +309,13 @@ RuntimeVal Interpreter::callNativeFunction(const std::string& name, std::vector<
 
     }
 
+
+
+    void Interpreter::visit(StructDeclarationNode& node) {
+      //Do something Here not sure yet, its a user defined type
+    }
+
+
     void Interpreter::visit(FunctionDeclarationNode& node) {
         if (functionTable.find(node.functionName) != functionTable.end()) {
             // Function with the same name already exists
