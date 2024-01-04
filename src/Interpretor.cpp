@@ -220,13 +220,12 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
     }
 
 
-    void Interpreter::handleStructInitializerListAssignment(std::string assignToType, std::string assignToName, ASTNode* initilizerNode, VariableSettings setting){
+std::shared_ptr<RuntimeVal> Interpreter::handleStructInitializerListAssignment(std::string assignToType, std::string assignToName, ASTNode* initilizerNode, VariableSettings setting, bool isNestedList = false){
 
         // Check if assigment type is valid struct type
         auto it = structTable.find(assignToType);
         if (it == structTable.end()) {
             runtimeError("Type '" + assignToType + "' was not defined");
-            return;
         }
 
         //Valid struct name, get info about struct
@@ -256,9 +255,16 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
             auto it = structDeclarationInfo.properties.find(param->variableName);
             if(it == structDeclarationInfo.properties.end()){
               runtimeError("Property '" + param->variableName +"' does not exist on '" + structDeclarationInfo.structName +"'");
-              return;
             }
 
+        //Handle struct initalizer lists inside of struct initilizer lists
+        StructInitalizerListNode* nested = dynamic_cast<StructInitalizerListNode*>(param->value);
+        if (nested != nullptr) {
+            auto nestedStructType = structDeclarationInfo.properties[param->variableName];
+            auto nestedStructValue = handleStructInitializerListAssignment(nestedStructType, param->variableName, nested, VariableSettings::Assignment, true);
+            structValue->setProperty(param->variableName, nestedStructValue);
+            continue;
+        }
             //Evaluate expression in initializer list to get value of param
             std::shared_ptr<RuntimeVal> paramValue = evaluateExpression(param->value);
 
@@ -269,13 +275,19 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
 
             //Add property to struct
             structValue->setProperty(param->variableName, paramValue);
+            std::cout << "Setting struct prop " << assignToType << " " <<  paramValue->toString() << "\n";
 
         }
 
 
 
-        //Add variable to scope
-        currentScope()->setVariable(assignToName, structValue, setting);
+        if(isNestedList == false){
+          //Add variable to scope
+          currentScope()->setVariable(assignToName, structValue, setting);
+        }
+
+        return structValue;
+
     }
 
     void Interpreter::visit(VariableDeclarationNode& node) {

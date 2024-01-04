@@ -1,14 +1,17 @@
 
+struct Test {
+  string name;
+};
+
 struct Point {
   int x;
   int y;
+  Test t;
 };
 
 
-Point p = {x: 1, y: 2 + 1};
+Point p = {x: 1, y: 2 + 1, t: {name: "Elijah"} };
 
 print(p)
 
-p = {x: 13 - 1, y: 4/2};
 
-print(p)

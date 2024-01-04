@@ -51,7 +51,7 @@ public:
     std::shared_ptr<RuntimeVal> callNativeFunction(const std::string& name, std::vector<std::shared_ptr<RuntimeVal>>& args); 
 
   bool isStructType(const std::string& name); 
-  void handleStructInitializerListAssignment(std::string assignToType, std::string assignToName, ASTNode* initilizerNode, VariableSettings setting);
+std::shared_ptr<RuntimeVal> handleStructInitializerListAssignment(std::string assignToType, std::string assignToName, ASTNode* initilizerNode, VariableSettings setting, bool isNestedList);
 
     void visit(ProgramNode& node) override;
 

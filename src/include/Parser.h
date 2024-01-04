@@ -250,12 +250,36 @@ private:
 
     ASTNode* parseExpression() {
 
-      /* std::cout << "Parse Expr: " << peek().value << "\n"; */
 
       //Struct Initializer list: Ex -  {x: 1+2, y: 5}
       if(check(TokenType::LBracket) && peekNext().type == TokenType::Identifier){
         std::cout << "HERE" << std::endl;
         return parseStructInitializerList();
+      }
+
+
+      //Parse struct acess or assigment for single property Ex: point.x  or point.x = 3;
+      if(check(TokenType::Identifier) && peekNext().type == TokenType::Dot){
+        std::string baseStructName = consume(TokenType::Identifier, "Expected struct name").value;
+
+        // Collect property names for nested access
+        std::vector<std::string> propertyNames;
+        while (match(TokenType::Dot)) {
+            propertyNames.push_back(consume(TokenType::Identifier, "Expected property name").value);
+        }
+
+
+        if(check(TokenType::Equals)){
+            // Handle struct property assignment
+            consume(TokenType::Equals, "Expected '=' after property name");
+            ASTNode* value = parseExpression();
+            consume(TokenType::Semicolon, "Expect ';' after struct property assigment");
+            /* return new StructPropertyAssignmentNode(structName, propertyName, value); */
+        } else {
+            // Handle struct property access
+            /* return new StructPropertyAccessNode(structName, propertyName); */
+        }
+
       }
 
 
