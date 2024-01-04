@@ -55,7 +55,7 @@ If you have ever written in other languages like javascript, go, c++ these will 
 ```
 int a = 3;
 if(a == 3){
-	print(a)
+  print(a)
 }
 ``` 
 

@@ -377,7 +377,12 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
           enterNewScope();
           evaluateExpression(node.thenBranch);
           exitCurrentScope();
+        } else {
+          enterNewScope();
+          evaluateExpression(node.elseBranch);
+          exitCurrentScope();
         }
+
 
     }
 
