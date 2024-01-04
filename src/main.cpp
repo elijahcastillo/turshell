@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
         interpreter.registerNativeFunction("input", input);
 
         ast->accept(interpreter); // Execute the AST
-        interpreter.printStack();
+        /* interpreter.printStack(); */
 
 
 

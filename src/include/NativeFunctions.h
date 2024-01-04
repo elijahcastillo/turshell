@@ -34,7 +34,8 @@ std::shared_ptr<RuntimeVal> input(Interpreter& interpreter, std::vector<std::sha
 
     std::string value;
     std::cout << inputPrint->getValue();
-    std::cin >> value;
+    std::getline(std::cin, value);
+
 
     // Try to convert to number if possible
     try {

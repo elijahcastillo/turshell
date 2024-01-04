@@ -33,6 +33,12 @@ class TurshellReturn : public std::exception {
 
 
 
+bool isPrimitiveType(const std::string& type) {
+    return type == "int" || type == "string" || type == "bool";
+}
+
+
+
 //======== Native Functions ==========
 void Interpreter::registerNativeFunction(const std::string& name, std::function<std::shared_ptr<RuntimeVal>(Interpreter&, std::vector<std::shared_ptr<RuntimeVal>>&)> func) {
     nativeFunctions[name] = func;
@@ -213,63 +219,73 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
 
     }
 
-    void Interpreter::visit(VariableDeclarationNode& node) {
 
-      if(isStructType(node.variableType)){
+    void Interpreter::handleStructInitializerListAssignment(std::string assignToType, std::string assignToName, ASTNode* initilizerNode, VariableSettings setting){
 
-        /* StructDeclInfo declInfo = structTable[node.variableType]; */
-        auto it = structTable.find(node.variableType);
+        // Check if assigment type is valid struct type
+        auto it = structTable.find(assignToType);
         if (it == structTable.end()) {
-            runtimeError("Internal error: Struct type '" + node.variableType + "' should exist but was not found in structTable");
+            runtimeError("Type '" + assignToType + "' was not defined");
             return;
         }
 
-        StructDeclInfo& declInfo = it->second;
-        /* std::cout << "Found struct declaration: " << declInfo.structName << std::endl; */
-        
-        StructInitalizerListNode* initList = dynamic_cast<StructInitalizerListNode*>(node.initializer);
+        //Valid struct name, get info about struct
+        StructDeclInfo& structDeclarationInfo = it->second;
+        /* std::cout << "Found struct type of " << structDeclarationInfo.structName << "\n"; */
 
-        if(initList == nullptr){
-          runtimeError("Can only initalize type of struct '" + node.variableName + "' with struct initializer list");
+        //Get initilizer list from AST
+        StructInitalizerListNode* initializerList = dynamic_cast<StructInitalizerListNode*>(initilizerNode);
+        if(initializerList == nullptr){
+          runtimeError("Can only initalize type of struct '" + assignToName + "' with struct initializer list");
         }
 
-        if(declInfo.numProperties != initList->properties.size()){
+        //Make sure # of values in initalizer list match number of properties in struct
+        if(structDeclarationInfo.numProperties != initializerList->properties.size()){
           runtimeError("Size of struct initilizer list must match # of properties in type defintion");
         }
 
+        //Runtime Value to be populated
+        auto structValue = std::make_shared<StructValue>(assignToType);
 
-        //Runtime Value
-        auto structValue = std::make_shared<StructValue>();
-        /* std::cout << "Initializing struct Runtime: " << declInfo.structName << std::endl; */
+      
+        for(int i = 0; i < structDeclarationInfo.numProperties; i++){
+            //Single parameter in initlizer list  Ex: x: 3 + 2,
+            VariableAssignmentNode* param = static_cast<VariableAssignmentNode*>(initializerList->properties[i]);
 
-        for(int i = 0; i < declInfo.numProperties; i++){
-            VariableAssignmentNode* param = static_cast<VariableAssignmentNode*>(initList->properties[i]);
-            /* std::cout << "Processing property InitList: " << param->variableName << std::endl; */
-            
             //Check if propery exists on struct
-            auto it = declInfo.properties.find(param->variableName);
-            if(it == declInfo.properties.end()){
-              runtimeError("Property '" + param->variableName +"' does not exist on '" + declInfo.structName +"'");
+            auto it = structDeclarationInfo.properties.find(param->variableName);
+            if(it == structDeclarationInfo.properties.end()){
+              runtimeError("Property '" + param->variableName +"' does not exist on '" + structDeclarationInfo.structName +"'");
               return;
             }
 
+            //Evaluate expression in initializer list to get value of param
             std::shared_ptr<RuntimeVal> paramValue = evaluateExpression(param->value);
-/* std::cout << "Init List Evaluated property value for " << param->variableName << ": " << paramValue->toString() << std::endl; */
-            
-              
-            //Type Checking
-            if(paramValue->getType() != declInfo.properties[param->variableName]){
+
+            //Type Checking on single parameter
+            if(paramValue->getType() != structDeclarationInfo.properties[param->variableName]){
               runtimeError("Initializer list type must match struct property type");
             }
 
             //Add property to struct
             structValue->setProperty(param->variableName, paramValue);
-              /* std::cout << "Property set: " << param->variableName << std::endl; */
+
         }
 
 
-        currentScope()->setVariable(node.variableName, structValue, VariableSettings::Declaration);
-        return;
+
+        //Add variable to scope
+        currentScope()->setVariable(assignToName, structValue, setting);
+    }
+
+    void Interpreter::visit(VariableDeclarationNode& node) {
+
+
+      if(!isPrimitiveType(node.variableType)){
+
+      handleStructInitializerListAssignment(node.variableType, node.variableName, node.initializer, VariableSettings::Declaration);
+      return;
+
       }
        
 
@@ -289,8 +305,19 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
 
     // VariableAssignmentNode
     void Interpreter::visit(VariableAssignmentNode& node) {
-      std::shared_ptr<RuntimeVal> value = evaluateExpression(node.value);
+
       std::shared_ptr<RuntimeVal> assignTo = currentScope()->getVariable(node.variableName);
+
+
+      //Handle Structs assigmnet
+      if(!isPrimitiveType(assignTo->getType())){
+        handleStructInitializerListAssignment(assignTo->getType(), node.variableName, node.value, VariableSettings::Assignment);
+        return;
+
+      }
+
+
+      std::shared_ptr<RuntimeVal> value = evaluateExpression(node.value);
 
       if(value->getType() != assignTo->getType()){
         runtimeError("Cannot assign value of type '" + value->getType() + "' to variable '" + node.variableName + "' of type '" + assignTo->getType() + "'");

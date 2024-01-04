@@ -70,11 +70,9 @@ private:
 
       //Parse Variable Declaration Ex: int a = 3 + 2;
      if(check(TokenType::TypeIdentifier)){
-       std::cout << "VAR DECL" << std::endl;
         std::string varType = consume(TokenType::TypeIdentifier, "Expected Type").value;
         std::string varName = consume(TokenType::Identifier, "Expected Name for variable").value;
 
-        std::cout << "currdecl" << peek().value << " " << varType << " " << varName << "\n";
         return parseVariableDeclaration(varType, varName);
      } 
 
@@ -251,7 +249,7 @@ private:
 
     ASTNode* parseExpression() {
 
-      std::cout << "Parse Expr: " << peek().value << "\n";
+      /* std::cout << "Parse Expr: " << peek().value << "\n"; */
 
       //Struct Initializer list: Ex -  {x: 1+2, y: 5}
       if(check(TokenType::LBracket) && peekNext().type == TokenType::Identifier){

@@ -59,7 +59,7 @@ struct BoolValue : public RuntimeVal {
 struct StructValue : public RuntimeVal {
     std::map<std::string, std::shared_ptr<RuntimeVal>> properties;
 
-    StructValue() : RuntimeVal("struct") {}
+    StructValue(std::string structName) : RuntimeVal(structName) {}
 
     std::shared_ptr<RuntimeVal> getProperty(const std::string& name) override {
         auto it = properties.find(name);

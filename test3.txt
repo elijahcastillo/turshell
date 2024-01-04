@@ -6,4 +6,9 @@ struct Point {
 
 
 Point p = {x: 1, y: 2 + 1};
+
+print(p)
+
+p = {x: 13 - 1, y: 4/2};
+
 print(p)
