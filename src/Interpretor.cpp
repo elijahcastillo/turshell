@@ -420,6 +420,40 @@ std::shared_ptr<RuntimeVal> Interpreter::handleStructInitializerListAssignment(s
       //Do something Here not sure yet, its a user defined type
     }
 
+  void Interpreter::visit(StructPropertyAccessNode& node) {
+      // Start with the base struct
+      std::shared_ptr<RuntimeVal> structInstance = currentScope()->getVariable(node.baseName);
+
+      // Check if the base variable is indeed a struct
+      if (!isStructType(structInstance->getType())) {
+          runtimeError("Variable '" + node.baseName + "' is not a struct type");
+          return;
+      }
+
+      // Traverse through the nested properties
+      for (const std::string& propertyName : node.propertyNames) {
+          // Ensure that the current value is a struct to have properties
+          if (!isStructType(structInstance->getType())) {
+              runtimeError("Property access on non-struct type for '" + propertyName + "'");
+              return;
+          }
+
+          // Cast the current value to StructValue type to access its properties
+          auto structVal = std::static_pointer_cast<StructValue>(structInstance);
+
+          // Retrieve the next property in the chain
+          try {
+              structInstance = structInstance->getProperty(propertyName);
+          } catch (const std::runtime_error& e) {
+              runtimeError("Property '" + propertyName + "' not found in struct '" + structInstance->getType() + "'");
+              return;
+          }
+      }
+
+      // Push the final property value onto the evaluation stack
+      evaluationStack.push(structInstance);
+  }
+
 
     void Interpreter::visit(FunctionDeclarationNode& node) {
         if (functionTable.find(node.functionName) != functionTable.end()) {

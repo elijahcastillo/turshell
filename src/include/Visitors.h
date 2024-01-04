@@ -17,8 +17,11 @@ public:
     virtual void visit(IntLiteralNode& node) = 0;
     virtual void visit(StringLiteralNode& node) = 0;
     virtual void visit(BinaryLiteralNode& node) = 0;
+
     virtual void visit(StructDeclarationNode& node) = 0;
     virtual void visit(StructInitalizerListNode& node) = 0;
+    virtual void visit(StructPropertyAccessNode& node) = 0;
+
     virtual void visit(VariableDeclarationNode& node) = 0;
     virtual void visit(VariableAssignmentNode& node) = 0;
     virtual void visit(IfStatementNode& node) = 0;
@@ -46,6 +49,7 @@ public:
     void visit(BinaryLiteralNode& node) override; 
     void visit(StructDeclarationNode& node) override; 
     void visit(StructInitalizerListNode& node) override; 
+    void visit(StructPropertyAccessNode& node) override; 
     void visit(VariableDeclarationNode& node) override; 
     void visit(VariableAssignmentNode& node) override; 
 

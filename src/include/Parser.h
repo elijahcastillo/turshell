@@ -277,7 +277,7 @@ private:
             /* return new StructPropertyAssignmentNode(structName, propertyName, value); */
         } else {
             // Handle struct property access
-            /* return new StructPropertyAccessNode(structName, propertyName); */
+            return new StructPropertyAccessNode(baseStructName, propertyNames);
         }
 
       }

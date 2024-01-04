@@ -65,6 +65,9 @@ std::shared_ptr<RuntimeVal> handleStructInitializerListAssignment(std::string as
 
     void visit(StructDeclarationNode& node) override;
     void visit(StructInitalizerListNode& node) override;
+    void visit(StructPropertyAccessNode& node) override;
+
+
     void visit(VariableDeclarationNode& node) override;
 
     void visit(VariableAssignmentNode& node) override;

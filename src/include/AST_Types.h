@@ -111,6 +111,16 @@ struct StructInitalizerListNode : public ExpressionNode {
 };
 
 
+struct StructPropertyAccessNode : public ExpressionNode {
+    std::string baseName;
+    std::vector<std::string> propertyNames;
+
+    StructPropertyAccessNode(std::string& baseName, std::vector<std::string> propertyNames): baseName(baseName), propertyNames(propertyNames) {};
+
+  void accept(Visitor &v) override;
+};
+
+
 
 //Ex: int a = 3 + 2;
 struct VariableDeclarationNode : public StatementNode {
