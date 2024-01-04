@@ -4,11 +4,6 @@ Void for functions
 Tests
 break in while loop
 
+// TODO Handle case where final propery is struct with iniliizer list
 
-Dot notation
- - If idenetifier then . then identifier
- - Have specific AST Node for that 
- - Have a node for an
- - StructDotAssigment
- - StructDotValue watch out for == so,   ident dot ident equals might be point.x == 3
- - In interpretor
+

@@ -274,7 +274,7 @@ private:
             consume(TokenType::Equals, "Expected '=' after property name");
             ASTNode* value = parseExpression();
             consume(TokenType::Semicolon, "Expect ';' after struct property assigment");
-            /* return new StructPropertyAssignmentNode(structName, propertyName, value); */
+            return new StructPropertyAssignmentNode(baseStructName, propertyNames, value);
         } else {
             // Handle struct property access
             return new StructPropertyAccessNode(baseStructName, propertyNames);

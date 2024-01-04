@@ -111,11 +111,22 @@ struct StructInitalizerListNode : public ExpressionNode {
 };
 
 
+//Get value out of stuct  Ex: point.x
 struct StructPropertyAccessNode : public ExpressionNode {
     std::string baseName;
     std::vector<std::string> propertyNames;
 
     StructPropertyAccessNode(std::string& baseName, std::vector<std::string> propertyNames): baseName(baseName), propertyNames(propertyNames) {};
+
+  void accept(Visitor &v) override;
+};
+
+struct StructPropertyAssignmentNode : public ExpressionNode {
+    std::string baseName;
+    std::vector<std::string> propertyNames;
+    ASTNode* value;
+
+    StructPropertyAssignmentNode(std::string& baseName, std::vector<std::string> propertyNames, ASTNode* value): baseName(baseName), propertyNames(propertyNames), value(value) {};
 
   void accept(Visitor &v) override;
 };

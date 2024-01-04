@@ -79,6 +79,20 @@ void PrintVisitor::visit(StructPropertyAccessNode& node){
   }
 };
 
+void PrintVisitor::visit(StructPropertyAssignmentNode& node){
+  std::cout << node.baseName;
+  std::cout << ".";
+  for(int i = 0; i < node.propertyNames.size(); i++){
+    std::cout << node.propertyNames[i];
+    if(!(i == node.propertyNames.size() - 1)){
+      std::cout << ".";
+    }
+  }
+  std::cout << " = ";
+  node.value->accept(*this);
+  std::cout << "\n";
+};
+
 void PrintVisitor::visit(VariableDeclarationNode& node){
   std::cout << "Variable Declaration: " << node.variableType << " " << node.variableName << " = " ;
     node.initializer->accept(*this);

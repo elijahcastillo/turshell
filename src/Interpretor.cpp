@@ -420,6 +420,61 @@ std::shared_ptr<RuntimeVal> Interpreter::handleStructInitializerListAssignment(s
       //Do something Here not sure yet, its a user defined type
     }
 
+
+void Interpreter::visit(StructPropertyAssignmentNode& node) {
+    // Start with the base struct
+    std::shared_ptr<RuntimeVal> currentVal = currentScope()->getVariable(node.baseName);
+
+    // Check if the base variable is indeed a struct
+    if (!isStructType(currentVal->getType())) {
+        runtimeError("Variable '" + node.baseName + "' is not a struct type");
+        return;
+    }
+
+    // Traverse through the nested properties, but stop at the second-to-last property
+    for (size_t i = 0; i < node.propertyNames.size() - 1; ++i) {
+        const std::string& propertyName = node.propertyNames[i];
+
+        // Ensure that the current value is a struct to have properties
+        if (!isStructType(currentVal->getType())) {
+            runtimeError("Property access on non-struct type for '" + propertyName + "'");
+            return;
+        }
+
+        // Cast the current value to StructValue type to access its properties
+        auto structVal = std::static_pointer_cast<StructValue>(currentVal);
+
+        // Retrieve the next property in the chain
+        try {
+            currentVal = structVal->getProperty(propertyName);
+        } catch (const std::runtime_error& e) {
+            runtimeError("Property '" + propertyName + "' not found in struct '" + currentVal->getType() + "'");
+            return;
+        }
+    }
+
+    // Now, handle the final property for assignment
+    const std::string& finalProperty = node.propertyNames.back();
+    
+    // TODO Handle case where final propery is struct with iniliizer list
+    
+
+
+    // Evaluate the value to be assigned
+    std::shared_ptr<RuntimeVal> assignedValue = evaluateExpression(node.value);
+
+    // Cast the current value to StructValue type for property assignment
+    auto structVal = std::static_pointer_cast<StructValue>(currentVal);
+
+    // Perform the assignment
+    try {
+        structVal->setProperty(finalProperty, assignedValue);
+    } catch (const std::runtime_error& e) {
+        runtimeError("Property '" + finalProperty + "' not found in struct '" + currentVal->getType() + "'");
+        return;
+    }
+}
+
   void Interpreter::visit(StructPropertyAccessNode& node) {
       // Start with the base struct
       std::shared_ptr<RuntimeVal> structInstance = currentScope()->getVariable(node.baseName);
