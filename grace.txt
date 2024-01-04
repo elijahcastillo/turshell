@@ -1,7 +1,0 @@
-
-while(true){
-    string inp = input("what are you excited for: ");
-    if(inp == "spring break"){
-        print("i believe in you!")
-    }
-}

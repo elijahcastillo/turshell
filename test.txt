@@ -5,12 +5,12 @@ func add() int {
    return res;
 }
 
-func isEven(int n) int {
+func isEven(int n) bool {
   if(n % 2 == 0){
-    return 1;
+    return true;
   }
 
-  return 0;
+  return false;
 }
 
 
