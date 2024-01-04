@@ -1,9 +1,11 @@
 
 
-int a = 2;
+int a = 4;
 
 if(a == 2){
   print("Its 2")
 } else {
+  // This is really cool
   print("something else")
+  // print(1)
 }

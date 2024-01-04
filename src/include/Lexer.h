@@ -78,6 +78,21 @@ public:
   }
 
 
+  void consumeSingleLineComment() {
+    // Consume the initial "//"
+    position += 2;
+
+    // Consume characters until the end of the line
+    while (position < source.size() && source[position] != '\n') {
+      position++;
+    }
+
+    if (position < source.size() && source[position] == '\n') {
+      lineNumber++;  // Increment line number at the end of the line
+    }
+  }
+
+
   Token nextToken(){
     skipWhitespace();
 
@@ -87,6 +102,14 @@ public:
     }
 
     char currentChar = source[position];
+
+
+
+    // Handle single-line comments
+    if (currentChar == '/' && position + 1 < source.size() && source[position + 1] == '/') {
+      consumeSingleLineComment();
+      return nextToken(); // After consuming comment, move to the next token
+    }
 
 
     // Identifier or keyword
@@ -156,6 +179,7 @@ Token consumeNumber() {
         while (position < source.size() && isdigit(source[position])) {
             position++;
         }
+        /* return {FloatLiteral, number, lineNumber} */
     }
 
     std::string number = source.substr(start, position - start);
