@@ -390,9 +390,12 @@ std::shared_ptr<RuntimeVal> Interpreter::handleStructInitializerListAssignment(s
           evaluateExpression(node.thenBranch);
           exitCurrentScope();
         } else {
-          enterNewScope();
-          evaluateExpression(node.elseBranch);
-          exitCurrentScope();
+          if(node.elseBranch != nullptr){
+            enterNewScope();
+            evaluateExpression(node.elseBranch);
+            exitCurrentScope();
+          }
+
         }
 
 
