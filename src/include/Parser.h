@@ -466,6 +466,18 @@ private:
         }
 
         
+        //Array or String Access    Ex   arr[1]  or  str[4]
+        if(check(TokenType::Identifier) && peekNext().type == TokenType::LBracket){
+          std::string identifier = consume(TokenType::Identifier, "Expected Identifier for array access").value;
+          consume(TokenType::LBracket, "Expected '[' for array access");
+          ASTNode* value = parseExpression();
+          consume(TokenType::RBracket, "Expected ']' for end of array access");
+          return new ArrayAccessNode(identifier, value);
+          
+
+        }
+
+        
         //Array Literals   [1, 5, 3]
         if (check(TokenType::LBracket)) {
             return parseArrayLiteral();

@@ -3,6 +3,7 @@
 #include "include/AST_Types.h"
 #include "include/Enviorment.h"
 #include "include/Runtime.h"
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -211,7 +212,32 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
 
     void Interpreter::visit(StringLiteralNode& node) {
       evaluationStack.push(std::make_shared<StringValue>(node.value));
+    }
 
+
+    void Interpreter::visit(ArrayAccessNode& node) {
+
+      std::shared_ptr<RuntimeVal> accessIndex = evaluateExpression(node.value);
+      if(accessIndex->getType() != "int"){
+        runtimeError("Array access index must be an int");
+      }
+      auto accessIndexValue = static_cast<IntValue*>(accessIndex.get())->value;
+
+
+      std::shared_ptr<RuntimeVal> runtimeValue = currentScope()->getVariable(node.identifier);
+
+      ArrayValue* array = dynamic_cast<ArrayValue*>(runtimeValue.get());
+      if(array == nullptr){
+        runtimeError("Can only access on arrays");
+      }
+
+      /* std::cout << accessIndexValue << " " <<  array->elements.size() - 1 << "\n"; */
+
+      if(accessIndexValue > array->elements.size() - 1){
+        runtimeError("Array access out of range");
+      }
+
+       evaluationStack.push(array->elements[accessIndexValue]);
     }
 
 void Interpreter::visit(ArrayLiteralNode& node) {

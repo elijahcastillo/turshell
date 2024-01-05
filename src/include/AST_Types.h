@@ -101,6 +101,17 @@ struct ArrayLiteralNode: public ExpressionNode {
 };
 
 
+// Ex: arr[3]  or  str[4]
+struct ArrayAccessNode: public ExpressionNode {
+  std::string identifier;
+  ASTNode* value; //Must be an int
+
+    ArrayAccessNode(std::string& identifier, ASTNode* value) : identifier(identifier), value(value) {};
+
+    void accept(Visitor &v) override;
+};
+
+
 struct StructDeclarationNode: public ExpressionNode {
   std::string structName;
   std::vector<ASTNode*> properties;

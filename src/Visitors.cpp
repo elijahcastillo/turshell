@@ -57,6 +57,13 @@ void PrintVisitor::visit(ArrayLiteralNode& node) {
 }
 
 
+void PrintVisitor::visit(ArrayAccessNode& node) {
+  std::cout << node.identifier << "[";
+  node.value->accept(*this);
+  std::cout << "]";
+}
+
+
 void PrintVisitor::visit(StructDeclarationNode& node){
   std::cout << "struct " << node.structName << "{\n";
   for(auto prop: node.properties){
