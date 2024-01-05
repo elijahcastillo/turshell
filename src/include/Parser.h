@@ -24,6 +24,20 @@ public:
 
 private:
     // Parsing methods for different constructs
+    //
+
+
+    std::string getAnyType(){
+      std::string type = "Unkown Type";
+      if(check(TokenType::TypeIdentifier) || check(TokenType::Identifier)){
+        if(peek().value == "array"){
+          type = getArrayType();
+        } else {
+          type = advance().value;
+        }
+      }
+      return type;
+    }
 
     ASTNode* parseStatement(){
 
@@ -70,19 +84,18 @@ private:
 
       //Parse Variable Declaration Ex: int a = 3 + 2;
      if(check(TokenType::TypeIdentifier)){
+       std::string varType;
+       std::string varName;
 
         if (peek().value == "array") {
-            advance(); //Consume array keyword
-            consume(TokenType::LessThan, "Expected '<' after 'array'");
-            std::string arrayElementType = consume(TokenType::TypeIdentifier, "Expected type identifier").value;
-            consume(TokenType::GreaterThan, "Expected '>' after type identifier");
-            std::string varName = consume(TokenType::Identifier, "Expected Name for variable").value;
+            varType = getArrayType();
+            varName = consume(TokenType::Identifier, "Expected Name for variable").value;
 
-            return parseVariableDeclaration(arrayElementType, varName, true);
+            return parseVariableDeclaration(varType, varName, true);
         }
 
-        std::string varType = consume(TokenType::TypeIdentifier, "Expected Type").value;
-        std::string varName = consume(TokenType::Identifier, "Expected Name for variable").value;
+        varType = consume(TokenType::TypeIdentifier, "Expected Type").value;
+        varName = consume(TokenType::Identifier, "Expected Name for variable").value;
 
         return parseVariableDeclaration(varType, varName);
      } 
@@ -109,6 +122,25 @@ private:
 
 
      return parseExpression();
+    }
+
+
+
+    std::string getArrayType(){
+
+       std::string varType;
+        if (peek().value == "array") {
+            advance(); //Consume array keyword
+            consume(TokenType::LessThan, "Expected '<' after 'array'");
+            
+            if(check(TokenType::TypeIdentifier) || check(TokenType::Identifier)){
+              varType = "array<" + advance().value + ">";
+            }
+            consume(TokenType::GreaterThan, "Expected '>' after type identifier");
+
+            return varType;
+        }
+        return "THIS IS BAD ARRAY THING";
     }
 
 
@@ -152,10 +184,11 @@ private:
 
           std::string paramType;
           if(check(TokenType::Identifier) || check(TokenType::TypeIdentifier)){
-            paramType = advance().value;
+            paramType = getAnyType();
           } else {
               throw std::invalid_argument("Expected struct property type");
           }
+
           std::string paramName = consume(TokenType::Identifier, "Expected struct property name").value;
           properties.push_back(new ParameterNode(paramType, paramName));
         } while(match(TokenType::Semicolon));

@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <memory>
 #include <map>
+#include <vector>
 
 
 
@@ -94,4 +95,48 @@ std::string toString() override {
 }
 
     // toString implementation...
+};
+
+
+
+struct ArrayValue : public RuntimeVal {
+    std::vector<std::shared_ptr<RuntimeVal>> elements;
+    std::string elementType;
+
+    ArrayValue(std::string elementType, std::vector<std::shared_ptr<RuntimeVal>>& elements)
+        : RuntimeVal("array<" + elementType + ">"), elementType(elementType), elements(elements) {}
+
+    void addElement(std::shared_ptr<RuntimeVal> element) {
+        // Optional: Check if the element's type matches elementType
+        elements.push_back(element);
+    }
+
+    std::shared_ptr<RuntimeVal> getElement(int index) {
+        if (index < 0 || index >= elements.size()) {
+            throw std::runtime_error("Array index out of bounds");
+        }
+        return elements[index];
+    }
+
+    void setElement(int index, std::shared_ptr<RuntimeVal> element) {
+        // Optional: Check if the element's type matches elementType
+        if (index < 0 || index >= elements.size()) {
+            throw std::runtime_error("Array index out of bounds");
+        }
+        elements[index] = element;
+    }
+
+    std::string toString() override {
+        std::string result = "Array[";
+        for (size_t i = 0; i < elements.size(); ++i) {
+            if (i > 0) {
+                result += ", ";
+            }
+            result += elements[i]->toString();
+        }
+        result += "]";
+        return result;
+    }
+
+    // Additional methods as needed...
 };

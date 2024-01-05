@@ -214,10 +214,39 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
 
     }
 
-    void Interpreter::visit(ArrayLiteralNode& node) {
-      /* evaluationStack.push(std::make_shared<StringValue>(node.value)); */
+void Interpreter::visit(ArrayLiteralNode& node) {
+    // Assuming that you have a way to determine the type of elements in the array,
+    // for instance, based on the type of the first element or a predefined type.
+    // This example uses a generic type for simplicity.
+    std::string elementTypes = "unknown"; 
 
+
+
+    std::vector<std::shared_ptr<RuntimeVal>> arrayValues;
+
+    // Evaluate each element in the array literal and add it to the arrayVal
+    for (auto& element : node.values) {
+        std::shared_ptr<RuntimeVal> value = evaluateExpression(element);
+
+        //Check types
+        if(elementTypes == "unknown"){
+          elementTypes = value->getType();
+        } else {
+          if(value->getType() != elementTypes){
+              runtimeError("All types in an array literal must me the same");
+          }
+        }
+
+        // Add the evaluated element to the array
+        arrayValues.push_back(value);
     }
+
+    // Create an instance of ArrayValue to store the elements
+    auto arrayVal = std::make_shared<ArrayValue>(elementTypes, arrayValues);
+
+    // Push the populated ArrayValue onto the evaluation stack
+    evaluationStack.push(arrayVal);
+}
 
     void Interpreter::visit(BinaryLiteralNode& node) {
       evaluationStack.push(node.value ? std::make_shared<BoolValue>(true) : std::make_shared<BoolValue>(false));
@@ -299,7 +328,7 @@ std::shared_ptr<RuntimeVal> Interpreter::handleStructInitializerListAssignment(s
     void Interpreter::visit(VariableDeclarationNode& node) {
 
 
-      if(!isPrimitiveType(node.variableType)){
+      if(!isPrimitiveType(node.variableType) && node.isArray == false){
 
       handleStructInitializerListAssignment(node.variableType, node.variableName, node.initializer, VariableSettings::Declaration);
       return;
@@ -328,7 +357,7 @@ std::shared_ptr<RuntimeVal> Interpreter::handleStructInitializerListAssignment(s
 
 
       //Handle Structs assigmnet
-      if(!isPrimitiveType(assignTo->getType())){
+      if(!isPrimitiveType(assignTo->getType()) && dynamic_cast<StructValue*>(assignTo.get()) != nullptr){
         handleStructInitializerListAssignment(assignTo->getType(), node.variableName, node.value, VariableSettings::Assignment);
         return;
 

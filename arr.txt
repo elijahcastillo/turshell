@@ -1,1 +1,6 @@
 array<int> ages = [5, 13, 6];
+print(ages)
+
+ages = [3,7,8];
+
+print(ages)
