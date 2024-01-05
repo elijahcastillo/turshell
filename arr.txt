@@ -6,15 +6,14 @@ struct Comp {
 
 Comp c = {ages: [2,5,6], name: "Elijah"};
 print(c)
-c.ages = [4,5];
-int e = c.ages[1] + 6;
-print(e)
 
-c.ages[0] = 3;
-print(c.ages)
+c.name[1 - 1] = "m";
+print(c.name)
+print(c)
+print(c.name[1])
 
 
-//Need to fix  c.ages[2]  dosent work??
+
 
 
 

@@ -9,8 +9,7 @@ break in while loop
 
 
 
-
-
-int[] ages = [23, 14, 5];
-append(ages, 3)
-append(ages, [3,4,2])
+ - Normal array assigment  arr[0] = 3;
+ - 'break' keyword in while loop
+ - void for functions ???
+ - Tests
