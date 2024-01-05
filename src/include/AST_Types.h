@@ -134,8 +134,9 @@ struct StructInitalizerListNode : public ExpressionNode {
 struct StructPropertyAccessNode : public ExpressionNode {
     std::string baseName;
     std::vector<std::string> propertyNames;
+    ASTNode* index; // nullptr if not an array access
 
-    StructPropertyAccessNode(std::string& baseName, std::vector<std::string> propertyNames): baseName(baseName), propertyNames(propertyNames) {};
+    StructPropertyAccessNode(std::string& baseName, std::vector<std::string> propertyNames, ASTNode* index): baseName(baseName), propertyNames(propertyNames), index(index) {};
 
   void accept(Visitor &v) override;
 };
@@ -144,8 +145,9 @@ struct StructPropertyAssignmentNode : public ExpressionNode {
     std::string baseName;
     std::vector<std::string> propertyNames;
     ASTNode* value;
+    ASTNode* index; // nullptr if not an array access
 
-    StructPropertyAssignmentNode(std::string& baseName, std::vector<std::string> propertyNames, ASTNode* value): baseName(baseName), propertyNames(propertyNames), value(value) {};
+    StructPropertyAssignmentNode(std::string& baseName, std::vector<std::string> propertyNames, ASTNode* value, ASTNode* index): baseName(baseName), propertyNames(propertyNames), value(value), index(index) {};
 
   void accept(Visitor &v) override;
 };

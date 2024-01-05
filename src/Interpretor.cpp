@@ -215,30 +215,44 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
     }
 
 
-    void Interpreter::visit(ArrayAccessNode& node) {
-
-      std::shared_ptr<RuntimeVal> accessIndex = evaluateExpression(node.value);
-      if(accessIndex->getType() != "int"){
+void Interpreter::visit(ArrayAccessNode& node) {
+    std::shared_ptr<RuntimeVal> accessIndex = evaluateExpression(node.value);
+    if (accessIndex->getType() != "int") {
         runtimeError("Array access index must be an int");
-      }
-      auto accessIndexValue = static_cast<IntValue*>(accessIndex.get())->value;
-
-
-      std::shared_ptr<RuntimeVal> runtimeValue = currentScope()->getVariable(node.identifier);
-
-      ArrayValue* array = dynamic_cast<ArrayValue*>(runtimeValue.get());
-      if(array == nullptr){
-        runtimeError("Can only access on arrays");
-      }
-
-      /* std::cout << accessIndexValue << " " <<  array->elements.size() - 1 << "\n"; */
-
-      if(accessIndexValue > array->elements.size() - 1){
-        runtimeError("Array access out of range");
-      }
-
-       evaluationStack.push(array->elements[accessIndexValue]);
     }
+    auto accessIndexValue = static_cast<IntValue*>(accessIndex.get())->value;
+
+    std::shared_ptr<RuntimeVal> runtimeValue = currentScope()->getVariable(node.identifier);
+
+    // Check if the variable is an ArrayValue
+    ArrayValue* array = dynamic_cast<ArrayValue*>(runtimeValue.get());
+    if (array != nullptr) {
+        if (accessIndexValue < 0 || accessIndexValue >= array->elements.size()) {
+            runtimeError("Array access out of range");
+        }
+        evaluationStack.push(array->elements[accessIndexValue]);
+        return;
+    }
+
+    // Check if the variable is a StringValue
+    StringValue* stringVal = dynamic_cast<StringValue*>(runtimeValue.get());
+    if (stringVal != nullptr) {
+        const std::string& str = stringVal->getValue();
+        if (accessIndexValue < 0 || accessIndexValue >= str.size()) {
+            runtimeError("String index out of range");
+        }
+        char charAtIdx = str[accessIndexValue];
+        evaluationStack.push(std::make_shared<StringValue>(std::string(1, charAtIdx)));
+        return;
+    }
+
+    // If it's neither an array nor a string, throw an error
+    runtimeError("Can only use array access on arrays and strings");
+}
+
+
+
+
 
 void Interpreter::visit(ArrayLiteralNode& node) {
     // Assuming that you have a way to determine the type of elements in the array,
@@ -525,7 +539,35 @@ void Interpreter::visit(StructPropertyAssignmentNode& node) {
       runtimeError("Cannot assign property of " + finalProperty + " on a non struct type"); 
     }
 
-    /* StructDeclInfo() */
+
+    // If an index is provided, handle the array assignment
+    if (node.index) {
+        std::shared_ptr<RuntimeVal> indexVal = evaluateExpression(node.index);
+        if (indexVal->getType() != "int") {
+            runtimeError("Array index must be an int");
+            return;
+        }
+        int index = static_cast<IntValue*>(indexVal.get())->getValue();
+
+        std::shared_ptr<RuntimeVal> arrayVal = structVal->getProperty(finalProperty);
+        ArrayValue* array = dynamic_cast<ArrayValue*>(arrayVal.get());
+        if (!array) {
+            runtimeError(finalProperty + " is not an array");
+            return;
+        }
+
+        std::shared_ptr<RuntimeVal> assignedValue = evaluateExpression(node.value);
+        
+        if(array->elementType != assignedValue->getType()){
+          runtimeError("Cannot assign type of '" + assignedValue->getType() +"' to array of type '" + array->elementType + "'");
+        }
+
+
+        // Perform type checking here if necessary
+        array->setElement(index, assignedValue);
+        return;
+    }
+
 
     // Check if the value to be assigned is a struct initializer list
     if (auto initializerListNode = dynamic_cast<StructInitalizerListNode*>(node.value)) {
@@ -549,7 +591,6 @@ void Interpreter::visit(StructPropertyAssignmentNode& node) {
         structVal->setProperty(finalProperty, assignedValue);
     } else {
 
-        std::cout << "NOTT\n";
         // Evaluate the value to be assigned
         std::shared_ptr<RuntimeVal> assignedValue = evaluateExpression(node.value);
 
@@ -598,6 +639,26 @@ void Interpreter::visit(StructPropertyAssignmentNode& node) {
               return;
           }
       }
+
+
+    // Handle the array index if present
+    if (node.index != nullptr) {
+        std::shared_ptr<RuntimeVal> indexVal = evaluateExpression(node.index);
+        if (indexVal->getType() != "int") {
+            runtimeError("Array index must be an int");
+        }
+        auto index = static_cast<IntValue*>(indexVal.get())->getValue();
+
+        ArrayValue* arrayVal = dynamic_cast<ArrayValue*>(structInstance.get());
+        if (arrayVal == nullptr) {
+            runtimeError("Property '" + node.propertyNames[node.propertyNames.size() - 1] + "' is not an array");
+            return;
+        }
+
+        std::shared_ptr<RuntimeVal> elementVal = arrayVal->getElement(index);
+        evaluationStack.push(elementVal);
+        return;
+    }
 
       // Push the final property value onto the evaluation stack
       evaluationStack.push(structInstance);

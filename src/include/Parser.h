@@ -146,12 +146,16 @@ private:
 
 
     ASTNode* parseVariableDeclaration(std::string& varType, std::string& varName, bool isArray = false){
+
+      std::cout << "Parsing varible declartion: " << varType << " " << varName << "\n";
         ASTNode* varInitializer = nullptr;
 
         if(match(TokenType::Equals)){
 
           varInitializer = parseExpression();
         }
+
+        std::cout << "After = " << peek().value << "\n";
 
 
         consume(TokenType::Semicolon, "Expect ';' after variable declaration");
@@ -446,6 +450,8 @@ private:
         return new FunctionCallNode(functionName, arguments);
     }
 
+
+
     ASTNode* parsePrimary() {
 
         //Handle Parenthesis
@@ -527,16 +533,25 @@ private:
         }
 
 
+        ASTNode* index = nullptr;
+        if (check(TokenType::LBracket)) {
+            consume(TokenType::LBracket, "Expected '[' for array access");
+            index = parseExpression();
+            consume(TokenType::RBracket, "Expected ']' for end of array access");
+        }
+
+
+
         if(check(TokenType::Equals)){
             // Handle struct property assignment
             consume(TokenType::Equals, "Expected '=' after property name");
             ASTNode* value = parseExpression();
             consume(TokenType::Semicolon, "Expect ';' after struct property assigment");
-            return new StructPropertyAssignmentNode(baseStructName, propertyNames, value);
+            return new StructPropertyAssignmentNode(baseStructName, propertyNames, value, index);
         } else {
 
             // Handle struct property access
-            return new StructPropertyAccessNode(baseStructName, propertyNames);
+            return new StructPropertyAccessNode(baseStructName, propertyNames, index);
         }
 
       }

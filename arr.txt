@@ -7,6 +7,13 @@ struct Comp {
 Comp c = {ages: [2,5,6], name: "Elijah"};
 print(c)
 c.ages = [4,5];
+int e = c.ages[1] + 6;
+print(e)
+
+c.ages[0] = 20 + 1;
+print(c.ages)
+
+
 //Need to fix  c.ages[2]  dosent work??
 
 
@@ -14,3 +21,7 @@ c.ages = [4,5];
 array<int> a = [3,4,6,23];
 int b = a[2 + 1];
 print(b)
+
+string hope = "Elijah";
+string f = hope[2];
+print(f)
