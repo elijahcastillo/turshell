@@ -1,15 +1,7 @@
-Comments
-Arrays
-String index []
-Void for functions
-Tests
-break in while loop
-
-// TODO Handle case where final propery is struct with iniliizer list
-
-
 
  - Normal array assigment  arr[0] = 3;
+ - Array with structs???/
  - 'break' keyword in while loop
  - void for functions ???
+ - Fix recusrion in function, scope issue with vairbles or return issue??
  - Tests

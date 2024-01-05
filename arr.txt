@@ -14,7 +14,12 @@ print(c.name[1])
 
 
 
-
+print("==========")
+array<string> m = ["eli", "matthew"];
+print(m)
+append(m, "test")
+print(m)
+print("==========")
 
 
 array<int> a = [3,4,6,23];

@@ -172,8 +172,10 @@ struct VariableDeclarationNode : public StatementNode {
 struct VariableAssignmentNode : public ExpressionNode {
     std::string variableName;
     ASTNode* value;
+    ASTNode* index; //nullptr is not an array
 
-    VariableAssignmentNode(std::string& name, ASTNode* value): variableName(name), value(value) {};
+
+    VariableAssignmentNode(std::string& name, ASTNode* value, ASTNode* index = nullptr): variableName(name), value(value), index(index) {};
 
     void accept(Visitor &v) override; 
     // Constructor and accept method...

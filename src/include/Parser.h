@@ -473,15 +473,24 @@ private:
 
         
         //Array or String Access    Ex   arr[1]  or  str[4]
-        if(check(TokenType::Identifier) && peekNext().type == TokenType::LBracket){
-          std::string identifier = consume(TokenType::Identifier, "Expected Identifier for array access").value;
-          consume(TokenType::LBracket, "Expected '[' for array access");
-          ASTNode* value = parseExpression();
-          consume(TokenType::RBracket, "Expected ']' for end of array access");
-          return new ArrayAccessNode(identifier, value);
-          
+    // Check for array access or assignment
+    if (check(TokenType::Identifier) && peekNext().type == TokenType::LBracket) {
+        std::string identifier = consume(TokenType::Identifier, "Expected Identifier").value;
+        consume(TokenType::LBracket, "Expected '[' for array access");
+        ASTNode* index = parseExpression();
+        consume(TokenType::RBracket, "Expected ']' after index");
 
+        // If an assignment follows, it's an array assignment
+        if (match(TokenType::Equals)) {
+            ASTNode* value = parseExpression();
+            consume(TokenType::Semicolon, "Expect ';' after array assignment");
+            // Reuse VariableAssignmentNode with index for array assignment
+            return new VariableAssignmentNode(identifier, value, index);
+        } else {
+            // Otherwise, it's just array access
+            return new ArrayAccessNode(identifier, index);
         }
+    }
 
         
         //Array Literals   [1, 5, 3]

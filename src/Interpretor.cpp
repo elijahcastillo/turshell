@@ -393,6 +393,51 @@ std::shared_ptr<RuntimeVal> Interpreter::handleStructInitializerListAssignment(s
     // VariableAssignmentNode
     void Interpreter::visit(VariableAssignmentNode& node) {
 
+      if (node.index != nullptr) {
+        // Evaluate the index and ensure it's an integer
+        std::shared_ptr<RuntimeVal> indexVal = evaluateExpression(node.index);
+        if (indexVal->getType() != "int") {
+            runtimeError("Index must be an integer");
+            return;
+        }
+        int index = static_cast<IntValue*>(indexVal.get())->getValue();
+
+        // Retrieve the variable (array or string)
+        std::shared_ptr<RuntimeVal> varVal = currentScope()->getVariable(node.variableName);
+
+        if (ArrayValue* array = dynamic_cast<ArrayValue*>(varVal.get())) {
+            // Array assignment
+            std::shared_ptr<RuntimeVal> value = evaluateExpression(node.value);
+            if (value->getType() != array->elementType) {
+                runtimeError("Type mismatch in array assignment");
+                return;
+            }
+            array->setElement(index, value);
+            return;
+        } 
+
+        if (StringValue* string = dynamic_cast<StringValue*>(varVal.get())) {
+            // String assignment
+            std::shared_ptr<RuntimeVal> charVal = evaluateExpression(node.value);
+            if (charVal->getType() != "string" || charVal->toString().length() != 1) {
+                runtimeError("Can only assign a single character to a string index");
+                return;
+            }
+            if (index < 0 || index >= string->value.size()) {
+                runtimeError("String index out of range");
+                return;
+            }
+            string->value[index] = charVal->toString()[0];
+            return;
+        } 
+            
+        runtimeError("Indexing not supported on the given variable type");
+        
+        return;
+    }
+
+
+
       std::shared_ptr<RuntimeVal> assignTo = currentScope()->getVariable(node.variableName);
 
 
@@ -569,7 +614,7 @@ void Interpreter::visit(StructPropertyAssignmentNode& node) {
         if (stringVal) {
             std::shared_ptr<RuntimeVal> assignedValue = evaluateExpression(node.value);
             if (assignedValue->getType() != "string" || assignedValue->toString().length() != 1) {
-                runtimeError("Can only assign a single character to a string index");
+                runtimeError("Can only assign a single character to a string index OR type mismatch");
                 return;
             }
             std::string& str = stringVal->value;
