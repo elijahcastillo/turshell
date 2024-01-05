@@ -1,4 +1,5 @@
 #pragma once
+#include "Lexer.h"
 #include "Runtime.h"
 #include "Interpretor.h"
 #include <iostream>
@@ -54,4 +55,50 @@ std::shared_ptr<RuntimeVal> input(Interpreter& interpreter, std::vector<std::sha
 
     // Return as string if it's not a valid integer
     return std::make_shared<StringValue>(value);
+}
+
+
+
+
+
+std::shared_ptr<RuntimeVal> nativeAppend(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    // Ensure there is exactly one argument
+    if (args.size() != 2) {
+        throw std::runtime_error("Native function 'input' expects exactly 2 argument Ex: append(arr, 2)");
+    }
+
+    auto arrayRuntimeValue = dynamic_cast<ArrayValue*>(args[0].get());
+    if(arrayRuntimeValue == nullptr){
+        throw std::runtime_error("Native function 'append' expects an array as first argument");
+    }
+
+    std::shared_ptr<RuntimeVal> value = args[1];
+
+   
+    //Handle concat arrays  Ex: append(arr, [1,2,3])
+    auto valueArray = dynamic_cast<ArrayValue*>(args[1].get());
+    if(valueArray != nullptr){
+     
+      if(arrayRuntimeValue->getType() != valueArray->getType()){
+              throw std::runtime_error("Native function 'append': non matching types, array of " + arrayRuntimeValue->getType() + " != " + valueArray->getType());
+      }
+
+      //Concat arrays
+      for(auto value: valueArray->elements){
+        arrayRuntimeValue->addElement(value);
+      }
+
+      return std::make_shared<BoolValue>(true); // Return a dummy value or void
+    }
+
+    //Handle single elements
+    if(arrayRuntimeValue->elementType != value->getType()){
+
+        throw std::runtime_error("Native function 'append': non matching types, array of " + arrayRuntimeValue->elementType + " != " + value->getType());
+    }
+
+    arrayRuntimeValue->addElement(value);
+
+    
+    return std::make_shared<BoolValue>(true); // Return a dummy value or void
 }

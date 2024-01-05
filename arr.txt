@@ -10,7 +10,7 @@ c.ages = [4,5];
 int e = c.ages[1] + 6;
 print(e)
 
-c.ages[0] = 20 + 1;
+c.ages[0] = 3;
 print(c.ages)
 
 
@@ -25,3 +25,11 @@ print(b)
 string hope = "Elijah";
 string f = hope[2];
 print(f)
+
+
+array<int> g = [1,2,3];
+print(g)
+append(g, 4)
+print(g)
+append(g, [5,6,7])
+print(g)

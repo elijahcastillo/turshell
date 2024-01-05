@@ -94,6 +94,7 @@ int main(int argc, char* argv[]) {
         // Interpretation
         Interpreter interpreter;
         interpreter.registerNativeFunction("print", nativePrint);
+        interpreter.registerNativeFunction("append", nativeAppend);
         interpreter.registerNativeFunction("input", input);
 
         ast->accept(interpreter); // Execute the AST
