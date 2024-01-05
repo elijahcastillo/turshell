@@ -14,6 +14,7 @@ Point p = {x: 1, y: 2 + 1, t: {name: "Elijah"} };
 
 print(p)
 
-p.t.name = "Not Anymore";
+p.t.name = "awesome";
+
 
 print(p)

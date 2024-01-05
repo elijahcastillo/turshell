@@ -23,6 +23,7 @@ class Environment {
       /* std::cout << "Setting variable '" << name << "' to " << value->toString() << " with setting " << setting << std::endl; */
 
       if(setting == Declaration){
+      
         variables[name] = value;
         return;
       } 

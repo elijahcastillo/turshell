@@ -238,6 +238,8 @@ std::shared_ptr<RuntimeVal> Interpreter::handleStructInitializerListAssignment(s
           runtimeError("Can only initalize type of struct '" + assignToName + "' with struct initializer list");
         }
 
+
+
         //Make sure # of values in initalizer list match number of properties in struct
         if(structDeclarationInfo.numProperties != initializerList->properties.size()){
           runtimeError("Size of struct initilizer list must match # of properties in type defintion");
@@ -275,7 +277,6 @@ std::shared_ptr<RuntimeVal> Interpreter::handleStructInitializerListAssignment(s
 
             //Add property to struct
             structValue->setProperty(param->variableName, paramValue);
-            std::cout << "Setting struct prop " << assignToType << " " <<  paramValue->toString() << "\n";
 
         }
 
@@ -424,6 +425,7 @@ std::shared_ptr<RuntimeVal> Interpreter::handleStructInitializerListAssignment(s
     }
 
 
+
 void Interpreter::visit(StructPropertyAssignmentNode& node) {
     // Start with the base struct
     std::shared_ptr<RuntimeVal> currentVal = currentScope()->getVariable(node.baseName);
@@ -458,25 +460,54 @@ void Interpreter::visit(StructPropertyAssignmentNode& node) {
 
     // Now, handle the final property for assignment
     const std::string& finalProperty = node.propertyNames.back();
-    
-    // TODO Handle case where final propery is struct with iniliizer list
-    
+    auto structVal = dynamic_cast<StructValue*>(currentVal.get()); //Dynamic cast with null check???
+    if(structVal == nullptr){
+      runtimeError("Cannot assign property of " + finalProperty + " on a non struct type"); 
+    }
+
+    /* StructDeclInfo() */
+
+    // Check if the value to be assigned is a struct initializer list
+    if (auto initializerListNode = dynamic_cast<StructInitalizerListNode*>(node.value)) {
 
 
-    // Evaluate the value to be assigned
-    std::shared_ptr<RuntimeVal> assignedValue = evaluateExpression(node.value);
+        // Get the type of the struct we are assigning to
+        std::string structType = structVal->getProperty(finalProperty)->getType();
+  
+        if(isStructType(structType) == false){
+          runtimeError("Cannot initilize property of type '" + structType +"' with initilizer list");
+        }
 
-    // Cast the current value to StructValue type for property assignment
-    auto structVal = std::static_pointer_cast<StructValue>(currentVal);
 
-    // Perform the assignment
-    try {
+        if (structType.empty()) {
+            runtimeError("Property '" + finalProperty + "' type not found in struct '" + currentVal->getType() + "'");
+            return;
+        }
+
+        // Handle struct initializer list assignment
+        std::shared_ptr<RuntimeVal> assignedValue = handleStructInitializerListAssignment(structType, finalProperty, initializerListNode, VariableSettings::Assignment, true);
         structVal->setProperty(finalProperty, assignedValue);
-    } catch (const std::runtime_error& e) {
-        runtimeError("Property '" + finalProperty + "' not found in struct '" + currentVal->getType() + "'");
-        return;
+    } else {
+
+        std::cout << "NOTT\n";
+        // Evaluate the value to be assigned
+        std::shared_ptr<RuntimeVal> assignedValue = evaluateExpression(node.value);
+
+        if(assignedValue->getType() != structVal->getProperty(finalProperty)->getType()){
+          
+            runtimeError("Cannot assign type of '" + assignedValue->getType() + "' to type of'" + structVal->getProperty(finalProperty)->getType() + "'");
+        }
+
+        // Perform the assignment
+        try {
+            structVal->setProperty(finalProperty, assignedValue);
+        } catch (const std::runtime_error& e) {
+            runtimeError("Property '" + finalProperty + "' not found in struct '" + currentVal->getType() + "'");
+            return;
+        }
     }
 }
+
 
   void Interpreter::visit(StructPropertyAccessNode& node) {
       // Start with the base struct
@@ -601,6 +632,7 @@ void Interpreter::visit(StructPropertyAssignmentNode& node) {
             }
 
             currentScope()->setVariable(paramName, argValue, VariableSettings::Declaration);
+
         }
 
 
@@ -741,6 +773,7 @@ void Interpreter::printStack() {
 }
 
 void Interpreter::printEnv(){
+  std::cout << "CurrentEnv: \n";
   for (const auto& pair : currentScope()->variables) {
         std::cout << "Var: " << pair.first << ", Value: " << pair.second->toString() << std::endl;
     }
