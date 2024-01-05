@@ -5,4 +5,7 @@ struct Person {
 
 Person p = {age: 18};
 p.age = 4;
-print(p.age)
+
+int a = p.age + 3;
+print(a)
+

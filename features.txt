@@ -8,3 +8,9 @@ break in while loop
 // TODO Handle case where final propery is struct with iniliizer list
 
 
+
+
+
+int[] ages = [23, 14, 5];
+append(ages, 3)
+append(ages, [3,4,2])

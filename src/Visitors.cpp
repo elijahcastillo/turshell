@@ -47,6 +47,16 @@ void PrintVisitor::visit(BinaryLiteralNode& node) {
         std::cout << (node.value ? "true" : "false");
 }
 
+void PrintVisitor::visit(ArrayLiteralNode& node) {
+  std::cout << "[";
+  for(auto val: node.values){
+        val->accept(*this);
+        std::cout << ", ";
+  }
+  std::cout << "]";
+}
+
+
 void PrintVisitor::visit(StructDeclarationNode& node){
   std::cout << "struct " << node.structName << "{\n";
   for(auto prop: node.properties){

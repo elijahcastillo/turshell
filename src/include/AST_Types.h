@@ -92,6 +92,14 @@ struct BinaryLiteralNode: public ExpressionNode {
     void accept(Visitor &v) override;
 };
 
+struct ArrayLiteralNode: public ExpressionNode {
+    std::vector<ASTNode*> values;
+
+    ArrayLiteralNode(std::vector<ASTNode*> values) : values(values) {};
+
+    void accept(Visitor &v) override;
+};
+
 
 struct StructDeclarationNode: public ExpressionNode {
   std::string structName;
@@ -138,8 +146,9 @@ struct VariableDeclarationNode : public StatementNode {
     std::string variableName;
     std::string variableType;
     ASTNode* initializer;
+    bool isArray;
 
-    VariableDeclarationNode(std::string& name, std::string& type, ASTNode* init): variableName(name), variableType(type), initializer(init){};
+    VariableDeclarationNode(std::string& name, std::string& type, ASTNode* init, bool isArray = false): variableName(name), variableType(type), initializer(init), isArray(isArray){};
 
     void accept(Visitor &v) override; 
     // Constructor and accept method...

@@ -70,6 +70,17 @@ private:
 
       //Parse Variable Declaration Ex: int a = 3 + 2;
      if(check(TokenType::TypeIdentifier)){
+
+        if (peek().value == "array") {
+            advance(); //Consume array keyword
+            consume(TokenType::LessThan, "Expected '<' after 'array'");
+            std::string arrayElementType = consume(TokenType::TypeIdentifier, "Expected type identifier").value;
+            consume(TokenType::GreaterThan, "Expected '>' after type identifier");
+            std::string varName = consume(TokenType::Identifier, "Expected Name for variable").value;
+
+            return parseVariableDeclaration(arrayElementType, varName, true);
+        }
+
         std::string varType = consume(TokenType::TypeIdentifier, "Expected Type").value;
         std::string varName = consume(TokenType::Identifier, "Expected Name for variable").value;
 
@@ -102,7 +113,7 @@ private:
 
 
 
-    ASTNode* parseVariableDeclaration(std::string& varType, std::string& varName){
+    ASTNode* parseVariableDeclaration(std::string& varType, std::string& varName, bool isArray = false){
         ASTNode* varInitializer = nullptr;
 
         if(match(TokenType::Equals)){
@@ -117,7 +128,7 @@ private:
           throw std::invalid_argument("Varaible " +varName+" must be initialized: line "+std::to_string(previous().lineNumber));
         }
 
-        return new VariableDeclarationNode(varName, varType, varInitializer);
+        return new VariableDeclarationNode(varName, varType, varInitializer, isArray);
     }
 
 
@@ -128,16 +139,16 @@ private:
     //};
     ASTNode* parseStruct(){
       std::string structName = consume(TokenType::Identifier, "Expected identifer after struct keyword").value;
-      consume(TokenType::LBracket, "Expected '{' after struct identifier");
+      consume(TokenType::LBrace, "Expected '{' after struct identifier");
 
       //Parse properties of the struct
       std::vector<ASTNode*> properties;
 
-      if(!check(TokenType::LBracket)){
+      if(!check(TokenType::LBrace)){
 
         do{
 
-          if(peek().type == TokenType::RBracket) break;
+          if(peek().type == TokenType::RBrace) break;
 
           std::string paramType;
           if(check(TokenType::Identifier) || check(TokenType::TypeIdentifier)){
@@ -155,7 +166,7 @@ private:
         throw std::invalid_argument("Struct must have atleast one property");
       }
 
-      consume(TokenType::RBracket, "Expected '}' after struct");
+      consume(TokenType::RBrace, "Expected '}' after struct");
       consume(TokenType::Semicolon, "Expected ';' after struct");
       return new StructDeclarationNode(structName, properties);
 
@@ -220,20 +231,35 @@ private:
 
 
     ASTNode* parseBlock() {
-        consume(TokenType::LBracket, "Expected '{' at the start of block");
+        consume(TokenType::LBrace, "Expected '{' at the start of block");
 
         std::vector<ASTNode*> statements;
-        while (!check(TokenType::RBracket) && !isAtEnd()) {
+        while (!check(TokenType::RBrace) && !isAtEnd()) {
             statements.push_back(parseStatement());
         }
 
-        consume(TokenType::RBracket, "Expected '}' at the end of block");
+        consume(TokenType::RBrace, "Expected '}' at the end of block");
 
         return new BlockNode(statements);
     }
 
+
+    ASTNode* parseArrayLiteral() {
+        consume(TokenType::LBracket, "Expected '[' at the beginning of array literal");
+        std::vector<ASTNode*> elements;
+        if (!check(TokenType::RBracket)) {
+            do {
+                elements.push_back(parseExpression());
+            } while (match(TokenType::Comma));
+        }
+        consume(TokenType::RBracket, "Expected ']' at the end of array literal");
+        return new ArrayLiteralNode(elements);
+    }
+
+
+
     ASTNode* parseStructInitializerList() {
-        consume(TokenType::LBracket, "Expected '{' at the beginning of struct initializer list");
+        consume(TokenType::LBrace, "Expected '{' at the beginning of struct initializer list");
         std::vector<ASTNode*> initializers;
 
         do {
@@ -243,7 +269,7 @@ private:
             initializers.push_back(new VariableAssignmentNode(propertyName, initializer));
         } while (match(TokenType::Comma));
 
-        consume(TokenType::RBracket, "Expected '}' at the end of struct initializer list");
+        consume(TokenType::RBrace, "Expected '}' at the end of struct initializer list");
         return new StructInitalizerListNode(initializers);
     }
 
@@ -252,35 +278,12 @@ private:
 
 
       //Struct Initializer list: Ex -  {x: 1+2, y: 5}
-      if(check(TokenType::LBracket) && peekNext().type == TokenType::Identifier){
-        std::cout << "HERE" << std::endl;
+      if(check(TokenType::LBrace) && peekNext().type == TokenType::Identifier){
         return parseStructInitializerList();
       }
 
 
-      //Parse struct acess or assigment for single property Ex: point.x  or point.x = 3;
-      if(check(TokenType::Identifier) && peekNext().type == TokenType::Dot){
-        std::string baseStructName = consume(TokenType::Identifier, "Expected struct name").value;
 
-        // Collect property names for nested access
-        std::vector<std::string> propertyNames;
-        while (match(TokenType::Dot)) {
-            propertyNames.push_back(consume(TokenType::Identifier, "Expected property name").value);
-        }
-
-
-        if(check(TokenType::Equals)){
-            // Handle struct property assignment
-            consume(TokenType::Equals, "Expected '=' after property name");
-            ASTNode* value = parseExpression();
-            consume(TokenType::Semicolon, "Expect ';' after struct property assigment");
-            return new StructPropertyAssignmentNode(baseStructName, propertyNames, value);
-        } else {
-            // Handle struct property access
-            return new StructPropertyAccessNode(baseStructName, propertyNames);
-        }
-
-      }
 
 
 
@@ -318,7 +321,7 @@ private:
     ASTNode* parseComparison() {
         ASTNode* node = parseAddition();
 
-        while (check(TokenType::ComparisonOperator)) {
+        while (check(TokenType::ComparisonOperator) || check(TokenType::GreaterThan) || check(TokenType::LessThan)) {
             std::string op = advance().value;
             ASTNode* right = parseAddition();
             node = new BinaryExpressionNode(node, op, right);
@@ -429,6 +432,12 @@ private:
 
         }
 
+        
+        //Array Literals   [1, 5, 3]
+        if (check(TokenType::LBracket)) {
+            return parseArrayLiteral();
+        }
+
         //True and False
       if(check(TokenType::Keyword)){
         Token token = advance();
@@ -460,6 +469,35 @@ private:
             std::string str_value = advance().value;
             return new StringLiteralNode(str_value);
         }
+
+
+      //Parse struct acess or assigment for single property Ex: point.x  or point.x = 3;
+      if(check(TokenType::Identifier) && peekNext().type == TokenType::Dot){
+        std::string baseStructName = consume(TokenType::Identifier, "Expected struct name").value;
+
+        // Collect property names for nested access
+        std::vector<std::string> propertyNames;
+        while (match(TokenType::Dot)) {
+            propertyNames.push_back(consume(TokenType::Identifier, "Expected property name").value);
+        }
+
+
+        if(check(TokenType::Equals)){
+            // Handle struct property assignment
+            consume(TokenType::Equals, "Expected '=' after property name");
+            ASTNode* value = parseExpression();
+            consume(TokenType::Semicolon, "Expect ';' after struct property assigment");
+            return new StructPropertyAssignmentNode(baseStructName, propertyNames, value);
+        } else {
+
+            // Handle struct property access
+            return new StructPropertyAccessNode(baseStructName, propertyNames);
+        }
+
+      }
+
+
+
 
         // Handle Identifiers (e.g., variable names or function calls)
        if (check(TokenType::Identifier)) {

@@ -214,6 +214,11 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
 
     }
 
+    void Interpreter::visit(ArrayLiteralNode& node) {
+      /* evaluationStack.push(std::make_shared<StringValue>(node.value)); */
+
+    }
+
     void Interpreter::visit(BinaryLiteralNode& node) {
       evaluationStack.push(node.value ? std::make_shared<BoolValue>(true) : std::make_shared<BoolValue>(false));
 

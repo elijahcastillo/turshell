@@ -17,10 +17,14 @@ std::string tokenTypeToString(TokenType type) {
         case StringLiteral:      return "StringLiteral";
         case CharacterLiteral:   return "CharacterLiteral";
         case BooleanLiteral:     return "BooleanLiteral";
+        case LessThan:     return "LessThan";
+        case GreaterThan:     return "GreaterThan";
         case LParen:             return "LParen";
         case RParen:             return "RParen";
         case LBracket:           return "LBracket";
         case RBracket:           return "RBracket";
+        case LBrace:           return "LBrace";
+        case RBrace:           return "RBrace";
         case Colon:           return "Colon";
         case Comma:              return "Comma";
         case Semicolon:          return "Semicolon";

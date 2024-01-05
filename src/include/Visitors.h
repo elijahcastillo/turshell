@@ -14,9 +14,11 @@ public:
     virtual void visit(BinaryExpressionNode& node) = 0;
     virtual void visit(LogicalOperatorNode& node) = 0;
     virtual void visit(UnaryExpressionNode& node) = 0;
+
     virtual void visit(IntLiteralNode& node) = 0;
     virtual void visit(StringLiteralNode& node) = 0;
     virtual void visit(BinaryLiteralNode& node) = 0;
+    virtual void visit(ArrayLiteralNode& node) = 0;
 
     virtual void visit(StructDeclarationNode& node) = 0;
     virtual void visit(StructInitalizerListNode& node) = 0;
@@ -48,6 +50,7 @@ public:
     void visit(IntLiteralNode& node) override; 
     void visit(StringLiteralNode& node) override; 
     void visit(BinaryLiteralNode& node) override; 
+    void visit(ArrayLiteralNode& node) override; 
 
     void visit(StructDeclarationNode& node) override; 
     void visit(StructInitalizerListNode& node) override; 

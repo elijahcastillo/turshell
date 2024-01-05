@@ -23,10 +23,14 @@ enum TokenType {
     StringLiteral,       // String literals. Example: "\"Hello, world!\""
     CharacterLiteral,    // Character literals. Example: "'a'", "'3'"
     BooleanLiteral,      // Boolean literals. Example: "true", "false"
+    LessThan,      // Boolean literals. Example: "true", "false"
+    GreaterThan,      // Boolean literals. Example: "true", "false"
     LParen,              // (
     RParen,              // ) 
-    LBracket,            // { 
-    RBracket,            // } 
+    LBracket,            // [ 
+    RBracket,            // ]
+    LBrace,               // {
+    RBrace,              // } 
     Colon,                // :
     Comma,               // Comma for separation. Example: ","
     Semicolon,           // Semicolon as a statement terminator. Example: ";"
@@ -156,13 +160,13 @@ public:
   }
 
 bool isKeyword(const std::string& identifier) {
-    static const std::set<std::string> keywords = {"true", "false", "if", "else", "while", "return", "func", "struct"};
+    static const std::set<std::string> keywords = {"true", "false", "if", "else", "while", "break", "return", "func", "struct"};
     return keywords.find(identifier) != keywords.end();  
 }
 
 
 bool isType(const std::string& identifier) {
-    static const std::set<std::string> types = {"int", "string", "bool"};
+    static const std::set<std::string> types = {"int", "string", "bool", "array"};
     return types.find(identifier) != types.end();  
 }
 
@@ -246,12 +250,14 @@ Token consumeSingleCharacterToken() {
         case '/': type = Division; break;
         case '%': type = Modulo; break;
         case '!': type = LogicalOperator; break;
-        case '>': type = ComparisonOperator; break;
-        case '<': type = ComparisonOperator; break;
+        case '>': type = GreaterThan; break;
+        case '<': type = LessThan; break;
         case '(': type = LParen; break;
         case ')': type = RParen; break;
-        case '{': type = LBracket; break;
-        case '}': type = RBracket; break;
+        case '{': type = LBrace; break;
+        case '}': type = RBrace; break;
+        case '[': type = LBracket; break;
+        case ']': type = RBracket; break;
         case ':': type = Colon; break;
         case ',': type = Comma; break;
         case ';': type = Semicolon; break;
