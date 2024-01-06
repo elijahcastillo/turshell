@@ -38,6 +38,18 @@ struct IntValue : public RuntimeVal{
   }
 };
 
+struct FloatValue : public RuntimeVal{
+  float value;
+
+  FloatValue(float value): RuntimeVal("float"), value(value) {};
+
+  float getValue() { return value; };
+
+  std::string toString() override {
+    return std::to_string(value);
+  }
+};
+
 
 struct StringValue : public RuntimeVal {
     std::string value;
@@ -139,4 +151,116 @@ struct ArrayValue : public RuntimeVal {
     }
 
     // Additional methods as needed...
+};
+
+
+
+
+
+class RuntimeOps {
+public:
+    static std::shared_ptr<RuntimeVal> add(const std::shared_ptr<RuntimeVal>& left, const std::shared_ptr<RuntimeVal>& right) {
+        if (left->getType() == "int" && right->getType() == "int") {
+            return std::make_shared<IntValue>(static_cast<IntValue*>(left.get())->getValue() +
+                                              static_cast<IntValue*>(right.get())->getValue());
+        } else if (left->getType() == "float" && right->getType() == "float") {
+            return std::make_shared<FloatValue>(static_cast<FloatValue*>(left.get())->getValue() +
+                                                static_cast<FloatValue*>(right.get())->getValue());
+        } else if (left->getType() == "string" && right->getType() == "string") {
+            return std::make_shared<StringValue>(static_cast<StringValue*>(left.get())->getValue() +
+                                                 static_cast<StringValue*>(right.get())->getValue());
+        }
+        throw std::runtime_error("Unsupported types for addition");
+    }
+
+    static std::shared_ptr<RuntimeVal> subtract(const std::shared_ptr<RuntimeVal>& left, const std::shared_ptr<RuntimeVal>& right) {
+        if (left->getType() == "int" && right->getType() == "int") {
+            return std::make_shared<IntValue>(static_cast<IntValue*>(left.get())->getValue() -
+                                              static_cast<IntValue*>(right.get())->getValue());
+        } else if (left->getType() == "float" && right->getType() == "float") {
+            return std::make_shared<FloatValue>(static_cast<FloatValue*>(left.get())->getValue() -
+                                                static_cast<FloatValue*>(right.get())->getValue());
+        } 
+        throw std::runtime_error("Unsupported types for subtraction");
+    }
+
+
+    static std::shared_ptr<RuntimeVal> multiply(const std::shared_ptr<RuntimeVal>& left, const std::shared_ptr<RuntimeVal>& right) {
+        if (left->getType() == "int" && right->getType() == "int") {
+            return std::make_shared<IntValue>(static_cast<IntValue*>(left.get())->getValue() *
+                                              static_cast<IntValue*>(right.get())->getValue());
+        } else if (left->getType() == "float" && right->getType() == "float") {
+            return std::make_shared<FloatValue>(static_cast<FloatValue*>(left.get())->getValue() *
+                                                static_cast<FloatValue*>(right.get())->getValue());
+        } 
+        throw std::runtime_error("Unsupported types for multiplication");
+    }
+
+
+    static std::shared_ptr<RuntimeVal> divide(const std::shared_ptr<RuntimeVal>& left, const std::shared_ptr<RuntimeVal>& right) {
+        if (left->getType() == "int" && right->getType() == "int") {
+            return std::make_shared<IntValue>(static_cast<IntValue*>(left.get())->getValue() /
+                                              static_cast<IntValue*>(right.get())->getValue());
+        } else if (left->getType() == "float" && right->getType() == "float") {
+            return std::make_shared<FloatValue>(static_cast<FloatValue*>(left.get())->getValue() /
+                                                static_cast<FloatValue*>(right.get())->getValue());
+        } 
+        throw std::runtime_error("Unsupported types for division");
+    }
+
+
+    static std::shared_ptr<RuntimeVal> mod(const std::shared_ptr<RuntimeVal>& left, const std::shared_ptr<RuntimeVal>& right) {
+        if (left->getType() == "int" && right->getType() == "int") {
+            return std::make_shared<IntValue>(static_cast<IntValue*>(left.get())->getValue() %
+                                              static_cast<IntValue*>(right.get())->getValue());
+        } 
+        throw std::runtime_error("Unsupported types for mod");
+    }
+
+
+
+    static std::shared_ptr<RuntimeVal> compare(const std::shared_ptr<RuntimeVal>& left, const std::shared_ptr<RuntimeVal>& right, const std::string& op) {
+
+        if (left->getType() == "float" && right->getType() == "float") {
+            float leftValue = static_cast<FloatValue*>(left.get())->getValue();
+            float rightValue = static_cast<FloatValue*>(right.get())->getValue();
+            if (op == "==") return std::make_shared<BoolValue>(leftValue == rightValue);
+            if (op == ">") return std::make_shared<BoolValue>(leftValue > rightValue);
+            if (op == "<") return std::make_shared<BoolValue>(leftValue <  rightValue);
+            if (op == ">=") return std::make_shared<BoolValue>(leftValue >= rightValue);
+            if (op == "<=") return std::make_shared<BoolValue>(leftValue <= rightValue);
+            // Add cases for other comparison operators
+        } 
+        if (left->getType() == "int" && right->getType() == "int") {
+            int leftValue = static_cast<IntValue*>(left.get())->getValue();
+            int rightValue = static_cast<IntValue*>(right.get())->getValue();
+            if (op == "==") return std::make_shared<BoolValue>(leftValue == rightValue);
+            if (op == ">") return std::make_shared<BoolValue>(leftValue > rightValue);
+            if (op == "<") return std::make_shared<BoolValue>(leftValue <  rightValue);
+            if (op == ">=") return std::make_shared<BoolValue>(leftValue >= rightValue);
+            if (op == "<=") return std::make_shared<BoolValue>(leftValue <= rightValue);
+            // Add cases for other comparison operators
+        } 
+
+        if (left->getType() == "string" && right->getType() == "string") {
+          std::string leftValue = static_cast<StringValue*>(left.get())->getValue();
+          std::string rightValue = static_cast<StringValue*>(right.get())->getValue();
+            if (op == "==") return std::make_shared<BoolValue>(leftValue == rightValue);
+        }
+
+
+        if (left->getType() == "bool" && right->getType() == "bool") {
+            bool leftValue = static_cast<BoolValue*>(left.get())->getValue();
+            bool rightValue = static_cast<BoolValue*>(right.get())->getValue();
+            if (op == "==") return std::make_shared<BoolValue>(leftValue == rightValue);
+        }
+
+
+
+        // Add cases for string comparison and others if needed
+        throw std::runtime_error("Unsupported types for comparison");
+    }
+
+
+
 };

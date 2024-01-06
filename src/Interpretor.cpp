@@ -35,7 +35,7 @@ class TurshellReturn : public std::exception {
 
 
 bool isPrimitiveType(const std::string& type) {
-    return type == "int" || type == "string" || type == "bool";
+    return type == "int" || type == "string" || type == "bool" || type == "float";
 }
 
 
@@ -66,82 +66,36 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
         }
     }
 
-    void Interpreter::visit(BinaryExpressionNode& node) {
+
+void Interpreter::visit(BinaryExpressionNode& node) {
         node.left->accept(*this);
         node.right->accept(*this);
 
         std::shared_ptr<RuntimeVal> right = evaluationStack.top(); evaluationStack.pop();
         std::shared_ptr<RuntimeVal> left = evaluationStack.top(); evaluationStack.pop();
 
-
-        if(left->getType() == "int" && right->getType() == "int"){
-          auto leftInt = static_cast<IntValue*>(left.get());
-          auto rightInt = static_cast<IntValue*>(right.get());
-
-          if(node.op == "+"){
-
-            /* std::cout << "Adding " << leftInt->getValue() << " to " << rightInt->getValue() << std::endl; */
-            return evaluationStack.push(std::make_shared<IntValue>(leftInt->getValue() + rightInt->getValue()));
-          }
-          if(node.op == "-"){
-            return evaluationStack.push(std::make_shared<IntValue>(leftInt->getValue() - rightInt->getValue()));
-          }
-          if(node.op == "*"){
-            return evaluationStack.push(std::make_shared<IntValue>(leftInt->getValue() * rightInt->getValue()));
-          }
-          if(node.op == "/"){
-            return evaluationStack.push(std::make_shared<IntValue>(leftInt->getValue() / rightInt->getValue()));
-          }
-          if(node.op == "%"){
-            return evaluationStack.push(std::make_shared<IntValue>(leftInt->getValue() % rightInt->getValue()));
-          }
-          if(node.op == "=="){
-            return evaluationStack.push(std::make_shared<BoolValue>(leftInt->getValue() == rightInt->getValue() ? true : false));
-          }
-          if(node.op == ">"){
-            return evaluationStack.push(std::make_shared<BoolValue>(leftInt->getValue() > rightInt->getValue() ? true : false));
-          }
-          if(node.op == "<"){
-            return evaluationStack.push(std::make_shared<BoolValue>(leftInt->getValue() < rightInt->getValue() ? true : false));
-          }
-          if(node.op == ">="){
-            return evaluationStack.push(std::make_shared<BoolValue>(leftInt->getValue() >= rightInt->getValue() ? true : false));
-          }
-          if(node.op == "<="){
-            /* std::cout << "Comparing " << leftInt->getValue() << " <= " << rightInt->getValue() << std::endl; */
-            return evaluationStack.push(std::make_shared<BoolValue>(leftInt->getValue() <= rightInt->getValue() ? true : false));
-          }
-
+    try {
+        if (node.op == "+") {
+            evaluationStack.push(RuntimeOps::add(left, right));
+        } else if (node.op == "-") {
+            evaluationStack.push(RuntimeOps::subtract(left, right));
+        } else if (node.op == "*") {
+            evaluationStack.push(RuntimeOps::multiply(left, right));
+        } else if (node.op == "/") {
+            evaluationStack.push(RuntimeOps::divide(left, right));
+        } else if (node.op == "%"){
+          evaluationStack.push(RuntimeOps::mod(left, right));
+        } else if (node.op == "==" || node.op == ">" || node.op == "<" || 
+                   node.op == ">=" || node.op == "<=") {
+            evaluationStack.push(RuntimeOps::compare(left, right, node.op));
+        } else {
+            throw std::runtime_error("Unsupported operation in binary expression");
         }
-
-
-        if(left->getType() == "string" && right->getType() == "string"){
-          auto leftStr = static_cast<StringValue*>(left.get());
-          auto rightStr = static_cast<StringValue*>(right.get());
-
-          if(node.op == "+"){
-            return evaluationStack.push(std::make_shared<StringValue>(leftStr->getValue() + rightStr->getValue()));
-          }
-          if(node.op == "=="){
-            return evaluationStack.push(std::make_shared<BoolValue>(leftStr->getValue() == rightStr->getValue()));
-          }
-        }
-
-
-        if(left->getType() == "bool" && right->getType() == "bool"){
-          auto leftBool = static_cast<BoolValue*>(left.get());
-          auto rightBool = static_cast<BoolValue*>(right.get());
-
-          if(node.op == "=="){
-            return evaluationStack.push(std::make_shared<BoolValue>(leftBool->getValue() == rightBool->getValue()));
-          }
-        }
-
-
-
-      runtimeError("Unsuporrted Binary Expression");
-
+    } catch (const std::runtime_error& e) {
+        runtimeError(e.what());
     }
+}
+
 
 
     //&& ||
@@ -210,7 +164,7 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
     }
 
     void Interpreter::visit(FloatLiteralNode& node) {
-      /* evaluationStack.push(std::make_shared<IntValue>(node.value)); */
+      evaluationStack.push(std::make_shared<FloatValue>(node.value));
     }
 
     void Interpreter::visit(StringLiteralNode& node) {

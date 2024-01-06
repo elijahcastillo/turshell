@@ -378,6 +378,7 @@ private:
         return nextType == TokenType::NumberLiteral || 
                nextType == TokenType::StringLiteral || 
                nextType == TokenType::BooleanLiteral ||
+               nextType == TokenType::FloatLiteral||
                nextType == TokenType::Identifier || 
                nextType == TokenType::LParen;
     }
@@ -528,7 +529,6 @@ private:
         if (check(TokenType::FloatLiteral)) {
             std::string str_value = advance().value;
             float value = std::stof(str_value);
-
             return new FloatLiteralNode(value);
         }
 

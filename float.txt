@@ -1,1 +1,5 @@
 float x = 3.14;
+print(x)
+
+float y = x + 2.954;
+print(y)
