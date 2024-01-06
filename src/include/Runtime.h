@@ -5,6 +5,7 @@
 #include <memory>
 #include <map>
 #include <vector>
+#include <iostream>
 
 
 
@@ -231,10 +232,12 @@ public:
 
     static std::shared_ptr<RuntimeVal> compare(const std::shared_ptr<RuntimeVal>& left, const std::shared_ptr<RuntimeVal>& right, const std::string& op) {
 
+
         if (left->getType() == "float" && right->getType() == "float") {
             float leftValue = static_cast<FloatValue*>(left.get())->getValue();
             float rightValue = static_cast<FloatValue*>(right.get())->getValue();
             if (op == "==") return std::make_shared<BoolValue>(leftValue == rightValue);
+            if (op == "!=") return std::make_shared<BoolValue>(leftValue != rightValue);
             if (op == ">") return std::make_shared<BoolValue>(leftValue > rightValue);
             if (op == "<") return std::make_shared<BoolValue>(leftValue <  rightValue);
             if (op == ">=") return std::make_shared<BoolValue>(leftValue >= rightValue);
@@ -245,6 +248,7 @@ public:
             int leftValue = static_cast<IntValue*>(left.get())->getValue();
             int rightValue = static_cast<IntValue*>(right.get())->getValue();
             if (op == "==") return std::make_shared<BoolValue>(leftValue == rightValue);
+            if (op == "!=") return std::make_shared<BoolValue>(leftValue != rightValue);
             if (op == ">") return std::make_shared<BoolValue>(leftValue > rightValue);
             if (op == "<") return std::make_shared<BoolValue>(leftValue <  rightValue);
             if (op == ">=") return std::make_shared<BoolValue>(leftValue >= rightValue);
@@ -256,6 +260,7 @@ public:
           std::string leftValue = static_cast<StringValue*>(left.get())->getValue();
           std::string rightValue = static_cast<StringValue*>(right.get())->getValue();
             if (op == "==") return std::make_shared<BoolValue>(leftValue == rightValue);
+            if (op == "!=") return std::make_shared<BoolValue>(leftValue != rightValue);
         }
 
 
@@ -263,6 +268,7 @@ public:
             bool leftValue = static_cast<BoolValue*>(left.get())->getValue();
             bool rightValue = static_cast<BoolValue*>(right.get())->getValue();
             if (op == "==") return std::make_shared<BoolValue>(leftValue == rightValue);
+            if (op == "!=") return std::make_shared<BoolValue>(leftValue == rightValue);
         }
 
 

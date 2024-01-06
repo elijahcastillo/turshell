@@ -223,6 +223,11 @@ Token consumeSingleCharacterToken() {
       return {ComparisonOperator, "==", lineNumber};
     }
 
+    if(currentChar == '!' && nextChar == '='){
+      position++; //Skip second '='
+      return {ComparisonOperator, "!=", lineNumber};
+    }
+
     if(currentChar == '>' && nextChar == '='){
       position++; //Skip second '='
       return {ComparisonOperator, ">=", lineNumber};

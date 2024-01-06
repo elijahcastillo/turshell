@@ -4,12 +4,12 @@ int i = 0;
 
 while(i <= 10){
     
-  if(i == 5){
-    print("Cool", i)
-    break;
+  if(i != 5){
+    print("Yes", i)
+  } else {
+    print("Not", i)
   }
 
-  print(i)
   
   i = i + 1;
 }

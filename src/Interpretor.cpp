@@ -100,7 +100,7 @@ void Interpreter::visit(BinaryExpressionNode& node) {
         } else if (node.op == "%"){
           evaluationStack.push(RuntimeOps::mod(left, right));
         } else if (node.op == "==" || node.op == ">" || node.op == "<" || 
-                   node.op == ">=" || node.op == "<=") {
+                   node.op == ">=" || node.op == "<=" || node.op == "!=") {
             evaluationStack.push(RuntimeOps::compare(left, right, node.op));
         } else {
             throw std::runtime_error("Unsupported operation in binary expression");
