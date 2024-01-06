@@ -147,7 +147,7 @@ private:
 
     ASTNode* parseVariableDeclaration(std::string& varType, std::string& varName, bool isArray = false){
 
-      std::cout << "Parsing varible declartion: " << varType << " " << varName << "\n";
+      /* std::cout << "Parsing varible declartion: " << varType << " " << varName << "\n"; */
         ASTNode* varInitializer = nullptr;
 
         if(match(TokenType::Equals)){
@@ -155,7 +155,6 @@ private:
           varInitializer = parseExpression();
         }
 
-        std::cout << "After = " << peek().value << "\n";
 
 
         consume(TokenType::Semicolon, "Expect ';' after variable declaration");

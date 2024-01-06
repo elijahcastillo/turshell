@@ -1,0 +1,14 @@
+int integer = 3 + 2;
+print("Integer type:", integer)
+
+float f = 3.1415 - 2.31;
+print("Float type:", f)
+
+string s = "turshell is awesome";
+print("String type:", s)
+
+bool b = true;
+print("Bool type:", b)
+
+array<int> arr = [5,2,7,1];
+print("Array type:", arr)
