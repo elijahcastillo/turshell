@@ -85,8 +85,8 @@ modify(num)
 print(num)
 
 
-//array<Point> po = [{x: 1, y:2}, {x: 6, y:4}];
-//print(po)
+array<Point> po = [{x: 1, y:2}, {x: 6, y:4}];
+print(po)
 
 
 

@@ -225,6 +225,12 @@ void Interpreter::visit(ArrayLiteralNode& node) {
     for (auto& element : node.values) {
         std::shared_ptr<RuntimeVal> value = evaluateExpression(element);
 
+        //We dont know the type if its a struct, need more context
+        if(auto structCast = dynamic_cast<StructValue*>(element)){
+          arrayValues.push_back(value);
+          continue;
+        }
+
         //Check types
         if(elementTypes == "unknown"){
           elementTypes = value->getType();
@@ -251,12 +257,42 @@ void Interpreter::visit(ArrayLiteralNode& node) {
     }
 
 
+std::string extractStructTypeFromArrayType(const std::string& arrayType) {
+    size_t start = arrayType.find('<');
+    size_t end = arrayType.find('>');
 
+    if (start == std::string::npos || end == std::string::npos || end <= start) {
+        throw std::runtime_error("Invalid array type format: " + arrayType);
+    }
+
+    return arrayType.substr(start + 1, end - start - 1);
+}
 
     void Interpreter::visit(VariableDeclarationNode& node) {
 
 
       std::shared_ptr<RuntimeVal> value = evaluateExpression(node.initializer);
+
+    // Handle array literals with struct initializer lists
+    if (auto arrayVal = dynamic_cast<ArrayValue*>(value.get())) {
+        if (node.variableType.rfind("array<", 0) == 0) {
+            // Extract struct type from the variable type (e.g., "array<MyStruct>")
+            std::string structType = extractStructTypeFromArrayType(node.variableType);
+
+            // Set the type of each struct in the array
+            for (auto& element : arrayVal->elements) {
+                if (auto structVal = dynamic_cast<StructValue*>(element.get())) {
+                    validateAndSetStructType(element, structType);
+                }
+            }
+
+
+            // Update the element type of the array
+            arrayVal->type = "array<" + structType + ">";
+            arrayVal->elementType = structType;
+
+        }
+    }
 
 
 
@@ -267,7 +303,8 @@ void Interpreter::visit(ArrayLiteralNode& node) {
        
 
       if(!(node.variableType == value->getType())){
-          runtimeError("Type mismatch in variable declaration for " + node.variableName);
+        
+          runtimeError("Type mismatch in variable declaration for " + node.variableName + " of " + node.variableType + " and " + value->getType());
           return;
       }
 

@@ -128,6 +128,11 @@ struct ArrayValue : public RuntimeVal {
         elements.push_back(element);
     }
 
+    void setType(std::string type){
+      type = "array<" + type + ">";
+      elementType = type;
+    }
+
     std::shared_ptr<RuntimeVal> getElement(int index) {
         if (index < 0 || index >= elements.size()) {
             throw std::runtime_error("Array index out of bounds");
