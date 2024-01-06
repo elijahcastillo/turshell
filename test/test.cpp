@@ -114,9 +114,32 @@ int main() {
     "Bool type: true \n"
     "Array type: Array[5, 2, 7, 1] \n";
 
+
+std::string expected_2 = 
+    "1 is Odd \n"
+    "2 is Prime \n"
+    "3 is Prime \n"
+    "4 is Even \n"
+    "5 is Prime \n"
+    "6 is Even \n"
+    "7 is Prime \n"
+    "8 is Even \n"
+    "9 is Odd \n"
+    "10 is Even \n";
+
+
+std::string expected_3 = 
+    "Name: Elijah Castillo \n"
+    "Letter at index 3: j \n"
+    "Modified name: Elijnh Cistillo \n"
+    "Length of modified name: 15 \n"
+    "Concatenation of foo and bar: foobar \n"
+    "Title is Boss \n";
+
     // Add your tests here
-    runner.addTest(Test("Test 1 (types)", "test/typesTest.txt", expected_1));
-    // ... more tests
+    runner.addTest(Test("Test 1 (Types)", "test/typesTest.txt", expected_1));
+    runner.addTest(Test("Test 2 (Controll Flow)", "test/controlFlowTest.txt", expected_2));
+    runner.addTest(Test("Test 3 (Strings)", "test/stringTest.txt", expected_3));
 
     runner.runAll();
 

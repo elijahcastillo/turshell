@@ -595,7 +595,7 @@ private:
            return nullptr;
        }
        
-        throw std::invalid_argument("Cannot Parse Token: " + peek().value );
+        throw std::invalid_argument("Cannot Parse Token: " + peek().value + " " + std::to_string(peek().lineNumber) );
         // Handle other primary types (like parentheses) here
     }
 

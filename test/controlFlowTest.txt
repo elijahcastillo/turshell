@@ -1,0 +1,14 @@
+int n = 1;
+
+while (n <= 10) {
+    if (n == 2 || n == 3 || n == 5 || n == 7) {
+        print(n, "is Prime")
+    } else {
+        if (n % 2 == 0) {
+            print(n, "is Even")
+        } else {
+            print(n, "is Odd")
+        }
+    }
+    n = n + 1;
+}

@@ -1,0 +1,24 @@
+string name = "Elijah Castillo";
+print("Name:", name)
+
+string letter = name[3];
+print("Letter at index 3:", letter)
+
+name[4] = "n";
+name[8] = name[2];
+print("Modified name:", name)
+
+int strlen = len(name);
+print("Length of modified name:", strlen)
+
+string a = "foo";
+string b = "bar";
+string c = a + b;
+print("Concatenation of foo and bar:", c)
+
+string title = "Boss";
+if (title == "Boss") {
+    print("Title is Boss")
+} else {
+    print("Title is not Boss")
+}
