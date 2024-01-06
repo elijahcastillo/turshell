@@ -19,10 +19,24 @@ class TurshellReturn : public std::exception {
 
     TurshellReturn(std::shared_ptr<RuntimeVal> returnVal, const char* msg) : returnVal(returnVal), msg(msg) {};
 
-    const char * what () {
+    const char* what () const throw() {
         return msg;
     }
 };
+
+class TurshellBreak : public std::exception {
+
+    public:
+    const char* msg;
+
+    TurshellBreak(const char* msg) : msg(msg) {};
+
+    const char* what () const throw() {
+        return msg;
+    }
+};
+
+
 
   bool Interpreter::isStructType(const std::string& name) {
       auto it = structTable.find(name);
@@ -425,17 +439,26 @@ std::string extractStructTypeFromArrayType(const std::string& arrayType) {
 
 
         while(conditionValue->getValue()  == true){
+
+          enterNewScope();
+
+          try{
+
+            evaluateExpression(node.body);
+
+          } catch(TurshellBreak e) {
+            exitCurrentScope();
+            break;
+          }
           
           //Run code inside of {}
-          enterNewScope();
-          evaluateExpression(node.body);
           exitCurrentScope();
 
           //Recheck condition
           condition = evaluateExpression(node.condition);
 
           if(condition->getType() != "bool"){
-            runtimeError("Cannot evaluate 'while' condition of on boolean type");
+            runtimeError("Cannot evaluate 'while' condition of on non boolean type");
           }
 
           conditionValue = static_cast<BoolValue*>(condition.get());
@@ -912,11 +935,15 @@ void Interpreter::visit(StructPropertyAssignmentNode& node) {
             returnValue = evaluateExpression(node.expression);
         }
 
-
-
         // Exit the current function early, use tryCatch to stop execution in FuncCall
         // If error not caught my FuncCall Visitor then its not in a function
         throw TurshellReturn(returnValue, "Return Error - Can only use return inside of function");
+    }
+
+
+    void Interpreter::visit(BreakStatementNode& node) {
+
+        throw TurshellBreak("Break Error - Can only use 'break' inside of while loop");
     }
 
 

@@ -195,5 +195,9 @@ void PrintVisitor::visit(ReturnStatementNode& node){
   std::cout <<";\n";
 };
 
+void PrintVisitor::visit(BreakStatementNode& node){
+  std::cout << "break";
+};
+
 
 

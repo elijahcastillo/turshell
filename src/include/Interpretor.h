@@ -89,6 +89,7 @@ bool validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal, const std::
     void visit(VariableExpressionNode& node) override;
 
     void visit(ReturnStatementNode& node) override;
+    void visit(BreakStatementNode& node) override;
 
     void visit(ParameterNode& node) override;
     void visit(FunctionCallNode& node) override;

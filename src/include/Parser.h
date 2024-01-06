@@ -71,6 +71,11 @@ private:
           return parseStruct();
         }
 
+        if(token.value == "break"){
+          consume(TokenType::Semicolon, "Expect ';' after break");
+          return new BreakStatementNode();
+        }
+
         // Parse return statements
         if (token.value == "return") {
             ASTNode* expression = nullptr;

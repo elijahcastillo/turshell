@@ -1,7 +1,4 @@
  -  '!=' operator impl
- - Normal array assigment  arr[0] = 3;
- - Array with structs???/
+ - nativeAppend with structs
  - 'break' keyword in while loop
- - void for functions ???
  - Fix recusrion in function, scope issue with vairbles or return issue??
- - Tests

@@ -36,6 +36,7 @@ public:
     virtual void visit(FunctionDeclarationNode& node) = 0;
     virtual void visit(ParameterNode& node) = 0;
     virtual void visit(ReturnStatementNode& node) = 0;
+    virtual void visit(BreakStatementNode& node) = 0;
     virtual void visit(FunctionCallNode& node) = 0;
     // ... other visit methods for other node types
 };
@@ -71,6 +72,7 @@ public:
     void visit(FunctionDeclarationNode& node) override;
     void visit(ParameterNode& node) override;
     void visit(ReturnStatementNode& node) override;
+    void visit(BreakStatementNode& node) override;
     void visit(FunctionCallNode& node) override;
 
 

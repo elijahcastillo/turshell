@@ -278,3 +278,10 @@ struct ReturnStatementNode : public StatementNode {
 
     void accept(Visitor &v) override;
 };
+
+struct BreakStatementNode : public StatementNode {
+
+    BreakStatementNode(){};
+
+    void accept(Visitor &v) override;
+};

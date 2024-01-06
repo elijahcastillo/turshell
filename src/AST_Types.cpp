@@ -101,6 +101,10 @@ void ReturnStatementNode::accept(Visitor& v){
   v.visit(*this);
 }
 
+void BreakStatementNode::accept(Visitor& v){
+  v.visit(*this);
+}
+
 
 void FunctionCallNode::accept(Visitor& v){
   v.visit(*this);

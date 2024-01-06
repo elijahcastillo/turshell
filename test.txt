@@ -1,27 +1,15 @@
 
 
-func add() int {
-   int res = num + num;
-   return res;
-}
+int i = 0;
 
-func isEven(int n) bool {
-  if(n % 2 == 0){
-    return true;
+while(i <= 10){
+    
+  if(i == 5){
+    print("Cool", i)
+    break;
   }
 
-  return false;
+  print(i)
+  
+  i = i + 1;
 }
-
-
-func getName() string {
-  return input("Whats your name: ");
-}
-
-func wow(int b) int {
-  return b + 1;
-}
-
-int a = 20;
-print(wow(a))
-print(a)

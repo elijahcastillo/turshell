@@ -160,11 +160,31 @@ std::string expected_4 =
 "Struct{isClose: false, name: George} \n"
 "George \n";
 
+
+
+std::string expected_5 = 
+"Struct{x: 3, y: 5} \n"
+"8 \n"
+"16 \n"
+"true \n"
+"false \n"
+"llehsrut \n"
+"LOG: llehsrut \n"
+"\n"
+"======== Modify Tests ========== \n"
+"\n"
+"Array[1, 5, 3] \n"
+"Array[1, 5, 3] \n"
+"Array[Struct{x: 1, y: 2}, Struct{x: 6, y: 4}, Struct{x: 3, y: 5}, Struct{x: 3, y: 3}] \n"
+"Struct{x: 3, y: 5} \n"
+"Array[Struct{x: 7, y: 3}, Struct{x: 14, y: 76}] \n";
+
     // Add your tests here
     runner.addTest(Test("Test 1 (Types)", "test/typesTest.txt", expected_1));
     runner.addTest(Test("Test 2 (Controll Flow)", "test/controlFlowTest.txt", expected_2));
     runner.addTest(Test("Test 3 (Strings)", "test/stringTest.txt", expected_3));
     runner.addTest(Test("Test 4 (Structs)", "test/structsTests.txt", expected_4));
+    runner.addTest(Test("Test 4 (Functions)", "test/functionsTest.txt", expected_5));
 
     runner.runAll();
 
