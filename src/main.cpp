@@ -95,7 +95,13 @@ int main(int argc, char* argv[]) {
         Interpreter interpreter;
         interpreter.registerNativeFunction("print", nativePrint);
         interpreter.registerNativeFunction("append", nativeAppend);
-        interpreter.registerNativeFunction("input", input);
+        interpreter.registerNativeFunction("input", nativeInput);
+        interpreter.registerNativeFunction("len", nativeLen);
+        interpreter.registerNativeFunction("abs", nativeMathAbs);
+        interpreter.registerNativeFunction("random", nativeRandom);
+        interpreter.registerNativeFunction("pow", nativeMathPow);
+        interpreter.registerNativeFunction("sqrt", nativeMathSqrt);
+        interpreter.registerNativeFunction("readFile", nativeFileRead);
 
         ast->accept(interpreter); // Execute the AST
         /* interpreter.printStack(); */

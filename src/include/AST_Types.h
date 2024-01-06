@@ -76,6 +76,14 @@ struct IntLiteralNode : public ExpressionNode {
     void accept(Visitor &v) override;
 };
 
+struct FloatLiteralNode: public ExpressionNode {
+    float value;
+
+    FloatLiteralNode(const float value) : value(value) {}
+
+    void accept(Visitor &v) override;
+};
+
 struct StringLiteralNode : public ExpressionNode {
     std::string value;
 

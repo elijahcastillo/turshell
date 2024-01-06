@@ -525,6 +525,13 @@ private:
             return new IntLiteralNode(value);
         }
 
+        if (check(TokenType::FloatLiteral)) {
+            std::string str_value = advance().value;
+            float value = std::stof(str_value);
+
+            return new FloatLiteralNode(value);
+        }
+
         if (check(TokenType::StringLiteral)) {
             std::string str_value = advance().value;
             return new StringLiteralNode(str_value);

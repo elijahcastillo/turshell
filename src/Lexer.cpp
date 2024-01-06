@@ -14,6 +14,7 @@ std::string tokenTypeToString(TokenType type) {
         case Modulo:              return "Modulo";
         case Operator:           return "Operator";
         case NumberLiteral:      return "NumberLiteral";
+        case FloatLiteral:      return "FloatLiteral";
         case StringLiteral:      return "StringLiteral";
         case CharacterLiteral:   return "CharacterLiteral";
         case BooleanLiteral:     return "BooleanLiteral";

@@ -19,6 +19,10 @@ void IntLiteralNode::accept(Visitor& v){
   v.visit(*this);
 }
 
+void FloatLiteralNode::accept(Visitor& v){
+  v.visit(*this);
+}
+
 void StringLiteralNode::accept(Visitor& v){
   v.visit(*this);
 }

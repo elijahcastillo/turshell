@@ -1,11 +1,19 @@
 
-struct Person {
-  int age;
-};
+string name = "Elijah";
+print("Length of name is ", len(name))
 
-Person p = {age: 18};
-p.age = 4;
+array<bool> b = [true, false, false, true];
+print("Length of array is ", len(b))
 
-int a = p.age + 3;
-print(a)
+int neg = -4 + 2;
+print("The absolute value of ", neg, " is ", abs(neg))
 
+int rand = random();
+print("A random number is ", rand)
+
+int powNum = 2;
+print(powNum, " to the power of ", 3, " is ", pow(powNum, 3))
+
+
+int sqrtNum = 16;
+print("The square root of ", sqrtNum, " is ", sqrt(sqrtNum))

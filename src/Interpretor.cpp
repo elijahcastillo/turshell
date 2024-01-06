@@ -207,7 +207,10 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
 
     void Interpreter::visit(IntLiteralNode& node) {
       evaluationStack.push(std::make_shared<IntValue>(node.value));
+    }
 
+    void Interpreter::visit(FloatLiteralNode& node) {
+      /* evaluationStack.push(std::make_shared<IntValue>(node.value)); */
     }
 
     void Interpreter::visit(StringLiteralNode& node) {

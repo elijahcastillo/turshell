@@ -20,6 +20,7 @@ enum TokenType {
     Modulo,                // %
     Operator,             // + - / *
     NumberLiteral,       // Numeric literals. Example: "123", "3.14"
+    FloatLiteral,       // Numeric literals. Example: "123", "3.14"
     StringLiteral,       // String literals. Example: "\"Hello, world!\""
     CharacterLiteral,    // Character literals. Example: "'a'", "'3'"
     BooleanLiteral,      // Boolean literals. Example: "true", "false"
@@ -166,7 +167,7 @@ bool isKeyword(const std::string& identifier) {
 
 
 bool isType(const std::string& identifier) {
-    static const std::set<std::string> types = {"int", "string", "bool", "array"};
+    static const std::set<std::string> types = {"int", "float", "string", "bool", "array"};
     return types.find(identifier) != types.end();  
 }
 
@@ -183,7 +184,9 @@ Token consumeNumber() {
         while (position < source.size() && isdigit(source[position])) {
             position++;
         }
-        /* return {FloatLiteral, number, lineNumber} */
+
+        std::string number = source.substr(start, position - start);
+        return {FloatLiteral, number, lineNumber};
     }
 
     std::string number = source.substr(start, position - start);
