@@ -226,7 +226,7 @@ void Interpreter::visit(ArrayLiteralNode& node) {
         std::shared_ptr<RuntimeVal> value = evaluateExpression(element);
 
         //We dont know the type if its a struct, need more context
-        if(auto structCast = dynamic_cast<StructValue*>(element)){
+        if(auto structCast = dynamic_cast<StructValue*>(value.get())){
           arrayValues.push_back(value);
           continue;
         }
@@ -251,10 +251,11 @@ void Interpreter::visit(ArrayLiteralNode& node) {
     evaluationStack.push(arrayVal);
 }
 
-    void Interpreter::visit(BinaryLiteralNode& node) {
-      evaluationStack.push(node.value ? std::make_shared<BoolValue>(true) : std::make_shared<BoolValue>(false));
 
-    }
+void Interpreter::visit(BinaryLiteralNode& node) {
+  evaluationStack.push(node.value ? std::make_shared<BoolValue>(true) : std::make_shared<BoolValue>(false));
+
+}
 
 
 std::string extractStructTypeFromArrayType(const std::string& arrayType) {
@@ -282,7 +283,9 @@ std::string extractStructTypeFromArrayType(const std::string& arrayType) {
             // Set the type of each struct in the array
             for (auto& element : arrayVal->elements) {
                 if (auto structVal = dynamic_cast<StructValue*>(element.get())) {
-                    validateAndSetStructType(element, structType);
+                    if(!validateAndSetStructType(element, structType)){
+                      runtimeError("All structs in array literal must be of same type");
+                    }
                 }
             }
 
@@ -365,6 +368,30 @@ std::string extractStructTypeFromArrayType(const std::string& arrayType) {
 
       std::shared_ptr<RuntimeVal> assignTo = currentScope()->getVariable(node.variableName);
       std::shared_ptr<RuntimeVal> value = evaluateExpression(node.value);
+
+
+    // Handle array literals with struct initializer lists
+    if (auto arrayVal = dynamic_cast<ArrayValue*>(value.get())) {
+        if (assignTo->getType().rfind("array<", 0) == 0) {
+            // Extract struct type from the variable type (e.g., "array<MyStruct>")
+            std::string structType = extractStructTypeFromArrayType(assignTo->getType());
+
+            // Set the type of each struct in the array
+            for (auto& element : arrayVal->elements) {
+                if (auto structVal = dynamic_cast<StructValue*>(element.get())) {
+                    if(!validateAndSetStructType(element, structType)){
+                      runtimeError("All structs in array literal must be of same type");
+                    }
+                }
+            }
+
+
+            // Update the element type of the array
+            arrayVal->type = "array<" + structType + ">";
+            arrayVal->elementType = structType;
+
+        }
+    }
 
       //Handle Structs assigmnet
     if (isStructType(assignTo->getType()) && !validateAndSetStructType(value, assignTo->getType())) {
