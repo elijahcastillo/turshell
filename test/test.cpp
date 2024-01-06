@@ -152,7 +152,13 @@ std::string expected_4 =
 "Tim \n"
 "46 \n"
 "true \n"
-"1888.989990 \n";
+"1888.989990 \n"
+"3 \n"
+"Jimmy \n"
+"Array[7233.339844, 823.809998] \n"
+"823.809998 \n"
+"Struct{isClose: false, name: George} \n"
+"George \n";
 
     // Add your tests here
     runner.addTest(Test("Test 1 (Types)", "test/typesTest.txt", expected_1));

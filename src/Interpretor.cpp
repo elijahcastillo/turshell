@@ -581,41 +581,31 @@ void Interpreter::visit(StructPropertyAssignmentNode& node) {
 
     // Check if the value to be assigned is a struct initializer list
     if (auto initializerListNode = dynamic_cast<StructInitalizerListNode*>(node.value)) {
-
-
-        // Get the type of the struct we are assigning to
-        std::string structType = structVal->getProperty(finalProperty)->getType();
-  
-        if(isStructType(structType) == false){
-          runtimeError("Cannot initilize property of type '" + structType +"' with initilizer list");
-        }
-
-
-        if (structType.empty()) {
-            runtimeError("Property '" + finalProperty + "' type not found in struct '" + currentVal->getType() + "'");
-            return;
-        }
-
-        // Handle struct initializer list assignment
-        std::shared_ptr<RuntimeVal> assignedValue = handleStructInitializerListAssignment(structType, finalProperty, initializerListNode, VariableSettings::Assignment, true);
-        structVal->setProperty(finalProperty, assignedValue);
-    } else {
-
-        // Evaluate the value to be assigned
+        // Evaluate the struct initializer list to get the struct value
         std::shared_ptr<RuntimeVal> assignedValue = evaluateExpression(node.value);
 
-        if(assignedValue->getType() != structVal->getProperty(finalProperty)->getType()){
-          
-            runtimeError("Cannot assign type of '" + assignedValue->getType() + "' to type of'" + structVal->getProperty(finalProperty)->getType() + "'");
+        // Get the expected type of the property
+        std::string expectedType = structVal->getProperty(finalProperty)->getType();
+
+        // Validate the struct and set its type
+        if (!validateAndSetStructType(assignedValue, expectedType)) {
+            runtimeError("Struct initializer list does not match the expected struct type for '" + finalProperty + "'");
+            return;
         }
 
         // Perform the assignment
-        try {
-            structVal->setProperty(finalProperty, assignedValue);
-        } catch (const std::runtime_error& e) {
-            runtimeError("Property '" + finalProperty + "' not found in struct '" + currentVal->getType() + "'");
+        structVal->setProperty(finalProperty, assignedValue);
+    } else {
+        // Evaluate the value to be assigned for non-struct assignments
+        std::shared_ptr<RuntimeVal> assignedValue = evaluateExpression(node.value);
+
+        if (assignedValue->getType() != structVal->getProperty(finalProperty)->getType()) {
+            runtimeError("Cannot assign type '" + assignedValue->getType() + "' to type '" + structVal->getProperty(finalProperty)->getType() + "' of property '" + finalProperty + "'");
             return;
         }
+
+        // Perform the assignment for non-struct types
+        structVal->setProperty(finalProperty, assignedValue);
     }
 }
 

@@ -78,8 +78,8 @@ int main(int argc, char* argv[]) {
         while (token.type != TokenType::EndOfFile) {
             token = tokenizer.nextToken();
             tokens.push_back(token);
-            token.print();
-            std::cout << "\n";
+            /* token.print(); */
+            /* std::cout << "\n"; */
         }
 
         // Parsing
@@ -87,9 +87,9 @@ int main(int argc, char* argv[]) {
         ASTNode* ast = parser.parse();
 
         // Print the AST (for debugging or verification)
-        PrintVisitor printer;
-        ast->accept(printer);
-        std::cout << "========= End of Parser =========\n\n";
+        /* PrintVisitor printer; */
+        /* ast->accept(printer); */
+        /* std::cout << "========= End of Parser =========\n\n"; */
 
         // Interpretation
         Interpreter interpreter;

@@ -73,15 +73,12 @@ private:
 
         // Parse return statements
         if (token.value == "return") {
-            std::cout << "Return\n";
             ASTNode* expression = nullptr;
             if (!check(TokenType::Semicolon)) {
                 expression = parseExpression();
             }
-            std::cout << "Return after p:" << peek().value <<"\n";
             consume(TokenType::Semicolon, "Expect ';' after return value");
 
-            std::cout << "Return after2 p:" << peek().value <<"\n";
             return new ReturnStatementNode(expression);
         }
       } 
@@ -151,7 +148,7 @@ private:
 
     ASTNode* parseVariableDeclaration(std::string& varType, std::string& varName, bool isArray = false){
 
-      std::cout << "Parsing varible declartion: " << varType << " " << varName << "\n";
+      /* std::cout << "Parsing varible declartion: " << varType << " " << varName << "\n"; */
         ASTNode* varInitializer = nullptr;
 
         if(match(TokenType::Equals)){
@@ -167,7 +164,6 @@ private:
           throw std::invalid_argument("Varaible " +varName+" must be initialized: line "+std::to_string(previous().lineNumber));
         }
 
-      std::cout << "Parsing AFTER varible declartion: " << peek().value << " " << peekNext().value << "\n";
         return new VariableDeclarationNode(varName, varType, varInitializer, isArray);
     }
 
@@ -281,7 +277,6 @@ private:
             statements.push_back(parseStatement());
         }
 
-        std::cout << "Hope afterererer\n";
         consume(TokenType::RBrace, "Expected '}' at the end of block");
 
         return new BlockNode(statements);
