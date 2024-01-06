@@ -167,7 +167,7 @@ bool isKeyword(const std::string& identifier) {
 
 
 bool isType(const std::string& identifier) {
-    static const std::set<std::string> types = {"int", "float", "string", "bool", "array"};
+    static const std::set<std::string> types = {"int", "float", "string", "bool", "array", "void"};
     return types.find(identifier) != types.end();  
 }
 

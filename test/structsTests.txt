@@ -1,0 +1,54 @@
+
+struct Friend {
+  bool isClose;
+  string name;
+};
+
+struct Person{
+  int age;
+  string name;
+  Friend friend;
+  array<float> money;
+};
+
+Person bob = {age: 22, name: "Bob", friend: {name: "Tim", isClose: true}, money: [521.34, 1087.81]};
+
+print(bob.age)
+print(bob.name)
+print(bob.money)
+print(bob.money[1])
+print(bob.friend)
+print(bob.friend.name)
+
+
+print("Modfying and accessing struct")
+bob.age = 6 * 2 + 3;
+bob.name = "Not Bob" + " Concated";
+bob.money = [456.31, 1087.12];
+bob.money[0] = 12.64;
+append(bob.money, 789.23)
+bob.friend.isClose = false;
+
+print(bob.age)
+print(bob.name)
+print(bob.money)
+print(bob.money[1])
+print(bob.friend)
+print(bob.friend.name)
+
+int addedAge = bob.age + 31;
+print(addedAge)
+
+bool isTim = bob.friend.name == "Tim";
+print(isTim)
+
+float totalMoney = 0.0;
+
+int i = 0;
+while(i < len(bob.money)){
+  totalMoney = totalMoney + bob.money[i];
+  i = i + 1;
+}
+
+print(totalMoney)
+

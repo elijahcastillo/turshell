@@ -189,7 +189,9 @@ void PrintVisitor::visit(ParameterNode& node){
 
 void PrintVisitor::visit(ReturnStatementNode& node){
   std::cout << "return ";
-  node.expression->accept(*this);
+  if(node.expression){
+    node.expression->accept(*this);
+  }
   std::cout <<";\n";
 };
 

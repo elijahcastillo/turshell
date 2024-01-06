@@ -325,6 +325,20 @@ std::shared_ptr<RuntimeVal> Interpreter::handleStructInitializerListAssignment(s
     void Interpreter::visit(VariableDeclarationNode& node) {
 
 
+      //Check if getting already runtime value struct
+      std::shared_ptr<RuntimeVal> check = evaluateExpression(node.initializer);
+      if(auto runtimeStruct = dynamic_cast<StructValue*>(check.get())){
+          if(!(node.variableType == check->getType())){
+          runtimeError("Type mismatch in variable declaration for " + node.variableName);
+          return;
+         }
+
+        currentScope()->setVariable(node.variableName, check, VariableSettings::Declaration);
+        return;
+      }
+
+
+      //Struct initilzer list
       if(!isPrimitiveType(node.variableType) && node.isArray == false){
 
       handleStructInitializerListAssignment(node.variableType, node.variableName, node.initializer, VariableSettings::Declaration);
@@ -777,7 +791,7 @@ void Interpreter::visit(StructPropertyAssignmentNode& node) {
         for (size_t i = 0; i < node.arguments.size(); ++i) {
             
             ParameterNode* declParam = dynamic_cast<ParameterNode*>(functionDecl->parameters[i]);
-            ParameterNode* callParam = dynamic_cast<ParameterNode*>(node.arguments[i]);
+            /* ParameterNode* callParam = dynamic_cast<ParameterNode*>(node.arguments[i]); */
 
             
 
@@ -817,15 +831,20 @@ void Interpreter::visit(StructPropertyAssignmentNode& node) {
 
 
         if(didReturn){
+          if(functionDecl->returnType == "void" && returnValue != nullptr){
+            runtimeError("Function of return type void cannot return a value");
+          }
 
           if(returnValue->getType() != functionDecl->returnType){
             runtimeError("Invalid return type of '" + returnValue->getType() + "' expected '" + functionDecl->returnType + "' in function '" + functionDecl->functionName + "'" );
             return;
           }
 
+          if(functionDecl->returnType != "void" && returnValue != nullptr){
+            // Push the return value onto the stack
+            evaluationStack.push(returnValue);
+          }
 
-          // Push the return value onto the stack
-          evaluationStack.push(returnValue);
         }
 
 
@@ -857,7 +876,7 @@ void Interpreter::visit(StructPropertyAssignmentNode& node) {
 
     void Interpreter::visit(ReturnStatementNode& node) {
            // Evaluate the expression to be returned
-      std::shared_ptr<RuntimeVal> returnValue;
+      std::shared_ptr<RuntimeVal> returnValue = nullptr;
         if (node.expression) {
             returnValue = evaluateExpression(node.expression);
         }

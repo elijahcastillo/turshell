@@ -136,10 +136,29 @@ std::string expected_3 =
     "Concatenation of foo and bar: foobar \n"
     "Title is Boss \n";
 
+std::string expected_4 = 
+"22 \n"
+"Bob \n"
+"Array[521.340027, 1087.810059] \n"
+"1087.810059 \n"
+"Struct{isClose: true, name: Tim} \n"
+"Tim \n"
+"Modfying and accessing struct \n"
+"15 \n"
+"Not Bob Concated \n"
+"Array[12.640000, 1087.119995, 789.229980] \n"
+"1087.119995 \n"
+"Struct{isClose: false, name: Tim} \n"
+"Tim \n"
+"46 \n"
+"true \n"
+"1888.989990 \n";
+
     // Add your tests here
     runner.addTest(Test("Test 1 (Types)", "test/typesTest.txt", expected_1));
     runner.addTest(Test("Test 2 (Controll Flow)", "test/controlFlowTest.txt", expected_2));
     runner.addTest(Test("Test 3 (Strings)", "test/stringTest.txt", expected_3));
+    runner.addTest(Test("Test 4 (Structs)", "test/structsTests.txt", expected_4));
 
     runner.runAll();
 
