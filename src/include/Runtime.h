@@ -75,6 +75,11 @@ struct StructValue : public RuntimeVal {
 
     StructValue(std::string structName) : RuntimeVal(structName), structName(structName) {}
 
+    void setStructType(const std::string& type) {
+        this->type = type; // Set the RuntimeVal type to the struct type
+        this->structName = type; // Optionally set structName if needed
+    }
+
     std::shared_ptr<RuntimeVal> getProperty(const std::string& name) override {
         auto it = properties.find(name);
         if (it != properties.end()) {

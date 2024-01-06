@@ -251,106 +251,20 @@ void Interpreter::visit(ArrayLiteralNode& node) {
     }
 
 
-std::shared_ptr<RuntimeVal> Interpreter::handleStructInitializerListAssignment(std::string assignToType, std::string assignToName, ASTNode* initilizerNode, VariableSettings setting, bool isNestedList = false){
 
-        // Check if assigment type is valid struct type
-        auto it = structTable.find(assignToType);
-        if (it == structTable.end()) {
-            runtimeError("Type '" + assignToType + "' was not defined");
-        }
-
-        //Valid struct name, get info about struct
-        StructDeclInfo& structDeclarationInfo = it->second;
-        /* std::cout << "Found struct type of " << structDeclarationInfo.structName << "\n"; */
-
-        //Get initilizer list from AST
-        StructInitalizerListNode* initializerList = dynamic_cast<StructInitalizerListNode*>(initilizerNode);
-        if(initializerList == nullptr){
-          runtimeError("Can only initalize type of struct '" + assignToName + "' with struct initializer list");
-        }
-
-
-
-        //Make sure # of values in initalizer list match number of properties in struct
-        if(structDeclarationInfo.numProperties != initializerList->properties.size()){
-          runtimeError("Size of struct initilizer list must match # of properties in type defintion");
-        }
-
-        //Runtime Value to be populated
-        auto structValue = std::make_shared<StructValue>(assignToType);
-
-      
-        for(int i = 0; i < structDeclarationInfo.numProperties; i++){
-            //Single parameter in initlizer list  Ex: x: 3 + 2,
-            VariableAssignmentNode* param = static_cast<VariableAssignmentNode*>(initializerList->properties[i]);
-
-            //Check if propery exists on struct
-            auto it = structDeclarationInfo.properties.find(param->variableName);
-            if(it == structDeclarationInfo.properties.end()){
-              runtimeError("Property '" + param->variableName +"' does not exist on '" + structDeclarationInfo.structName +"'");
-            }
-
-        //Handle struct initalizer lists inside of struct initilizer lists
-        StructInitalizerListNode* nested = dynamic_cast<StructInitalizerListNode*>(param->value);
-        if (nested != nullptr) {
-            auto nestedStructType = structDeclarationInfo.properties[param->variableName];
-            auto nestedStructValue = handleStructInitializerListAssignment(nestedStructType, param->variableName, nested, VariableSettings::Assignment, true);
-            structValue->setProperty(param->variableName, nestedStructValue);
-            continue;
-        }
-            //Evaluate expression in initializer list to get value of param
-            std::shared_ptr<RuntimeVal> paramValue = evaluateExpression(param->value);
-
-            //Type Checking on single parameter
-            if(paramValue->getType() != structDeclarationInfo.properties[param->variableName]){
-              runtimeError("Initializer list type must match struct property type");
-            }
-
-            //Add property to struct
-            structValue->setProperty(param->variableName, paramValue);
-
-        }
-
-
-
-        if(isNestedList == false){
-          //Add variable to scope
-          currentScope()->setVariable(assignToName, structValue, setting);
-        }
-
-        return structValue;
-
-    }
 
     void Interpreter::visit(VariableDeclarationNode& node) {
 
 
-      //Check if getting already runtime value struct
-      std::shared_ptr<RuntimeVal> check = evaluateExpression(node.initializer);
-      if(auto runtimeStruct = dynamic_cast<StructValue*>(check.get())){
-          if(!(node.variableType == check->getType())){
-          runtimeError("Type mismatch in variable declaration for " + node.variableName);
-          return;
-         }
-
-        currentScope()->setVariable(node.variableName, check, VariableSettings::Declaration);
-        return;
-      }
-
-
-      //Struct initilzer list
-      if(!isPrimitiveType(node.variableType) && node.isArray == false){
-
-      handleStructInitializerListAssignment(node.variableType, node.variableName, node.initializer, VariableSettings::Declaration);
-      return;
-
-      }
-       
-
-
-
-
       std::shared_ptr<RuntimeVal> value = evaluateExpression(node.initializer);
+
+
+
+    if (isStructType(node.variableType) && !validateAndSetStructType(value, node.variableType)) {
+        runtimeError("Struct type mismatch in variable declaration for " + node.variableName);
+        return;
+    }
+       
 
       if(!(node.variableType == value->getType())){
           runtimeError("Type mismatch in variable declaration for " + node.variableName);
@@ -361,7 +275,10 @@ std::shared_ptr<RuntimeVal> Interpreter::handleStructInitializerListAssignment(s
         currentScope()->setVariable(node.variableName, value, VariableSettings::Declaration);
     }
 
-    // VariableAssignmentNode
+
+
+
+    // ==========VariableAssignmentNode===========
     void Interpreter::visit(VariableAssignmentNode& node) {
 
       if (node.index != nullptr) {
@@ -410,17 +327,15 @@ std::shared_ptr<RuntimeVal> Interpreter::handleStructInitializerListAssignment(s
 
 
       std::shared_ptr<RuntimeVal> assignTo = currentScope()->getVariable(node.variableName);
-
+      std::shared_ptr<RuntimeVal> value = evaluateExpression(node.value);
 
       //Handle Structs assigmnet
-      if(!isPrimitiveType(assignTo->getType()) && dynamic_cast<StructValue*>(assignTo.get()) != nullptr){
-        handleStructInitializerListAssignment(assignTo->getType(), node.variableName, node.value, VariableSettings::Assignment);
+    if (isStructType(assignTo->getType()) && !validateAndSetStructType(value, assignTo->getType())) {
+        runtimeError("Struct type mismatch in assignment to " + node.variableName);
         return;
+    }
 
-      }
 
-
-      std::shared_ptr<RuntimeVal> value = evaluateExpression(node.value);
 
       if(value->getType() != assignTo->getType()){
         runtimeError("Cannot assign value of type '" + value->getType() + "' to variable '" + node.variableName + "' of type '" + assignTo->getType() + "'");
@@ -510,9 +425,71 @@ std::shared_ptr<RuntimeVal> Interpreter::handleStructInitializerListAssignment(s
         structTable[node.structName] = info;
     }
 
-    void Interpreter::visit(StructInitalizerListNode& node) {
-      //Do something Here not sure yet, its a user defined type
+void Interpreter::visit(StructInitalizerListNode& node) {
+    std::string structType = ""; // This should be determined from the context or passed to the node.
+
+    // Create a StructValue for this initializer list
+    auto structValue = std::make_shared<StructValue>(structType);
+
+    for (auto& property : node.properties) {
+        VariableAssignmentNode* varAssign = dynamic_cast<VariableAssignmentNode*>(property);
+        if (!varAssign) {
+            runtimeError("Invalid property in struct initializer list");
+            return;
+        }
+
+        std::shared_ptr<RuntimeVal> propertyValue = evaluateExpression(varAssign->value);
+
+        // Handle nested struct initializer lists
+        if (auto nestedList = dynamic_cast<StructInitalizerListNode*>(varAssign->value)) {
+            std::string nestedStructType = ""; // Determine the nested struct type
+            propertyValue = evaluateExpression(varAssign->value); //Nested intilizer list
+
+        }
+
+        structValue->setProperty(varAssign->variableName, propertyValue);
     }
+
+    evaluationStack.push(structValue);
+}
+
+
+bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal, const std::string& expectedType) {
+    if (auto structValue = std::dynamic_pointer_cast<StructValue>(structVal)) {
+        auto structInfo = structTable[expectedType];
+
+        if (structValue->properties.size() != structInfo.numProperties) {
+            runtimeError("Struct initializer size does not match definition");
+            return false;
+        }
+
+        for (const auto& prop : structValue->properties) {
+            if (structInfo.properties.find(prop.first) == structInfo.properties.end()) {
+                runtimeError("Unknown property in struct: " + prop.first);
+                return false;
+            }
+
+            const std::string& expectedPropType = structInfo.properties[prop.first];
+            
+            // If property is a struct, recursively validate and set its type
+            if (auto nestedStructVal = std::dynamic_pointer_cast<StructValue>(prop.second)) {
+                if (!validateAndSetStructType(nestedStructVal, expectedPropType)) {
+                    return false;
+                }
+            } else if (prop.second->getType() != expectedPropType) {
+                runtimeError("Type mismatch for property '" + prop.first + "' in struct");
+                return false;
+            }
+        }
+
+        structValue->setStructType(expectedType); // Set the correct type
+        return true;
+    }
+
+    runtimeError("Expected a struct type");
+    return false;
+}
+
 
 
 

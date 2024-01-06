@@ -52,3 +52,12 @@ while(i < len(bob.money)){
 
 print(totalMoney)
 
+
+
+bob = {age: 3, name: "Jimmy", friend: {name: "George", isClose: false}, money: [7233.34, 823.81]};
+print(bob.age)
+print(bob.name)
+print(bob.money)
+print(bob.money[1])
+print(bob.friend)
+print(bob.friend.name)

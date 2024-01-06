@@ -16,11 +16,9 @@ struct StructDeclInfo{
   std::unordered_map<std::string, std::string> properties;
 
   StructDeclInfo(std::string structName, size_t numProperties): structName(structName), numProperties(numProperties) {
-    /* std::cout << "STRUCTTTTT" << std::endl; */
   };
 
   StructDeclInfo(){
-    /* std::cout << "BADVERYBAD\n"; */
   }
 
   void addProperty(std::string propName, std::string propType){
@@ -51,7 +49,11 @@ public:
     std::shared_ptr<RuntimeVal> callNativeFunction(const std::string& name, std::vector<std::shared_ptr<RuntimeVal>>& args); 
 
   bool isStructType(const std::string& name); 
-std::shared_ptr<RuntimeVal> handleStructInitializerListAssignment(std::string assignToType, std::string assignToName, ASTNode* initilizerNode, VariableSettings setting, bool isNestedList);
+
+
+
+
+bool validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal, const std::string& expectedType);
 
     void visit(ProgramNode& node) override;
 
