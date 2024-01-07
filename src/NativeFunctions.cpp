@@ -1,8 +1,12 @@
 #include "include/NativeFunctions.h"
+#include "include/Runtime.h"
 #include <random>
 #include <cmath>
 #include <fstream>
 #include <sstream>
+#include <chrono>
+#include <thread>
+#include <regex>
 
 // Example of a native function
 std::shared_ptr<RuntimeVal> nativePrint(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
@@ -12,8 +16,122 @@ std::shared_ptr<RuntimeVal> nativePrint(Interpreter& interpreter, std::vector<st
     }
 
     std::cout << std::endl;
-    return std::make_shared<StringValue>("E"); // Return a dummy value or void
+    return std::make_shared<BoolValue>(true);
 }
+
+
+std::shared_ptr<RuntimeVal> nativeStringSplit(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    if (args.size() != 2 || args[0]->getType() != "string" || args[1]->getType() != "string") {
+        throw std::runtime_error("nativeStringSplit expects two string arguments");
+    }
+
+    std::string str = static_cast<StringValue*>(args[0].get())->getValue();
+    std::string delimiter = static_cast<StringValue*>(args[1].get())->getValue();
+
+    std::vector<std::shared_ptr<RuntimeVal>> splitArray;
+    size_t start = 0;
+    size_t end = 0;
+
+    while ((end = str.find(delimiter, start)) != std::string::npos) {
+        splitArray.push_back(std::make_shared<StringValue>(str.substr(start, end - start)));
+        start = end + delimiter.length();
+    }
+
+    // Add the last part
+    splitArray.push_back(std::make_shared<StringValue>(str.substr(start)));
+
+    return std::make_shared<ArrayValue>("string", splitArray);  // Assuming ArrayValue is an appropriate type
+}
+
+
+std::shared_ptr<RuntimeVal> nativeAssert(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    if (args.size() < 1 || args.size() > 2) {
+        throw std::runtime_error("nativeAssert expects 1 or 2 arguments");
+    }
+
+    bool condition = static_cast<BoolValue*>(args[0].get())->getValue();
+    std::string message = "Assertion failed";
+
+    if (args.size() == 2 && args[1]->getType() == "string") {
+        message = static_cast<StringValue*>(args[1].get())->getValue();
+    }
+
+    if (!condition) {
+        throw std::runtime_error(message);
+    }
+
+    return std::make_shared<BoolValue>(true);
+}
+
+
+// Type Conversion: Convert to string
+std::shared_ptr<RuntimeVal> nativeToString(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    if (args.size() != 1) {
+        throw std::runtime_error("nativeToString expects one argument");
+    }
+    return std::make_shared<StringValue>(args[0]->toString());
+}
+
+// Regular Expressions: Match a string against a regex
+std::shared_ptr<RuntimeVal> nativeRegexMatch(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    if (args.size() != 2 || args[0]->getType() != "string" || args[1]->getType() != "string") {
+        throw std::runtime_error("nativeRegexMatch expects two string arguments");
+    }
+    std::string str = static_cast<StringValue*>(args[0].get())->getValue();
+    std::string regexPattern = static_cast<StringValue*>(args[1].get())->getValue();
+    std::regex pattern(regexPattern);
+    bool match = std::regex_match(str, pattern);
+    return std::make_shared<BoolValue>(match);
+}
+
+
+
+
+// Timing: Get current time in milliseconds since the epoch
+std::shared_ptr<RuntimeVal> nativeTimeNow(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    auto now = std::chrono::system_clock::now();
+    auto duration = now.time_since_epoch();
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+    return std::make_shared<FloatValue>(static_cast<int>(millis));
+}
+
+// Timing: Sleep for a specified number of milliseconds
+std::shared_ptr<RuntimeVal> nativeSleep(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    if (args.size() != 1 || args[0]->getType() != "int") {
+        throw std::runtime_error("nativeSleep expects one integer argument");
+    }
+    int millis = static_cast<IntValue*>(args[0].get())->getValue();
+    std::this_thread::sleep_for(std::chrono::milliseconds(millis));
+    return std::make_shared<BoolValue>(true); // Return a dummy value or void
+}
+
+// Math: Generate a random number within a specified range
+std::shared_ptr<RuntimeVal> nativeMathRandRange(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    if (args.size() != 2 || args[0]->getType() != "int" || args[1]->getType() != "int") {
+        throw std::runtime_error("nativeMathRandRange expects two integer arguments");
+    }
+    int min = static_cast<IntValue*>(args[0].get())->getValue();
+    int max = static_cast<IntValue*>(args[1].get())->getValue();
+
+    static std::mt19937 generator(std::random_device{}());
+    std::uniform_int_distribution<int> distribution(min, max);
+
+    return std::make_shared<IntValue>(distribution(generator));
+}
+
+
+// String Manipulation: Convert to uppercase
+std::shared_ptr<RuntimeVal> nativeStringUpper(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    if (args.size() != 1 || args[0]->getType() != "string") {
+        throw std::runtime_error("nativeStringUpper expects one string argument");
+    }
+    std::string str = static_cast<StringValue*>(args[0].get())->getValue();
+    std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+    return std::make_shared<StringValue>(str);
+}
+
+
+
 
 
 std::shared_ptr<RuntimeVal> nativeInput(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {

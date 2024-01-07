@@ -93,15 +93,44 @@ int main(int argc, char* argv[]) {
 
         // Interpretation
         Interpreter interpreter;
+
+        //Variable number of arguments of any type, printed seperated by space with a newline at end
         interpreter.registerNativeFunction("print", nativePrint);
+
+        //Takes in 2 arguments, first is the array type, second is the value to append
         interpreter.registerNativeFunction("append", nativeAppend);
+
+        //Takes 1 argument of type string, returns the value gotten from IO as string or int if possible
         interpreter.registerNativeFunction("input", nativeInput);
+
+        //Take 1 argument array, returns the # of items in the array as an int
         interpreter.registerNativeFunction("len", nativeLen);
+
         interpreter.registerNativeFunction("abs", nativeMathAbs);
         interpreter.registerNativeFunction("random", nativeRandom);
         interpreter.registerNativeFunction("pow", nativeMathPow);
         interpreter.registerNativeFunction("sqrt", nativeMathSqrt);
-        interpreter.registerNativeFunction("readFile", nativeFileRead);
+
+        //No arguments, returns a float for the miliseconds since epoch
+        interpreter.registerNativeFunction("timeNow", nativeTimeNow);
+
+        //1 argument of type int, number of milisecodns to stop execution
+        interpreter.registerNativeFunction("sleep", nativeSleep);
+
+        //Random int between the range
+        interpreter.registerNativeFunction("randRange", nativeMathRandRange);
+
+        //Takes 1 argument of any time and creates the string represenation of it; 
+        interpreter.registerNativeFunction("toString", nativeToString);
+
+        //Takes 2 arguments, 1st is a string and 2nd is the regex to match the string, returns bool
+        interpreter.registerNativeFunction("regexMatch", nativeRegexMatch);
+
+        //Takes 1 or 2 argumetns, first is bool, seconds is error message is false
+        interpreter.registerNativeFunction("assert", nativeAssert);
+
+        //Takes 2 arguments of type stiing, 1st is the string to seach, second is the dilimeter, returns array of string
+        interpreter.registerNativeFunction("split", nativeStringSplit);
 
         ast->accept(interpreter); // Execute the AST
         /* interpreter.printStack(); */

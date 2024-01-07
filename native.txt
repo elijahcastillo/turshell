@@ -1,0 +1,13 @@
+float tOne = timeNow();
+
+assert(1 == 1, "Nope is wrong")
+
+string name = "Elijah Stephen Castillo";
+array<string> n = split(name, " ");
+print(n)
+
+float tTwo = timeNow();
+
+float diff = tTwo - tOne;
+float seconds = diff / 1000.0;
+print("Took", seconds, "s")

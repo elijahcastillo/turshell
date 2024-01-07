@@ -1,11 +1,6 @@
 
-
-int b = 0;
-
-while(b <= 10){
-
-  if(b % 2 == 0){
-    print(b)
-  }
-  b = b + 1;
+int i = 0;
+while(i < 1000000){
+  i = i + 1;
 }
+print("done")
