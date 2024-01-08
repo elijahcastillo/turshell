@@ -122,7 +122,8 @@ struct ArrayValue : public RuntimeVal {
     std::string elementType;
 
     ArrayValue(std::string elementType, std::vector<std::shared_ptr<RuntimeVal>>& elements)
-        : RuntimeVal("array<" + elementType + ">"), elementType(elementType), elements(elements) {}
+        : RuntimeVal("array<" + elementType + ">"), elementType(elementType), elements(elements) {
+        }
 
     void addElement(std::shared_ptr<RuntimeVal> element) {
         // Optional: Check if the element's type matches elementType

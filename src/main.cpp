@@ -78,8 +78,8 @@ int main(int argc, char* argv[]) {
         while (token.type != TokenType::EndOfFile) {
             token = tokenizer.nextToken();
             tokens.push_back(token);
-            /* token.print(); */
-            /* std::cout << "\n"; */
+            token.print();
+            std::cout << "\n";
         }
 
         // Parsing
@@ -87,9 +87,9 @@ int main(int argc, char* argv[]) {
         ASTNode* ast = parser.parse();
 
         // Print the AST (for debugging or verification)
-        /* PrintVisitor printer; */
-        /* ast->accept(printer); */
-        /* std::cout << "========= End of Parser =========\n\n"; */
+        PrintVisitor printer;
+        ast->accept(printer);
+        std::cout << "========= End of Parser =========\n\n";
 
         // Interpretation
         Interpreter interpreter;
@@ -131,6 +131,9 @@ int main(int argc, char* argv[]) {
 
         //Takes 2 arguments of type stiing, 1st is the string to seach, second is the dilimeter, returns array of string
         interpreter.registerNativeFunction("split", nativeStringSplit);
+        
+        //Takes in 1 argument of any type and reutrns an int of the hast of its toString
+        interpreter.registerNativeFunction("hash", nativeHash);
 
         ast->accept(interpreter); // Execute the AST
         /* interpreter.printStack(); */

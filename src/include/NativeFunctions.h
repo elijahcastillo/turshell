@@ -10,6 +10,9 @@
 std::shared_ptr<RuntimeVal> nativePrint(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args);
 
 
+
+std::shared_ptr<RuntimeVal> nativeHash(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args); 
+
 std::shared_ptr<RuntimeVal> nativeAssert(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args); 
 
 

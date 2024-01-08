@@ -1,0 +1,33 @@
+struct KeyValue {
+  int value;
+  string key;
+  bool isOccupied;
+};
+int hash_capacity = 10;
+int hash_size = 0;
+array<KeyValue> hash_data = [];
+
+func makeKV(string k, int v) KeyValue {
+  KeyValue val = {value: v, key: k, isOccupied: true};
+  return val;
+}
+
+func hash_add(string key, int value) void {
+  int index = hash(key) % hash_capacity;
+  hash_data[index] = makeKV(key, value);
+  hash_size = hash_size + 1;
+}
+
+func hash_get(string key) int{
+  int index = hash(key) % hash_capacity;
+  KeyValue kv = hash_data[index];
+  return kv.value;
+}
+
+
+hash_add("Elijah", 19)
+hash_add("Matthew", 20)
+
+print(hash_data)
+
+

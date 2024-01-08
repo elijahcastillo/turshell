@@ -10,18 +10,18 @@ func makePoint(int x, int y) Point {
 } 
 
 
-func sumPoint(Point n) int {
-  return n.x + n.y;
-}
+//func sumPoint(Point n) int {
+//  return n.x + n.y;
+//}
 
 func sumPoints(array<Point> arr) Point {
   Point sum = {x: 0, y:0};
 
   int i = 0;
   while(i < len(arr)){
-    Point p = arr[i];
-    sum.x = sum.x + p.x;
-    sum.y = sum.y + p.y;
+    sum.x = sum.x + arr[i].x;
+    sum.y = sum.y + arr[i].y;
+
     i = i + 1;
   }
 
@@ -34,8 +34,7 @@ array<Point> po = [{x: 1, y:2}, {x: 6, y:4}, {x: 3, y: 3}];
 Point sum = sumPoints(po);
 print(sum)
 
-//Point t = po[2];
-//po = [{x: 7, y:3}, {x:14, y:76}];
+
 
 
 

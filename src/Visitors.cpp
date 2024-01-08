@@ -61,11 +61,35 @@ void PrintVisitor::visit(ArrayLiteralNode& node) {
 }
 
 
+
+
+
 void PrintVisitor::visit(ArrayAccessNode& node) {
-  std::cout << node.identifier << "[";
-  node.value->accept(*this);
+  std::cout << "[";
+  node.index->accept(*this);
   std::cout << "]";
 }
+
+void PrintVisitor::visit(PropertyAccessNode& node) {
+  std::cout << "." << node.propertyName;
+}
+
+void PrintVisitor::visit(ChainedAccessNode& node) {
+  std::cout << "ChainedAccess: ";
+  for(auto val: node.accesses){
+        val->accept(*this);
+  }
+}
+
+void PrintVisitor::visit(ChainedAssignmentNode& node) {
+  std::cout << "ChainedAssignment: ";
+  node.accesses->accept(*this);
+  std::cout << " = ";
+  node.value->accept(*this);
+}
+
+
+//=======
 
 
 void PrintVisitor::visit(StructDeclarationNode& node){

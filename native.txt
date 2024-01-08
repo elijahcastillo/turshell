@@ -6,6 +6,9 @@ string name = "Elijah Stephen Castillo";
 array<string> n = split(name, " ");
 print(n)
 
+int h = hash(name) % 10;
+print(h)
+
 float tTwo = timeNow();
 
 float diff = tTwo - tOne;

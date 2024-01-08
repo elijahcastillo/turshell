@@ -82,14 +82,15 @@ std::shared_ptr<RuntimeVal> Interpreter::callNativeFunction(const std::string& n
 
 
 void Interpreter::visit(BinaryExpressionNode& node) {
-        node.left->accept(*this);
-        node.right->accept(*this);
+        /* node.left->accept(*this); */
+        /* node.right->accept(*this); */
 
-        std::shared_ptr<RuntimeVal> right = evaluationStack.top(); evaluationStack.pop();
-        std::shared_ptr<RuntimeVal> left = evaluationStack.top(); evaluationStack.pop();
+        std::shared_ptr<RuntimeVal> right = evaluateExpression(node.right);
+        std::shared_ptr<RuntimeVal> left = evaluateExpression(node.left);
 
     try {
         if (node.op == "+") {
+        /* std::cout << "1: " << left->toString() << "  2: " << right->toString() << "\n"; */
             evaluationStack.push(RuntimeOps::add(left, right));
         } else if (node.op == "-") {
             evaluationStack.push(RuntimeOps::subtract(left, right));
@@ -186,40 +187,206 @@ void Interpreter::visit(BinaryExpressionNode& node) {
     }
 
 
-void Interpreter::visit(ArrayAccessNode& node) {
-    std::shared_ptr<RuntimeVal> accessIndex = evaluateExpression(node.value);
-    if (accessIndex->getType() != "int") {
-        runtimeError("Array access index must be an int");
+void Interpreter::visit(ChainedAssignmentNode& node) {
+  std::shared_ptr<RuntimeVal> valueToAssign = evaluateExpression(node.value);
+
+    auto chainedAccess = dynamic_cast<ChainedAccessNode*>(node.accesses);
+    if(chainedAccess == nullptr){
+      runtimeError("Chain Assignment .value must be good");
     }
-    auto accessIndexValue = static_cast<IntValue*>(accessIndex.get())->value;
 
-    std::shared_ptr<RuntimeVal> runtimeValue = currentScope()->getVariable(node.identifier);
+    //===============================================================
+      std::shared_ptr<RuntimeVal> first = evaluateExpression(chainedAccess->accesses[0]);
 
-    // Check if the variable is an ArrayValue
-    ArrayValue* array = dynamic_cast<ArrayValue*>(runtimeValue.get());
-    if (array != nullptr) {
-        if (accessIndexValue < 0 || accessIndexValue >= array->elements.size()) {
-            runtimeError("Array access out of range");
+      StructValue* firstStructValue = dynamic_cast<StructValue*>(first.get());
+      ArrayValue* firstArrayValue = dynamic_cast<ArrayValue*>(first.get());
+
+      if (!firstStructValue && !firstArrayValue) {
+          runtimeError("First node variable in the access chain is not a valid type of array or struct");
+      }
+
+
+      //Push to stack to be used by the other nodes in chain
+      evaluationStack.push(first);
+
+      if(chainedAccess->accesses.size() <= 1){
+        runtimeError("Really bad chain thing");
+      }
+
+
+
+      for (size_t i = 1; i < chainedAccess->accesses.size(); ++i) {
+          chainedAccess->accesses[i]->accept(*this); // This will push the result of each access onto the stack
+      }
+
+
+    //===============================================================
+    // The target should now be at the top of the evaluation stack
+    ASTNode* target = chainedAccess->accesses[chainedAccess->accesses.size() - 1];
+
+    // The previous value in the stack should be the object or array that contains the target
+    evaluationStack.pop();
+    std::shared_ptr<RuntimeVal> container = evaluationStack.top();
+    evaluationStack.pop();
+
+
+
+    /* if(target->getType() != valueToAssign->getType()){ */
+    /*   runtimeError("Chained Assigment type mismatch"); */
+    /* } */
+
+  
+
+    // Now you need to determine what the target is and assign the value appropriately
+    if (auto structVal = dynamic_cast<StructValue*>(container.get())) {
+      std::string propName = static_cast<PropertyAccessNode*>(target)->propertyName;
+      structVal->setProperty(propName, valueToAssign);
+
+    
+    } 
+    else if (auto arrayVal = dynamic_cast<ArrayValue*>(container.get())) {
+        auto access = static_cast<ArrayAccessNode*>(target);
+        std::shared_ptr<RuntimeVal> indexVal = evaluateExpression(access->index);
+
+        if (indexVal->getType() != "int") {
+            runtimeError("Array index must be an integer");
+            return;
         }
-        evaluationStack.push(array->elements[accessIndexValue]);
+
+        int index = std::static_pointer_cast<IntValue>(indexVal)->getValue();
+
+        // For an array element
+        arrayVal->setElement(index, valueToAssign);
+    } 
+    else {
+        runtimeError("Invalid target for assignment");
+    }
+}
+
+
+void Interpreter::visit(ChainedAccessNode& node) {
+    // Iterate over the accesses and resolve each step
+    std::shared_ptr<RuntimeVal> currentVal = nullptr;
+
+
+
+    std::shared_ptr<RuntimeVal> first = evaluateExpression(node.accesses[0]);
+
+    StructValue* firstStructValue = dynamic_cast<StructValue*>(first.get());
+    ArrayValue* firstArrayValue = dynamic_cast<ArrayValue*>(first.get());
+
+    /* std::cout << "First value in chain: " << first->getType() << std::endl; */
+
+    if (!firstStructValue && !firstArrayValue && first->type != "string") {
+        runtimeError("First node variable in the access chain is not a valid type of array or struct or string");
+    }
+
+
+
+
+    //Push to stack to be used by the other nodes in chain
+    evaluationStack.push(first);
+
+    if(node.accesses.size() <= 1){
+      runtimeError("Really bad chain thing");
+    }
+
+
+
+    for (size_t i = 1; i < node.accesses.size(); ++i) {
+        node.accesses[i]->accept(*this); // This will push the result of each access onto the stack
+    }
+    currentVal = evaluationStack.top();
+    evaluationStack.push(currentVal); // Push the final result onto the stack
+}
+
+
+void Interpreter::visit(PropertyAccessNode& node) {
+    // Assuming the object (struct) is already on the stack as a result of previous operations
+    std::shared_ptr<RuntimeVal> structVal = evaluationStack.top();
+    /* evaluationStack.pop(); */
+
+    // Check if the structVal is indeed a struct and perform the property access
+    if (auto structObj = dynamic_cast<StructValue*>(structVal.get())) {
+        evaluationStack.push(structObj->getProperty(node.propertyName));
+    } else {
+        runtimeError("Trying to access a property of a non-struct type");
+    }
+}
+
+
+void Interpreter::visit(ArrayAccessNode& node) {
+    // Evaluate the index expression and ensure it's an integer
+    std::shared_ptr<RuntimeVal> indexVal = evaluateExpression(node.index);
+
+    if (indexVal->getType() != "int") {
+        runtimeError("Array index must be an integer");
         return;
     }
+    int index = std::static_pointer_cast<IntValue>(indexVal)->getValue();
 
-    // Check if the variable is a StringValue
-    StringValue* stringVal = dynamic_cast<StringValue*>(runtimeValue.get());
-    if (stringVal != nullptr) {
-        const std::string& str = stringVal->getValue();
-        if (accessIndexValue < 0 || accessIndexValue >= str.size()) {
-            runtimeError("String index out of range");
+    // Assuming the array is already on the stack as a result of previous operations
+    std::shared_ptr<RuntimeVal> arrayVal = evaluationStack.top();
+    /* evaluationStack.pop(); */
+
+    // Check if the arrayVal is indeed an array and perform the access
+    if (ArrayValue* array = dynamic_cast<ArrayValue*>(arrayVal.get())) {
+        if (index < 0 || index >= array->elements.size()) {
+            runtimeError("Array index out of bounds");
+            return;
         }
-        char charAtIdx = str[accessIndexValue];
+        evaluationStack.push(array->getElement(index));
+    } else if (StringValue* string = dynamic_cast<StringValue*>(arrayVal.get())){
+        if (index < 0 || index >= string->value.size()) {
+            runtimeError("String index out of range in array access node");
+        }
+        char charAtIdx = string->value[index];
         evaluationStack.push(std::make_shared<StringValue>(std::string(1, charAtIdx)));
         return;
-    }
 
-    // If it's neither an array nor a string, throw an error
-    runtimeError("Can only use array access on arrays and strings");
+    } else {
+        runtimeError("Trying to index a non-array type");
+    }
 }
+
+
+//============================
+
+
+/* void Interpreter::visit(ArrayAccessNode& node) { */
+/*     std::shared_ptr<RuntimeVal> accessIndex = evaluateExpression(node.value); */
+/*     if (accessIndex->getType() != "int") { */
+/*         runtimeError("Array access index must be an int"); */
+/*     } */
+/*     auto accessIndexValue = static_cast<IntValue*>(accessIndex.get())->value; */
+/*  */
+/*     std::shared_ptr<RuntimeVal> runtimeValue = currentScope()->getVariable(node.identifier); */
+/*  */
+/*     // Check if the variable is an ArrayValue */
+/*     ArrayValue* array = dynamic_cast<ArrayValue*>(runtimeValue.get()); */
+/*     if (array != nullptr) { */
+/*         if (accessIndexValue < 0 || accessIndexValue >= array->elements.size()) { */
+/*             runtimeError("Array access out of range"); */
+/*         } */
+/*         evaluationStack.push(array->elements[accessIndexValue]); */
+/*         return; */
+/*     } */
+/*  */
+/*     // Check if the variable is a StringValue */
+/*     StringValue* stringVal = dynamic_cast<StringValue*>(runtimeValue.get()); */
+/*     if (stringVal != nullptr) { */
+/*         const std::string& str = stringVal->getValue(); */
+/*         if (accessIndexValue < 0 || accessIndexValue >= str.size()) { */
+/*             runtimeError("String index out of range"); */
+/*         } */
+/*         char charAtIdx = str[accessIndexValue]; */
+/*         evaluationStack.push(std::make_shared<StringValue>(std::string(1, charAtIdx))); */
+/*         return; */
+/*     } */
+/*  */
+/*     // If it's neither an array nor a string, throw an error */
+/*     runtimeError("Can only use array access on arrays and strings"); */
+/* } */
 
 
 
@@ -241,6 +408,7 @@ void Interpreter::visit(ArrayLiteralNode& node) {
 
         //We dont know the type if its a struct, need more context
         if(auto structCast = dynamic_cast<StructValue*>(value.get())){
+          /* std::cout << "Pushing struct into array arr lit\n"; */
           arrayValues.push_back(value);
           continue;
         }
@@ -283,13 +451,27 @@ std::string extractStructTypeFromArrayType(const std::string& arrayType) {
     return arrayType.substr(start + 1, end - start - 1);
 }
 
-    void Interpreter::visit(VariableDeclarationNode& node) {
+
+//Variable Delcartion +_+_+_+_+_+_+_+
+void Interpreter::visit(VariableDeclarationNode& node) {
 
 
-      std::shared_ptr<RuntimeVal> value = evaluateExpression(node.initializer);
+
+
+
+    std::shared_ptr<RuntimeVal> value = evaluateExpression(node.initializer);
+
+    /* auto bin = dynamic_cast<BinaryExpressionNode*>(node.initializer); */
+    /* if(bin != nullptr){ */
+    /* std::cout << evaluateExpression(bin->left)->toString() << "  llll\n"; */
+    /* std::cout << evaluateExpression(bin->right)->toString() << "   ppppp\n"; */
+    /* } */
+
 
     // Handle array literals with struct initializer lists
     if (auto arrayVal = dynamic_cast<ArrayValue*>(value.get())) {
+
+
         if (node.variableType.rfind("array<", 0) == 0) {
             // Extract struct type from the variable type (e.g., "array<MyStruct>")
             std::string structType = extractStructTypeFromArrayType(node.variableType);
@@ -310,6 +492,9 @@ std::string extractStructTypeFromArrayType(const std::string& arrayType) {
 
         }
     }
+
+
+
 
 
 
@@ -543,12 +728,17 @@ void Interpreter::visit(StructInitalizerListNode& node) {
 
 bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal, const std::string& expectedType) {
     if (auto structValue = std::dynamic_pointer_cast<StructValue>(structVal)) {
+
+        /* std::cout << "Inside validate struct\n"; */
         auto structInfo = structTable[expectedType];
+        /* std::cout << "Got Struct Info: " << structInfo.structName << "\n"; */
 
         if (structValue->properties.size() != structInfo.numProperties) {
             runtimeError("Struct initializer size does not match definition");
             return false;
         }
+
+        /* std::cout << "Passed struct validate #prop\n"; */
 
         for (const auto& prop : structValue->properties) {
             if (structInfo.properties.find(prop.first) == structInfo.properties.end()) {
@@ -556,13 +746,47 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
                 return false;
             }
 
+
+          /* std::cout << "Passed struct validate prop exists in struct\n"; */
+
             const std::string& expectedPropType = structInfo.properties[prop.first];
+
+            /* std::cout << "Expected propType = " << expectedPropType << "  Actual type = " << prop.second->getType() << "\n"; */
             
+
             // If property is a struct, recursively validate and set its type
             if (auto nestedStructVal = std::dynamic_pointer_cast<StructValue>(prop.second)) {
                 if (!validateAndSetStructType(nestedStructVal, expectedPropType)) {
                     return false;
                 }
+
+            } else if (auto arrayVal = dynamic_cast<ArrayValue*>(prop.second.get())) {
+                std::string structTypeInArray = extractStructTypeFromArrayType(arrayVal->getType());
+                std::string expectedStructTypeInArray = extractStructTypeFromArrayType(expectedPropType);
+
+                //Array type is unknown if its filled with structs
+                if(structTypeInArray == "unknown"){
+                    for(auto& element : arrayVal->elements){
+
+
+                      //Update the structs inside of the arrays type's
+                        if (auto structValInArray = dynamic_cast<StructValue*>(element.get())) {
+                            if (!validateAndSetStructType(element, expectedStructTypeInArray)) {
+                                return false;
+                            }
+                        } else {
+                            runtimeError("Non-struct element in array property of struct");
+                            return false;
+                        }
+
+
+                    }
+
+                    //Update arrays type
+                    arrayVal->type = expectedPropType;
+                    arrayVal->elementType = expectedStructTypeInArray;
+                }
+
             } else if (prop.second->getType() != expectedPropType) {
                 runtimeError("Type mismatch for property '" + prop.first + "' in struct");
                 return false;

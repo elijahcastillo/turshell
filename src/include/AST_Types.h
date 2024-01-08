@@ -21,6 +21,9 @@ struct StatementNode : public ASTNode {
     // Represents a statement. A statement is an executable unit of code, like a variable declaration or a function call.
 };
 
+
+
+
 struct ProgramNode : public ASTNode {
   std::vector<ASTNode*> statements;
 
@@ -109,15 +112,49 @@ struct ArrayLiteralNode: public ExpressionNode {
 };
 
 
-// Ex: arr[3]  or  str[4]
-struct ArrayAccessNode: public ExpressionNode {
-  std::string identifier;
-  ASTNode* value; //Must be an int
 
-    ArrayAccessNode(std::string& identifier, ASTNode* value) : identifier(identifier), value(value) {};
+//===============
+//
+
+
+struct ChainedAccessNode : public ExpressionNode {
+    std::vector<ASTNode*> accesses;
+
+    ChainedAccessNode(const std::vector<ASTNode*>& accesses) : accesses(accesses) {}
 
     void accept(Visitor &v) override;
 };
+
+struct ChainedAssignmentNode : public ExpressionNode {
+    ASTNode* accesses;
+    ASTNode* value;
+
+    ChainedAssignmentNode(ASTNode* accesses, ASTNode* value) : accesses(accesses), value(value) {}
+
+    void accept(Visitor &v) override;
+};
+
+// Ex: arr[3]  or  str[4]  CHANGED!!!!!
+struct ArrayAccessNode: public ExpressionNode {
+  ASTNode* index; //Must be an int
+
+    ArrayAccessNode(ASTNode* index) : index(index) {};
+
+    void accept(Visitor &v) override;
+};
+
+struct PropertyAccessNode: public ExpressionNode {
+  std::string propertyName;
+
+  PropertyAccessNode(std::string& propertyName): propertyName(propertyName) {};
+
+  void accept(Visitor &v) override;
+};
+
+
+
+
+//===============
 
 
 struct StructDeclarationNode: public ExpressionNode {

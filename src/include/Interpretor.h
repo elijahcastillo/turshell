@@ -66,7 +66,15 @@ bool validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal, const std::
     void visit(StringLiteralNode& node) override;
     void visit(BinaryLiteralNode& node) override;
     void visit(ArrayLiteralNode& node) override;
+
+
     void visit(ArrayAccessNode& node) override;
+    void visit(PropertyAccessNode& node) override;
+    void visit(ChainedAccessNode& node) override;
+    void visit(ChainedAssignmentNode& node) override;
+
+
+
 
     void visit(StructDeclarationNode& node) override;
     void visit(StructInitalizerListNode& node) override;

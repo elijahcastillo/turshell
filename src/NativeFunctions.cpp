@@ -8,6 +8,31 @@
 #include <thread>
 #include <regex>
 
+
+
+
+
+// Example hash function
+unsigned int simpleHash(const std::string& str) {
+    unsigned int hash = 0;
+    for (char ch : str) {
+        hash = hash * 31 + static_cast<unsigned char>(ch);
+    }
+    return hash;
+}
+
+std::shared_ptr<RuntimeVal> nativeHash(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    if (args.size() != 1) {
+        throw std::runtime_error("nativeHash expects one argument");
+    }
+
+    std::string str = args[0]->toString();
+
+    unsigned int hashValue = simpleHash(str);
+    return std::make_shared<IntValue>(hashValue);
+}
+
+
 // Example of a native function
 std::shared_ptr<RuntimeVal> nativePrint(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
     for (const auto& arg : args) {

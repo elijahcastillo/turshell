@@ -35,9 +35,28 @@ void ArrayLiteralNode::accept(Visitor& v){
   v.visit(*this);
 }
 
+
+
 void ArrayAccessNode::accept(Visitor& v){
   v.visit(*this);
 }
+
+void PropertyAccessNode::accept(Visitor& v){
+  v.visit(*this);
+}
+
+void ChainedAccessNode::accept(Visitor& v){
+  v.visit(*this);
+
+}
+
+void ChainedAssignmentNode::accept(Visitor& v){
+  v.visit(*this);
+}
+
+
+
+
 
 
 void StructDeclarationNode::accept(Visitor& v){
