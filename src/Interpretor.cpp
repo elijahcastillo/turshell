@@ -201,7 +201,7 @@ void Interpreter::visit(ChainedAssignmentNode& node) {
       StructValue* firstStructValue = dynamic_cast<StructValue*>(first.get());
       ArrayValue* firstArrayValue = dynamic_cast<ArrayValue*>(first.get());
 
-      if (!firstStructValue && !firstArrayValue) {
+    if (!firstStructValue && !firstArrayValue && first->type != "string") {
           runtimeError("First node variable in the access chain is not a valid type of array or struct");
       }
 
