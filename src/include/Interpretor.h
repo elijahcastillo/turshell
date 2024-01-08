@@ -54,6 +54,8 @@ public:
 
 
 bool validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal, const std::string& expectedType);
+void handleArrayValidation(std::shared_ptr<RuntimeVal> arr, std::string expectedType);
+std::string getStructPropertyType(std::string structType, std::string propertyName);
 
     void visit(ProgramNode& node) override;
 

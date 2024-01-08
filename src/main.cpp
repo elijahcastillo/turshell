@@ -97,6 +97,9 @@ int main(int argc, char* argv[]) {
         //Variable number of arguments of any type, printed seperated by space with a newline at end
         interpreter.registerNativeFunction("print", nativePrint);
 
+        //Print out type of variables passed in seperated by space with a new line at end
+        interpreter.registerNativeFunction("type", nativeType);
+
         //Takes in 2 arguments, first is the array type, second is the value to append
         interpreter.registerNativeFunction("append", nativeAppend);
 

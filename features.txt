@@ -1,4 +1,5 @@
  - nativeAppend with structs
+ - 2d arrays parsing, not sure about interpetor
  - Fix line numbers for errors due to remove whitespace in lexer
  - Chain Assigment Node string indexing : Ex str[0] = "m";
  - If return struct init list from function, do veryify with the return value type

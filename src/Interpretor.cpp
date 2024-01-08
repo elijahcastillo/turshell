@@ -37,6 +37,18 @@ class TurshellBreak : public std::exception {
 };
 
 
+std::string extractStructTypeFromArrayType(const std::string& arrayType) {
+    size_t start = arrayType.find('<');
+    size_t end = arrayType.find('>');
+
+    if (start == std::string::npos || end == std::string::npos || end <= start) {
+        throw std::runtime_error("Invalid array type format: " + arrayType);
+    }
+
+    return arrayType.substr(start + 1, end - start - 1);
+}
+
+
 
   bool Interpreter::isStructType(const std::string& name) {
       auto it = structTable.find(name);
@@ -45,6 +57,29 @@ class TurshellBreak : public std::exception {
       }
       return false;
   }
+
+
+bool startsWith(const std::string& fullString, const std::string& starting) {
+    // Check if the last occurrence is at the start of the string
+    return fullString.rfind(starting, 0) == 0;
+}
+
+std::string Interpreter::getStructPropertyType(std::string structType, std::string propertyName){
+
+        if(!isStructType(structType)){
+          runtimeError("Cannot get struct property type on non struct type");
+        }
+
+        StructDeclInfo structInfo = structTable[structType];
+
+        if (structInfo.properties.find(propertyName) == structInfo.properties.end()) {
+            runtimeError("Unknown property in struct: " + propertyName);
+        }
+
+        std::string propertyType = structInfo.properties[propertyName];
+
+        return  propertyType;
+}
 
 
 
@@ -187,6 +222,44 @@ void Interpreter::visit(BinaryExpressionNode& node) {
     }
 
 
+void Interpreter::handleArrayValidation(std::shared_ptr<RuntimeVal> arr, std::string expectedArrayType){
+        if (auto array = dynamic_cast<ArrayValue*>(arr.get())) {
+
+          std::string expectedTypeInArray = extractStructTypeFromArrayType(expectedArrayType);
+          /* std::cout << "HandleArrayValidation: " << expectedTypeInArray << "\n"; */
+
+            if(isStructType(expectedTypeInArray)){
+                // Set the type of each struct in the array
+                for (auto& element : array->elements) {
+                    if (auto structVal = dynamic_cast<StructValue*>(element.get())) {
+                        if(!validateAndSetStructType(element, expectedTypeInArray)){
+                          runtimeError("All structs in array literal must be of same type");
+                        }
+                    } else {
+                      runtimeError("Trying to assign value of type '" + expectedTypeInArray +"' to a struct type");
+                    }
+                }
+
+                /* std::cout << "Updating Arrays type after struct validation\n"; */
+                array->type = "array<" + expectedTypeInArray + ">";
+                array->elementType = expectedTypeInArray;
+
+
+            } else {
+              //Should already have a type in array infered from the elements inside
+              if(arr->getType() != expectedArrayType){
+                runtimeError("Cannot assign array of type " + arr->getType() + " to array of type " + expectedArrayType);
+              }
+            }
+
+
+
+        } else {
+          runtimeError("Expected type of ArrayValue in handleArrayOfStructs");
+        }
+}
+
+
 void Interpreter::visit(ChainedAssignmentNode& node) {
   std::shared_ptr<RuntimeVal> valueToAssign = evaluateExpression(node.value);
 
@@ -239,8 +312,30 @@ void Interpreter::visit(ChainedAssignmentNode& node) {
 
     // Now you need to determine what the target is and assign the value appropriately
     if (auto structVal = dynamic_cast<StructValue*>(container.get())) {
+
+      //TODOO!!!!!!!:Check types and also give types to structs and arrays
+
       std::string propName = static_cast<PropertyAccessNode*>(target)->propertyName;
+      std::string propType = getStructPropertyType(structVal->getType(), propName);
+
+      //Handle array assigment to stuct property
+      if(startsWith(propType, "array<")){
+        handleArrayValidation(valueToAssign, propType);
+      }
+
+      //Handle struct assigment to struct property
+      if(isStructType(propType)){
+        validateAndSetStructType(valueToAssign, propType);
+      }
+
+      if(valueToAssign->getType() != propType){
+        runtimeError("Chained Assigment type mismatch for struct property");
+      }
+
+
+
       structVal->setProperty(propName, valueToAssign);
+
 
     
     } 
@@ -254,6 +349,20 @@ void Interpreter::visit(ChainedAssignmentNode& node) {
         }
 
         int index = std::static_pointer_cast<IntValue>(indexVal)->getValue();
+
+
+        if(isStructType(arrayVal->elementType)){
+          if(!validateAndSetStructType(valueToAssign, arrayVal->elementType)){
+              runtimeError("All structs in array literal must be of same type");
+          }
+        }
+
+
+
+        if(arrayVal->elementType != valueToAssign->getType()){
+          runtimeError("Chained Assigment array index type mismatch");
+        }
+
 
         // For an array element
         arrayVal->setElement(index, valueToAssign);
@@ -372,7 +481,6 @@ void Interpreter::visit(ArrayAccessNode& node) {
     }
 }
 
-
 //============================
 
 
@@ -429,16 +537,7 @@ void Interpreter::visit(BinaryLiteralNode& node) {
 }
 
 
-std::string extractStructTypeFromArrayType(const std::string& arrayType) {
-    size_t start = arrayType.find('<');
-    size_t end = arrayType.find('>');
 
-    if (start == std::string::npos || end == std::string::npos || end <= start) {
-        throw std::runtime_error("Invalid array type format: " + arrayType);
-    }
-
-    return arrayType.substr(start + 1, end - start - 1);
-}
 
 
 //Variable Delcartion +_+_+_+_+_+_+_+

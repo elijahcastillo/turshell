@@ -9,6 +9,8 @@
 // Example of a native function
 std::shared_ptr<RuntimeVal> nativePrint(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args);
 
+std::shared_ptr<RuntimeVal> nativeType(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args);
+
 
 
 std::shared_ptr<RuntimeVal> nativeHash(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args); 

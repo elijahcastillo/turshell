@@ -45,6 +45,17 @@ std::shared_ptr<RuntimeVal> nativePrint(Interpreter& interpreter, std::vector<st
 }
 
 
+std::shared_ptr<RuntimeVal> nativeType(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args){
+    for (const auto& arg : args) {
+        // Assuming a method in RuntimeVal to get its string representation
+        std::cout << arg->getType() << " ";
+    }
+
+    std::cout << std::endl;
+    return std::make_shared<BoolValue>(true);
+}
+
+
 std::shared_ptr<RuntimeVal> nativeStringSplit(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
     if (args.size() != 2 || args[0]->getType() != "string" || args[1]->getType() != "string") {
         throw std::runtime_error("nativeStringSplit expects two string arguments");

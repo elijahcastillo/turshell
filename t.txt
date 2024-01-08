@@ -10,16 +10,22 @@ struct Arr {
 struct Person{
   string name;
   array<Test> ages;
+  Test x;
 };
 
 
-//Person p = {name: "Elijah", ages: [{g: 10}, {g: 23}]  };
+Person p = {name: "Elijah", ages: [{g: 10}, {g: 23}], x:{g: 92}  };
+print(p)
 
-array<string> m = ["elijah", "bob"];
+p.ages[0] = {g: 344};
+print(p)
+print(type(p.ages[0]))
 
-print(m[1])
-m[1][0] = "M";
-print(m[1])
+
+//array<array<int>> m = [[1,3], [2,6]];
+//print(m)
+
+
 
 
 
