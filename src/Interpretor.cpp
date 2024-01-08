@@ -257,6 +257,29 @@ void Interpreter::visit(ChainedAssignmentNode& node) {
 
         // For an array element
         arrayVal->setElement(index, valueToAssign);
+    } else if (auto string = dynamic_cast<StringValue*>(container.get())) {
+        auto access = static_cast<ArrayAccessNode*>(target);
+        std::shared_ptr<RuntimeVal> indexVal = evaluateExpression(access->index);
+
+        if (indexVal->getType() != "int") {
+            runtimeError("Array index must be an integer");
+            return;
+        }
+
+        int index = std::static_pointer_cast<IntValue>(indexVal)->getValue();
+
+
+        if (valueToAssign->getType() != "string" || valueToAssign->toString().length() != 1) {
+            runtimeError("Can only assign a single character to a string index");
+            return;
+        }
+        if (index < 0 || index >= string->value.size()) {
+            runtimeError("String index out of range");
+            return;
+        }
+
+        string->value[index] = valueToAssign->toString()[0];
+
     } 
     else {
         runtimeError("Invalid target for assignment");
@@ -353,40 +376,6 @@ void Interpreter::visit(ArrayAccessNode& node) {
 //============================
 
 
-/* void Interpreter::visit(ArrayAccessNode& node) { */
-/*     std::shared_ptr<RuntimeVal> accessIndex = evaluateExpression(node.value); */
-/*     if (accessIndex->getType() != "int") { */
-/*         runtimeError("Array access index must be an int"); */
-/*     } */
-/*     auto accessIndexValue = static_cast<IntValue*>(accessIndex.get())->value; */
-/*  */
-/*     std::shared_ptr<RuntimeVal> runtimeValue = currentScope()->getVariable(node.identifier); */
-/*  */
-/*     // Check if the variable is an ArrayValue */
-/*     ArrayValue* array = dynamic_cast<ArrayValue*>(runtimeValue.get()); */
-/*     if (array != nullptr) { */
-/*         if (accessIndexValue < 0 || accessIndexValue >= array->elements.size()) { */
-/*             runtimeError("Array access out of range"); */
-/*         } */
-/*         evaluationStack.push(array->elements[accessIndexValue]); */
-/*         return; */
-/*     } */
-/*  */
-/*     // Check if the variable is a StringValue */
-/*     StringValue* stringVal = dynamic_cast<StringValue*>(runtimeValue.get()); */
-/*     if (stringVal != nullptr) { */
-/*         const std::string& str = stringVal->getValue(); */
-/*         if (accessIndexValue < 0 || accessIndexValue >= str.size()) { */
-/*             runtimeError("String index out of range"); */
-/*         } */
-/*         char charAtIdx = str[accessIndexValue]; */
-/*         evaluationStack.push(std::make_shared<StringValue>(std::string(1, charAtIdx))); */
-/*         return; */
-/*     } */
-/*  */
-/*     // If it's neither an array nor a string, throw an error */
-/*     runtimeError("Can only use array access on arrays and strings"); */
-/* } */
 
 
 
@@ -461,11 +450,7 @@ void Interpreter::visit(VariableDeclarationNode& node) {
 
     std::shared_ptr<RuntimeVal> value = evaluateExpression(node.initializer);
 
-    /* auto bin = dynamic_cast<BinaryExpressionNode*>(node.initializer); */
-    /* if(bin != nullptr){ */
-    /* std::cout << evaluateExpression(bin->left)->toString() << "  llll\n"; */
-    /* std::cout << evaluateExpression(bin->right)->toString() << "   ppppp\n"; */
-    /* } */
+
 
 
     // Handle array literals with struct initializer lists
@@ -520,48 +505,6 @@ void Interpreter::visit(VariableDeclarationNode& node) {
     // ==========VariableAssignmentNode===========
     void Interpreter::visit(VariableAssignmentNode& node) {
 
-      if (node.index != nullptr) {
-        // Evaluate the index and ensure it's an integer
-        std::shared_ptr<RuntimeVal> indexVal = evaluateExpression(node.index);
-        if (indexVal->getType() != "int") {
-            runtimeError("Index must be an integer");
-            return;
-        }
-        int index = static_cast<IntValue*>(indexVal.get())->getValue();
-
-        // Retrieve the variable (array or string)
-        std::shared_ptr<RuntimeVal> varVal = currentScope()->getVariable(node.variableName);
-
-        if (ArrayValue* array = dynamic_cast<ArrayValue*>(varVal.get())) {
-            // Array assignment
-            std::shared_ptr<RuntimeVal> value = evaluateExpression(node.value);
-            if (value->getType() != array->elementType) {
-                runtimeError("Type mismatch in array assignment");
-                return;
-            }
-            array->setElement(index, value);
-            return;
-        } 
-
-        if (StringValue* string = dynamic_cast<StringValue*>(varVal.get())) {
-            // String assignment
-            std::shared_ptr<RuntimeVal> charVal = evaluateExpression(node.value);
-            if (charVal->getType() != "string" || charVal->toString().length() != 1) {
-                runtimeError("Can only assign a single character to a string index");
-                return;
-            }
-            if (index < 0 || index >= string->value.size()) {
-                runtimeError("String index out of range");
-                return;
-            }
-            string->value[index] = charVal->toString()[0];
-            return;
-        } 
-            
-        runtimeError("Indexing not supported on the given variable type");
-        
-        return;
-    }
 
 
 

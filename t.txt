@@ -15,10 +15,11 @@ struct Person{
 
 //Person p = {name: "Elijah", ages: [{g: 10}, {g: 23}]  };
 
-array<Test> m = [{g: 98}, {g: 33}];
-print(m)
-int a = m[0].g + 1;
-print(a)
+array<string> m = ["elijah", "bob"];
+
+print(m[1])
+m[1][0] = "M";
+print(m[1])
 
 
 
