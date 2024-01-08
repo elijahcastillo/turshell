@@ -180,11 +180,11 @@ std::string expected_5 =
 "Array[Struct{x: 7, y: 3}, Struct{x: 14, y: 76}] \n";
 
     // Add your tests here
-    runner.addTest(Test("Test 1 (Types)", "test/typesTest.txt", expected_1));
-    runner.addTest(Test("Test 2 (Controll Flow)", "test/controlFlowTest.txt", expected_2));
-    runner.addTest(Test("Test 3 (Strings)", "test/stringTest.txt", expected_3));
-    runner.addTest(Test("Test 4 (Structs)", "test/structsTests.txt", expected_4));
-    runner.addTest(Test("Test 4 (Functions)", "test/functionsTest.txt", expected_5));
+    runner.addTest(Test("1 (Types)", "test/typesTest.txt", expected_1));
+    runner.addTest(Test("2 (Controll Flow)", "test/controlFlowTest.txt", expected_2));
+    runner.addTest(Test("3 (Strings)", "test/stringTest.txt", expected_3));
+    runner.addTest(Test("4 (Structs)", "test/structsTests.txt", expected_4));
+    runner.addTest(Test("5 (Functions)", "test/functionsTest.txt", expected_5));
 
     runner.runAll();
 

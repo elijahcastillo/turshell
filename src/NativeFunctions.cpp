@@ -93,7 +93,7 @@ std::shared_ptr<RuntimeVal> nativeAssert(Interpreter& interpreter, std::vector<s
     }
 
     if (!condition) {
-        throw std::runtime_error(message);
+        throw std::runtime_error("ASSERT: " + message);
     }
 
     return std::make_shared<BoolValue>(true);

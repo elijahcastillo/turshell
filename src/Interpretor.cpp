@@ -37,11 +37,27 @@ class TurshellBreak : public std::exception {
 };
 
 
-std::string extractStructTypeFromArrayType(const std::string& arrayType) {
-    size_t start = arrayType.find('<');
-    size_t end = arrayType.find('>');
 
-    if (start == std::string::npos || end == std::string::npos || end <= start) {
+
+std::string extractInnerTypeFromArrayType(const std::string& arrayType) {
+    size_t start = arrayType.find('<');
+    size_t end = start;
+
+    if (start == std::string::npos) {
+        throw std::runtime_error("Invalid array type format: " + arrayType);
+    }
+
+    int bracketCount = 1;
+    // Iterate through the string to find the matching closing bracket
+    while (bracketCount > 0 && ++end < arrayType.size()) {
+        if (arrayType[end] == '<') {
+            bracketCount++;
+        } else if (arrayType[end] == '>') {
+            bracketCount--;
+        }
+    }
+
+    if (bracketCount != 0 || end == start + 1) {
         throw std::runtime_error("Invalid array type format: " + arrayType);
     }
 
@@ -222,41 +238,41 @@ void Interpreter::visit(BinaryExpressionNode& node) {
     }
 
 
-void Interpreter::handleArrayValidation(std::shared_ptr<RuntimeVal> arr, std::string expectedArrayType){
-        if (auto array = dynamic_cast<ArrayValue*>(arr.get())) {
+void Interpreter::handleArrayValidation(std::shared_ptr<RuntimeVal> arr, const std::string& expectedArrayType) {
+    if (auto arrayVal = dynamic_cast<ArrayValue*>(arr.get())) {
+        std::string expectedTypeInArray = extractInnerTypeFromArrayType(expectedArrayType);
 
-          std::string expectedTypeInArray = extractStructTypeFromArrayType(expectedArrayType);
-          /* std::cout << "HandleArrayValidation: " << expectedTypeInArray << "\n"; */
-
-            if(isStructType(expectedTypeInArray)){
-                // Set the type of each struct in the array
-                for (auto& element : array->elements) {
-                    if (auto structVal = dynamic_cast<StructValue*>(element.get())) {
-                        if(!validateAndSetStructType(element, expectedTypeInArray)){
-                          runtimeError("All structs in array literal must be of same type");
-                        }
-                    } else {
-                      runtimeError("Trying to assign value of type '" + expectedTypeInArray +"' to a struct type");
-                    }
-                }
-
-                /* std::cout << "Updating Arrays type after struct validation\n"; */
-                array->type = "array<" + expectedTypeInArray + ">";
-                array->elementType = expectedTypeInArray;
-
-
-            } else {
-              //Should already have a type in array infered from the elements inside
-              if(arr->getType() != expectedArrayType){
-                runtimeError("Cannot assign array of type " + arr->getType() + " to array of type " + expectedArrayType);
-              }
+        // Check if the expected type inside the array is also an array
+        if (startsWith(expectedTypeInArray, "array<")) {
+            // Recursively validate each element in the array
+            for (auto& element : arrayVal->elements) {
+                handleArrayValidation(element, expectedTypeInArray);
             }
-
-
-
+        } else if (isStructType(expectedTypeInArray)) {
+            // Handle struct type validation
+            for (auto& element : arrayVal->elements) {
+                if (auto structVal = dynamic_cast<StructValue*>(element.get())) {
+                    if (!validateAndSetStructType(element, expectedTypeInArray)) {
+                        runtimeError("All structs in array must be of same type");
+                    }
+                } else {
+                    runtimeError("Trying to assign value of type '" + expectedTypeInArray + "' to a struct type");
+                }
+            }
         } else {
-          runtimeError("Expected type of ArrayValue in handleArrayOfStructs");
+            // Validate primitive types in array
+            for (auto& element : arrayVal->elements) {
+                if (element->getType() != expectedTypeInArray) {
+                    runtimeError("Type mismatch in array elements");
+                }
+            }
         }
+
+        arrayVal->type = "array<" + expectedTypeInArray + ">";
+        arrayVal->elementType = expectedTypeInArray;
+    } else {
+        runtimeError("Expected type of ArrayValue in handleArrayValidation");
+    }
 }
 
 
@@ -304,16 +320,8 @@ void Interpreter::visit(ChainedAssignmentNode& node) {
 
 
 
-    /* if(target->getType() != valueToAssign->getType()){ */
-    /*   runtimeError("Chained Assigment type mismatch"); */
-    /* } */
-
-  
-
     // Now you need to determine what the target is and assign the value appropriately
     if (auto structVal = dynamic_cast<StructValue*>(container.get())) {
-
-      //TODOO!!!!!!!:Check types and also give types to structs and arrays
 
       std::string propName = static_cast<PropertyAccessNode*>(target)->propertyName;
       std::string propType = getStructPropertyType(structVal->getType(), propName);
@@ -357,6 +365,9 @@ void Interpreter::visit(ChainedAssignmentNode& node) {
           }
         }
 
+        if(startsWith(arrayVal->elementType, "array<")){
+          handleArrayValidation(valueToAssign, arrayVal->elementType);
+        }
 
 
         if(arrayVal->elementType != valueToAssign->getType()){
@@ -366,6 +377,7 @@ void Interpreter::visit(ChainedAssignmentNode& node) {
 
         // For an array element
         arrayVal->setElement(index, valueToAssign);
+
     } else if (auto string = dynamic_cast<StringValue*>(container.get())) {
         auto access = static_cast<ArrayAccessNode*>(target);
         std::shared_ptr<RuntimeVal> indexVal = evaluateExpression(access->index);
@@ -407,7 +419,6 @@ void Interpreter::visit(ChainedAccessNode& node) {
     StructValue* firstStructValue = dynamic_cast<StructValue*>(first.get());
     ArrayValue* firstArrayValue = dynamic_cast<ArrayValue*>(first.get());
 
-    /* std::cout << "First value in chain: " << first->getType() << std::endl; */
 
     if (!firstStructValue && !firstArrayValue && first->type != "string") {
         runtimeError("First node variable in the access chain is not a valid type of array or struct or string");
@@ -554,27 +565,7 @@ void Interpreter::visit(VariableDeclarationNode& node) {
 
     // Handle array literals with struct initializer lists
     if (auto arrayVal = dynamic_cast<ArrayValue*>(value.get())) {
-
-
-        if (node.variableType.rfind("array<", 0) == 0) {
-            // Extract struct type from the variable type (e.g., "array<MyStruct>")
-            std::string structType = extractStructTypeFromArrayType(node.variableType);
-
-            // Set the type of each struct in the array
-            for (auto& element : arrayVal->elements) {
-                if (auto structVal = dynamic_cast<StructValue*>(element.get())) {
-                    if(!validateAndSetStructType(element, structType)){
-                      runtimeError("All structs in array literal must be of same type");
-                    }
-                }
-            }
-
-
-            // Update the element type of the array
-            arrayVal->type = "array<" + structType + ">";
-            arrayVal->elementType = structType;
-
-        }
+      handleArrayValidation(value, node.variableType);
     }
 
 
@@ -613,25 +604,7 @@ void Interpreter::visit(VariableDeclarationNode& node) {
 
     // Handle array literals with struct initializer lists
     if (auto arrayVal = dynamic_cast<ArrayValue*>(value.get())) {
-        if (assignTo->getType().rfind("array<", 0) == 0) {
-            // Extract struct type from the variable type (e.g., "array<MyStruct>")
-            std::string structType = extractStructTypeFromArrayType(assignTo->getType());
-
-            // Set the type of each struct in the array
-            for (auto& element : arrayVal->elements) {
-                if (auto structVal = dynamic_cast<StructValue*>(element.get())) {
-                    if(!validateAndSetStructType(element, structType)){
-                      runtimeError("All structs in array literal must be of same type");
-                    }
-                }
-            }
-
-
-            // Update the element type of the array
-            arrayVal->type = "array<" + structType + ">";
-            arrayVal->elementType = structType;
-
-        }
+      handleArrayValidation(value, assignTo->getType());
     }
 
       //Handle Structs assigmnet
@@ -793,7 +766,6 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
 
             const std::string& expectedPropType = structInfo.properties[prop.first];
 
-            /* std::cout << "Expected propType = " << expectedPropType << "  Actual type = " << prop.second->getType() << "\n"; */
             
 
             // If property is a struct, recursively validate and set its type
@@ -803,31 +775,9 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
                 }
 
             } else if (auto arrayVal = dynamic_cast<ArrayValue*>(prop.second.get())) {
-                std::string structTypeInArray = extractStructTypeFromArrayType(arrayVal->getType());
-                std::string expectedStructTypeInArray = extractStructTypeFromArrayType(expectedPropType);
 
-                //Array type is unknown if its filled with structs
-                if(structTypeInArray == "unknown"){
-                    for(auto& element : arrayVal->elements){
+                handleArrayValidation(prop.second, expectedPropType);
 
-
-                      //Update the structs inside of the arrays type's
-                        if (auto structValInArray = dynamic_cast<StructValue*>(element.get())) {
-                            if (!validateAndSetStructType(element, expectedStructTypeInArray)) {
-                                return false;
-                            }
-                        } else {
-                            runtimeError("Non-struct element in array property of struct");
-                            return false;
-                        }
-
-
-                    }
-
-                    //Update arrays type
-                    arrayVal->type = expectedPropType;
-                    arrayVal->elementType = expectedStructTypeInArray;
-                }
 
             } else if (prop.second->getType() != expectedPropType) {
                 runtimeError("Type mismatch for property '" + prop.first + "' in struct");

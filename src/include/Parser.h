@@ -134,22 +134,30 @@ private:
 
 
 
-    std::string getArrayType(){
-
-       std::string varType;
-        if (peek().value == "array") {
-            advance(); //Consume array keyword
-            consume(TokenType::LessThan, "Expected '<' after 'array'");
-            
-            if(check(TokenType::TypeIdentifier) || check(TokenType::Identifier)){
-              varType = "array<" + advance().value + ">";
-            }
-            consume(TokenType::GreaterThan, "Expected '>' after type identifier");
-
-            return varType;
-        }
-        return "THIS IS BAD ARRAY THING";
+std::string getArrayType() {
+    if (peek().value != "array") {
+        return "THIS IS BAD ARRAY THING"; // Or throw an error
     }
+
+    advance(); // Consume array keyword
+    consume(TokenType::LessThan, "Expected '<' after 'array'");
+
+    std::string elementType;
+
+    // Check for nested array
+    if (peek().value == "array") {
+        elementType = getArrayType(); // Recursive call to handle nested arrays
+    } else if (check(TokenType::TypeIdentifier) || check(TokenType::Identifier)) {
+        elementType = advance().value; // Consume the type identifier
+    } else {
+        return "THIS IS BAD ARRAY THING"; // Or throw an error
+    }
+
+
+    consume(TokenType::GreaterThan, "Expected '>' after type identifier");
+
+    return "array<" + elementType + ">";
+}
 
 
 
@@ -600,7 +608,8 @@ ASTNode* parseChainedAccess(const std::string& baseName) {
            return nullptr;
        }
        
-        throw std::invalid_argument("Cannot Parse Token: " + peek().value + " " + std::to_string(peek().lineNumber) );
+        throw std::invalid_argument("Unknown Language Grammer: Cannot Parse Token of " + peek().value + " " + std::to_string(peek().lineNumber) );
+
         // Handle other primary types (like parentheses) here
     }
 

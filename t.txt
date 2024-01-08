@@ -9,21 +9,23 @@ struct Arr {
 
 struct Person{
   string name;
-  array<Test> ages;
+  array<array<Test>> ages;
   Test x;
 };
 
 
-Person p = {name: "Elijah", ages: [{g: 10}, {g: 23}], x:{g: 92}  };
-print(p)
+Person p = {name: "Elijah", ages: [[{g:0}, {g:1}], [{g:2},{g:3}]], x:{g: 92}  };
 
-p.ages[0] = {g: 344};
 print(p)
-print(type(p.ages[0]))
+print(p.ages)
+p.ages[0][0] = {g: 2};
+print(p.ages)
+
 
 
 //array<array<int>> m = [[1,3], [2,6]];
-//print(m)
+//print(type(m))
+//print(m[0])
 
 
 
