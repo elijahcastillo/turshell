@@ -141,7 +141,6 @@ void Interpreter::visit(BinaryExpressionNode& node) {
 
     try {
         if (node.op == "+") {
-        /* std::cout << "1: " << left->toString() << "  2: " << right->toString() << "\n"; */
             evaluationStack.push(RuntimeOps::add(left, right));
         } else if (node.op == "-") {
             evaluationStack.push(RuntimeOps::subtract(left, right));
@@ -858,8 +857,9 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
             arguments.push_back(evaluateExpression(node.arguments[i]));
           }
           std::shared_ptr<RuntimeVal> returnValue = callNativeFunction(node.functionName, arguments);
-
-          evaluationStack.push(returnValue);
+          if(returnValue != nullptr){
+            evaluationStack.push(returnValue);
+          }
           return;
         }
 
@@ -910,6 +910,17 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
 
         // Pop the local scope from the stack
         exitCurrentScope();
+
+
+        //Handle return of array
+        if(startsWith(functionDecl->returnType, "array<")){
+          handleArrayValidation(returnValue, functionDecl->returnType);
+        }
+
+        //Handle return of struct
+        if(isStructType(functionDecl->returnType)){
+          validateAndSetStructType(returnValue, functionDecl->returnType);
+        }
 
 
         if(didReturn){

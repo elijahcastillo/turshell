@@ -16,16 +16,14 @@ struct Person{
 
 Person p = {name: "Elijah", ages: [[{g:0}, {g:1}], [{g:2},{g:3}]], x:{g: 92}  };
 
-print(p)
-print(p.ages)
-p.ages[0][0] = {g: 2};
-print(p.ages)
 
-
-
-//array<array<int>> m = [[1,3], [2,6]];
-//print(type(m))
-//print(m[0])
+func arrTest() array<Test> {
+  array<Test> x = [{g: 1}, {g:2}];
+  return x;
+}
+array<Test> b = arrTest();
+print(b)
+print(type(b))
 
 
 

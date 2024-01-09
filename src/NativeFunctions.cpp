@@ -41,7 +41,7 @@ std::shared_ptr<RuntimeVal> nativePrint(Interpreter& interpreter, std::vector<st
     }
 
     std::cout << std::endl;
-    return std::make_shared<BoolValue>(true);
+    return nullptr; 
 }
 
 
@@ -52,7 +52,7 @@ std::shared_ptr<RuntimeVal> nativeType(Interpreter& interpreter, std::vector<std
     }
 
     std::cout << std::endl;
-    return std::make_shared<BoolValue>(true);
+    return nullptr;
 }
 
 
