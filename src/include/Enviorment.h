@@ -22,7 +22,9 @@ class Environment {
     void setVariable(const std::string& name, std::shared_ptr<RuntimeVal> value, VariableSettings setting) {
       /* std::cout << "Setting variable '" << name << "' to " << value->toString() << " with setting " << setting << std::endl; */
 
+
       if(setting == Declaration){
+        
       
         variables[name] = value;
         return;
@@ -37,7 +39,6 @@ class Environment {
         } else {
           //Look in parent
           if(parent != nullptr && (parent->variables.find(name) != parent->variables.end())){
-
             parent->variables[name] = value;
           } else {
 
@@ -45,19 +46,45 @@ class Environment {
           }
         }
       }
+
+
       
 
     }
 
     std::shared_ptr<RuntimeVal> getVariable(const std::string& name) {
-/* std::cout << "Getting variable '" << name << "'" << std::endl; */
+        /* std::cout << "Getting variable '" << name << "'" << std::endl; */
+
+
+
+
         if (variables.find(name) != variables.end()) {
             return variables[name];
         } else if (parent != nullptr) {
+            /* std::cout << "Geting varible in parent" << std::endl; */
             return parent->getVariable(name);
         } else {
             throw std::runtime_error("Variable not defined: " + name);
         }
+
+
+    }
+
+    void printCurrent(){
+      std::cout << "Inside Env current env\n";
+      for (const auto& pair : variables) {
+            std::cout << "Variable: " << pair.first << ", Value: " << pair.second->toString() << std::endl;
+        }
+    }
+
+    void printParent(){
+      std::cout << "Inside Env PARENT env\n";
+      if(parent){
+      for (const auto& pair : parent->variables) {
+            std::cout << "Variable: " << pair.first << ", Value: " << pair.second->toString() << std::endl;
+        }
+      }
+
     }
 
     // Add methods for scope management if needed

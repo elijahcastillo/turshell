@@ -866,9 +866,6 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
 
         enterNewScope();
 
-
-
-
         // Bind arguments to parameters in the new local scope
         for (size_t i = 0; i < node.arguments.size(); ++i) {
             
@@ -887,9 +884,16 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
               return;
             }
 
+             
+
             currentScope()->setVariable(paramName, argValue, VariableSettings::Declaration);
 
         }
+
+
+
+    // Remember the current stack depth
+    int initialStackDepth = envStack.size();
 
 
         //Evalute body of function
@@ -900,12 +904,29 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
 
             evaluateExpression(functionDecl->body);
 
+
           } catch(TurshellReturn e) {
+
+              //Returns env stack back to orignal state
+              //Helps when you return from a function inside of another block
+              //like an if statment where since you returned the scope is never closed
+              while (envStack.size() > initialStackDepth) {
+                  exitCurrentScope();
+              }
+
             //End Body execution early
             returnValue = e.returnVal;
             didReturn = true;
 
+
+
+
           }
+
+
+
+
+
 
 
         // Pop the local scope from the stack
@@ -957,12 +978,19 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
       }
 
 
+
+
       /* exitCurrentScope(); */
 
     }
 
     void Interpreter::visit(VariableExpressionNode& node) {
+        
+
+
+ 
       std::shared_ptr<RuntimeVal> value = currentScope()->getVariable(node.variableName);
+
       /* std::cout << "Varaible Expression Node pushed: " << value->getType() << "  " << value->toString() << "\n"; */
       evaluationStack.push(value);
     }
@@ -1053,6 +1081,17 @@ void Interpreter::printEnv(){
   for (const auto& pair : currentScope()->variables) {
         std::cout << "Var: " << pair.first << ", Value: " << pair.second->toString() << std::endl;
     }
+}
+
+void Interpreter::printEnvParent(){
+  std::cout << "ParentEnv: \n";
+  if(currentScope()->parent){
+    for (const auto& pair : currentScope()->parent->variables) {
+          std::cout << "Var: " << pair.first << ", Value: " << pair.second->toString() << std::endl;
+      }
+
+  }
+
 }
 
 

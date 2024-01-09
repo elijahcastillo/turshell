@@ -1,37 +1,29 @@
 
 
-func factorial(int n) int {
-  if(n <= 1){
-    return 1;
-  }
-
-
-  return n * factorial(n - 1);
-}
+//func factorial(int n) int {
+//  if(n <= 1){
+//    return 1;
+//  }
+//  return n * factorial(n - 1);
+//}
 
 func fib(int n) int {
-  print("Called fib with n = ", n)
 
   if (n <= 1) {
-    print("Returning ", n)
     return n;
   }
 
-  print("Calculating fib(", n - 1, ")")
-  print("Before a ", n)
+
   int a = fib(n - 1);
 
-  print("Before b ", n)
-  print("Result of fib(", n - 1, ") = ", a)
-  print("Calculating fib(", n - 2, ")")
+
   int b = fib(n - 2);
 
-  print("Result of fib(", n - 2, ") = ", b)
-  print("Returning ", a + b, " for fib(n) where n = ", n)
+
   return a + b;
 }
 
 
 
  // print(factorial(3))
-print(fib(3))
+print(fib(8))

@@ -59,6 +59,10 @@ void handleArrayValidation(std::shared_ptr<RuntimeVal> arr, const std::string& e
 
 std::string getStructPropertyType(std::string structType, std::string propertyName);
 
+
+
+void printEnvParent();
+
     void visit(ProgramNode& node) override;
 
     void visit(BinaryExpressionNode& node) override;
