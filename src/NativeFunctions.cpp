@@ -337,12 +337,18 @@ std::shared_ptr<RuntimeVal> nativeFileRead(Interpreter& interpreter, std::vector
         throw std::runtime_error("nativeFileRead expects one string argument for the file path");
     }
 
-    std::string filePath = static_cast<StringValue*>(args[0].get())->getValue();
-    // Resolve filePath based on the context of the calling file
+    std::string relativeFilePath = static_cast<StringValue*>(args[0].get())->getValue();
 
-    std::ifstream file(filePath);
+    // Assuming you have a member in Interpreter class like this:
+    // std::filesystem::path scriptDirectory;
+    // Construct the full path
+    std::filesystem::path fullFilePath = interpreter.scriptDir / relativeFilePath;
+
+    /* std::cout << "File native read: " << fullFilePath << "\n"; */
+
+    std::ifstream file(fullFilePath);
     if (!file.is_open()) {
-        throw std::runtime_error("nativeFileRead: unable to open file " + filePath);
+        throw std::runtime_error("nativeFileRead: unable to open file " + fullFilePath.string());
     }
 
     std::stringstream buffer;

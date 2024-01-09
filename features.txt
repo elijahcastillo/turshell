@@ -1,4 +1,6 @@
  - nativeAppend with structs
+ - Add functions to structs  impl Struct -> age() int {
+
+                             }
  - pass in error messages to validate array and struct functons for better errors
  - Fix line numbers for errors due to remove whitespace in lexer
- - Fix recusrion in function, scope issue with vairbles or return issue??

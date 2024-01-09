@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <functional>
 #include <stack>
+#include <filesystem>
 
 
 
@@ -41,8 +42,15 @@ class Interpreter : public Visitor {
 
 public:
 
+
+    std::filesystem::path scriptDir;
+
     Interpreter(){
       envStack.push(std::make_shared<Environment>());
+    }
+
+    void setScriptDir(std::filesystem::path dir){
+        scriptDir = dir;
     }
 
     void registerNativeFunction(const std::string& name, std::function<  std::shared_ptr<RuntimeVal>(  Interpreter&, std::vector<std::shared_ptr<RuntimeVal>>&  )  > func); 

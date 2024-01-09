@@ -1,11 +1,11 @@
 
 
-//func factorial(int n) int {
-//  if(n <= 1){
-//    return 1;
-//  }
-//  return n * factorial(n - 1);
-//}
+func factorial(int n) int {
+  if(n <= 1){
+    return 1;
+  }
+  return n * factorial(n - 1);
+}
 
 func fib(int n) int {
 
@@ -14,16 +14,13 @@ func fib(int n) int {
   }
 
 
-  int a = fib(n - 1);
 
 
-  int b = fib(n - 2);
 
-
-  return a + b;
+  return fib(n-1) + fib(n-2);
 }
 
 
 
- // print(factorial(3))
-print(fib(8))
+print(factorial(8))
+//print(fib(25))

@@ -4,12 +4,28 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
+#include <filesystem> // For path manipulation and retrieval
+#include <cstdlib>    // For getenv
 #include "include/AST_Types.h"
 #include "include/Lexer.h"
 #include "include/Parser.h"
 #include "include/Visitors.h"
 #include "include/Interpretor.h"
 #include "include/NativeFunctions.h"
+
+
+namespace fs = std::filesystem;
+
+fs::path getAbsolutePath() {
+    // Retrieve the current working directory
+    fs::path cwd = fs::current_path();
+
+    // Combine the CWD with the relative path to get the absolute path
+    /* fs::path absolutePath = cwd / relativePath; */
+
+    // Convert to absolute path
+    return fs::absolute(cwd);
+}
 
 std::vector<char> readFileToVector(const std::string& filepath) {
     // Open file in binary mode
@@ -68,6 +84,19 @@ int main(int argc, char* argv[]) {
     }
 
     try {
+
+    // Get the absolute path of the script
+    fs::path scriptDir = getAbsolutePath();
+
+
+    std::cout << "Absolute path of the script: " << scriptDir << std::endl;
+
+
+
+
+
+
+
         std::string filepath = argv[1];
         std::string buffer = readFileToString(filepath);
 
@@ -93,6 +122,7 @@ int main(int argc, char* argv[]) {
 
         // Interpretation
         Interpreter interpreter;
+        interpreter.setScriptDir(scriptDir);
 
         //Variable number of arguments of any type, printed seperated by space with a newline at end
         interpreter.registerNativeFunction("print", nativePrint);
@@ -108,6 +138,8 @@ int main(int argc, char* argv[]) {
 
         //Take 1 argument array, returns the # of items in the array as an int
         interpreter.registerNativeFunction("len", nativeLen);
+
+        interpreter.registerNativeFunction("read", nativeFileRead);
 
         interpreter.registerNativeFunction("abs", nativeMathAbs);
         interpreter.registerNativeFunction("random", nativeRandom);
