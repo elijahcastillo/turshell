@@ -173,7 +173,7 @@ struct ArrayValue : public RuntimeVal {
     }
 
     void setElement(int index, std::shared_ptr<RuntimeVal> element) {
-        std::cout << "Array setElement at index '" << index << "' at addr " << element << " of value " << element->toString() << "\n";
+        /* std::cout << "Array setElement at index '" << index << "' at addr " << element << " of value " << element->toString() << "\n"; */
 
 
 

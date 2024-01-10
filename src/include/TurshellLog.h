@@ -4,7 +4,7 @@
 #include <iostream>
 #include <sstream>   // For std::ostringstream
 
-std::string pointerAddrToString(const void* ptr);
+
 
 class TurshellLog {
 public:
@@ -17,6 +17,8 @@ public:
         // You can define more flags here
     };
 
+
+
     static void setSettings(int newSettings) {
         settings = newSettings; // Use the static settings variable
     }
@@ -27,5 +29,11 @@ public:
         }
     }
 };
+
+
+
+std::string pointerAddrToString(const void* ptr);
+
+std::string logFlagToString(TurshellLog::Flags flag);
 
 

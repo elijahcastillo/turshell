@@ -82,20 +82,17 @@ int main(int argc, char* argv[]) {
     if (argc != 2) {
         std::cerr << "Usage: [program] [input_file]\n";
         return 1;
-    }
+    }        
+
+    //Logger
+    /* TurshellLog::setSettings(TurshellLog::LOG_INFO); */
 
     try {
 
     // Get the absolute path of the script
     fs::path scriptDir = getAbsolutePath();
 
-
-    std::cout << "Absolute path of the script: " << scriptDir << std::endl;
-
-
-
-
-
+    TurshellLog::Log("Absolute path of the script: " + scriptDir.generic_string(), TurshellLog::LOG_INFO);
 
 
         std::string filepath = argv[1];
@@ -122,8 +119,7 @@ int main(int argc, char* argv[]) {
         /* std::cout << "========= End of Parser =========\n\n"; */
 
 
-        //Loger for Interpretor
-        TurshellLog::setSettings(TurshellLog::LOG_MEMORY_INFO);
+
 
         // Interpretation
         Interpreter interpreter;

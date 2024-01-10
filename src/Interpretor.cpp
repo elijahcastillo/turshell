@@ -563,14 +563,16 @@ void Interpreter::visit(BinaryLiteralNode& node) {
 //Variable Delcartion +_+_+_+_+_+_+_+
 void Interpreter::visit(VariableDeclarationNode& node) {
 
+    TurshellLog::Log("Varaible Declaration Started for variable '"  + node.variableName + "'", TurshellLog::LOG_INFO);
 
-      /* std::cout << "Varaible Declaration Started for variable '"  << node.variableName << "'\n"; */
+    //Get value to initilize varible with
     std::shared_ptr<RuntimeVal> value = evaluateExpression(node.initializer);
 
 
     TurshellLog::Log("Variable declaration of '" + node.variableName +  "' : initilizer evaluated at: " + pointerAddrToString(value.get()) + " of value " + value->toString(), TurshellLog::LOG_MEMORY_INFO);
 
-    // Handle array literals with struct initializer lists
+
+    // Handle arrays
     if (auto arrayVal = dynamic_cast<ArrayValue*>(value.get())) {
       handleArrayValidation(value, node.variableType);
     }
@@ -598,9 +600,12 @@ void Interpreter::visit(VariableDeclarationNode& node) {
 void Interpreter::visit(VariableAssignmentNode& node) {
 
 
-      /* std::cout << "Varaible Assigment Started to variable '" << node.variableName << "'\n"; */
+      TurshellLog::Log("Varaible Assignment Started for variable '"  + node.variableName + "'", TurshellLog::LOG_INFO);
 
+      //Needed for type checking of new value
       std::shared_ptr<RuntimeVal> assignTo = currentScope()->getVariable(node.variableName);
+
+      //New value to assign to variable
       std::shared_ptr<RuntimeVal> value = evaluateExpression(node.value);
 
 
@@ -859,7 +864,8 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
 
 
         if(isNativeFunction){
-          std::cout << "Started Native Function!\n";
+          TurshellLog::Log("Started Native Function!", TurshellLog::LOG_INFO);
+
           std::vector<std::shared_ptr<RuntimeVal>> arguments;
           for(int i = 0; i < node.arguments.size(); i++){
             arguments.push_back(evaluateExpression(node.arguments[i]));
@@ -894,7 +900,7 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
 
              
 
-            std::cout << "Setting param for function: " << paramName << " " << argValue << "\n";
+            /* std::cout << "Setting param for function: " << paramName << " " << argValue << "\n"; */
             currentScope()->setVariable(paramName, argValue, VariableSettings::Declaration);
 
         }
@@ -998,7 +1004,8 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
 
       std::shared_ptr<RuntimeVal> value = currentScope()->getVariable(node.variableName);
 
-      TurshellLog::Log("VaribleExpressionNode, getting varible " + node.variableName + " located at addr " + pointerAddrToString(value.get()) + " of value " + value->toString(), TurshellLog::LOG_MEMORY_INFO);
+      TurshellLog::Log("VaribleExpressionNode: getting variable " + node.variableName, TurshellLog::LOG_INFO);
+      TurshellLog::Log("VaribleExpressionNode, getting variable " + node.variableName + " located at addr " + pointerAddrToString(value.get()) + " of value " + value->toString(), TurshellLog::LOG_MEMORY_INFO);
 
       /* std::cout << "Varaible Expression Node pushed: " << value->getType() << "  " << value->toString() << "\n"; */
       evaluationStack.push(value);
