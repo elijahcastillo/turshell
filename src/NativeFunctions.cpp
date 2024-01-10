@@ -21,6 +21,30 @@ unsigned int simpleHash(const std::string& str) {
     return hash;
 }
 
+// MurmurHash-inspired hash function
+unsigned int improvedHash(const std::string& str) {
+    const unsigned int seed = 0x9E3779B9; // A small prime number
+    const unsigned int m = 0x5bd1e995;
+    const int r = 24;
+
+    unsigned int hash = seed ^ str.length();
+
+    for (char ch : str) {
+        unsigned int k = static_cast<unsigned char>(ch);
+        k *= m;
+        k ^= k >> r;
+        k *= m;
+        hash *= m;
+        hash ^= k;
+    }
+
+    hash ^= hash >> 13;
+    hash *= m;
+    hash ^= hash >> 15;
+
+    return hash;
+}
+
 std::shared_ptr<RuntimeVal> nativeHash(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
     if (args.size() != 1) {
         throw std::runtime_error("nativeHash expects one argument");
@@ -28,7 +52,8 @@ std::shared_ptr<RuntimeVal> nativeHash(Interpreter& interpreter, std::vector<std
 
     std::string str = args[0]->toString();
 
-    unsigned int hashValue = simpleHash(str);
+    int hashValue = improvedHash(str);
+    /* std::cout << "HASHASH " << hashValue << "\n"; */
     return std::make_shared<IntValue>(hashValue);
 }
 

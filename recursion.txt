@@ -13,14 +13,10 @@ func fib(int n) int {
     return n;
   }
 
-
-
-
-
   return fib(n-1) + fib(n-2);
 }
 
 
 
 print(factorial(8))
-//print(fib(25))
+//print(fib(15))

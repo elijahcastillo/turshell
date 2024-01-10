@@ -6,8 +6,11 @@ string name = "Elijah Stephen Castillo";
 array<string> n = split(name, " ");
 print(n)
 
-int h = hash(name) % 10;
+int h = hash("HOPE");
 print(h)
+
+int x = abs(h) % 200;
+print(x)
 
 float tTwo = timeNow();
 
