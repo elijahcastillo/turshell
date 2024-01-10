@@ -5,6 +5,7 @@
 #include <string>
 #include <stdexcept>
 #include "Runtime.h"
+#include "TurshellLog.h"
 
 enum VariableSettings{
   Declaration,
@@ -20,7 +21,8 @@ class Environment {
     Environment(std::shared_ptr<Environment> parent = nullptr) : parent(parent) {}
 
     void setVariable(const std::string& name, std::shared_ptr<RuntimeVal> value, VariableSettings setting) {
-      /* std::cout << "Setting variable '" << name << "' to " << value->toString() << " with setting " << setting << std::endl; */
+
+     TurshellLog::Log("Setting variable '" + name + "' to addr " + pointerAddrToString(value.get()) + " of value " + value->toString() + " with setting " + std::to_string(setting) , TurshellLog::LOG_MEMORY_INFO);
 
 
       if(setting == Declaration){

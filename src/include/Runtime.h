@@ -15,8 +15,11 @@ struct RuntimeVal {
   std::string type;
 
   RuntimeVal(std::string typeStr): type(typeStr){};
-  virtual ~RuntimeVal() = default;
+  virtual ~RuntimeVal() {
+    /* std::cout << "Base RuntimeVal of type " << type << " is being destroyed\n"; */
+  }
   virtual std::string toString() = 0;
+virtual std::shared_ptr<RuntimeVal> copy() const = 0;
     virtual std::shared_ptr<RuntimeVal> getProperty(const std::string& name) {
         throw std::runtime_error("Not a struct type");
     }
@@ -31,8 +34,15 @@ struct IntValue : public RuntimeVal{
   int value;
 
   IntValue(int value): RuntimeVal("int"), value(value) {};
+    ~IntValue() override {
+        /* std::cout << "IntValue destructor called with value of " << value <<  "\n"; */
+    }
 
   int getValue() { return value; };
+
+  std::shared_ptr<RuntimeVal> copy() const override {
+    return std::make_shared<IntValue>(value);
+  }
 
   std::string toString() override {
     return std::to_string(value);
@@ -46,6 +56,10 @@ struct FloatValue : public RuntimeVal{
 
   float getValue() { return value; };
 
+  std::shared_ptr<RuntimeVal> copy() const override {
+    return std::make_shared<FloatValue>(value);
+  }
+
   std::string toString() override {
     return std::to_string(value);
   }
@@ -58,6 +72,10 @@ struct StringValue : public RuntimeVal {
     StringValue(const std::string& value) : RuntimeVal("string"), value(value) {};
     std::string toString() override { return value; };
     std::string getValue() { return value; };
+
+  std::shared_ptr<RuntimeVal> copy() const override {
+    return std::make_shared<StringValue>(value);
+  }
 };
 
 
@@ -67,6 +85,10 @@ struct BoolValue : public RuntimeVal {
     BoolValue(bool value) : RuntimeVal("bool"), value(value) {};
     std::string toString() override { return value ? "true" : "false"; };
     bool getValue() { return value; };
+
+    std::shared_ptr<RuntimeVal> copy() const override {
+      return std::make_shared<BoolValue>(value);
+    }
 };
 
 
@@ -92,6 +114,14 @@ struct StructValue : public RuntimeVal {
     void setProperty(const std::string& name, std::shared_ptr<RuntimeVal> value) override {
         properties[name] = value;
     }
+
+  std::shared_ptr<RuntimeVal> copy() const override {
+    auto cloned = std::make_shared<StructValue>(structName);
+    for (const auto& pair : properties) {
+      cloned->properties[pair.first] = pair.second->copy();
+    }
+    return cloned;
+  }
 
 std::string toString() override {
     std::string result = "Struct{";
@@ -143,12 +173,25 @@ struct ArrayValue : public RuntimeVal {
     }
 
     void setElement(int index, std::shared_ptr<RuntimeVal> element) {
+        std::cout << "Array setElement at index '" << index << "' at addr " << element << " of value " << element->toString() << "\n";
+
+
+
         // Optional: Check if the element's type matches elementType
         if (index < 0 || index >= elements.size()) {
             throw std::runtime_error("Array index out of bounds");
         }
         elements[index] = element;
     }
+
+
+  std::shared_ptr<RuntimeVal> copy() const override {
+    std::vector<std::shared_ptr<RuntimeVal>> clonedElements;
+    for (const auto& element : elements) {
+      clonedElements.push_back(element->copy());
+    }
+    return std::make_shared<ArrayValue>(elementType, clonedElements);
+  }
 
     std::string toString() override {
         std::string result = "Array[";

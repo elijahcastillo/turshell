@@ -1,40 +1,9 @@
 
-struct Point{
-  int x;
-  int y;
-};
-
-func makePoint(int x, int y) Point {
-  Point p = {x: x, y: y};
-  return p;
-} 
-
-
-//func sumPoint(Point n) int {
-//  return n.x + n.y;
-//}
-
-func sumPoints(array<Point> arr) Point {
-  Point sum = {x: 0, y:0};
-
-  int i = 0;
-  while(i < len(arr)){
-    sum.x = sum.x + arr[i].x;
-    sum.y = sum.y + arr[i].y;
-
-    i = i + 1;
-  }
-
-  return sum;
+func modify(int a) void {
+  a = 3;
 }
 
-
-
-array<Point> po = [{x: 1, y:2}, {x: 6, y:4}, {x: 3, y: 3}];
-Point sum = sumPoints(po);
-print(sum)
-
-
-
-
-
+int b = 5;
+print(b)
+modify(b)
+print(b)

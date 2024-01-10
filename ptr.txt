@@ -1,0 +1,10 @@
+
+struct Test {
+ int g;
+};
+
+Test a = {g: 5};
+Test b = copy(a);
+b.g = 2;
+print(a,b)
+addr(a,b)

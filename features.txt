@@ -4,3 +4,41 @@
                              }
  - pass in error messages to validate array and struct functons for better errors
  - Fix line numbers for errors due to remove whitespace in lexer
+
+
+ - If you update the data inside of the runtimve valuje like setElement in the array, then yes any references to that array will also be changed, but if you reassign a new arrayliteral to that variable that used to hold the old array then the old array will not be updated
+
+ - bassically total reassignment wont change orignial, but sub-assignemtn will
+ - have copy() native function
+
+ -Log feature for debugging
+ - TurshellLog(std::string, enum type)
+ - in main call Log.setTypes(INFO | Address | ...)
+
+ Total Assigment
+ ===============
+ int a = 3;
+ int b = a;
+ b = 5;
+ print(a) // Still 3
+ print(b) // 5
+
+ Sub-Assignment
+ ==============
+ array<int> a = [1,2,3];
+ array<int> b = a;
+
+ //Sub assigment
+ b[1] = 8;
+ print(a) // [1,8,3]
+ print(b) // [1,8,3]
+
+
+ //Total assigment with arrays
+ b = [4,5,6]
+ print(a) // Still [1,2,3]
+ print(b) // [4,5,6]
+
+
+
+

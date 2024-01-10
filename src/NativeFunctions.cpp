@@ -33,11 +33,30 @@ std::shared_ptr<RuntimeVal> nativeHash(Interpreter& interpreter, std::vector<std
 }
 
 
+
+std::shared_ptr<RuntimeVal> nativeCopy(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    if (args.size() != 1) {
+        throw std::runtime_error("nativeCopy expects one argument");
+    }
+    return args[0]->copy(); 
+}
+
+
 // Example of a native function
 std::shared_ptr<RuntimeVal> nativePrint(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
     for (const auto& arg : args) {
         // Assuming a method in RuntimeVal to get its string representation
         std::cout << arg->toString() << " ";
+    }
+
+    std::cout << std::endl;
+    return nullptr; 
+}
+
+std::shared_ptr<RuntimeVal> nativePrintAddr(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    for (const auto& arg : args) {
+        // Assuming a method in RuntimeVal to get its string representation
+        std::cout << arg << " ";
     }
 
     std::cout << std::endl;

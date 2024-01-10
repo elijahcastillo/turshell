@@ -1,0 +1,42 @@
+
+//struct Test {
+//  int a;
+//};
+
+//Test t  = {a: 4};
+//Test ta = t;
+//print(t, ta)
+//ta = {a: 45};
+//print(t, ta)
+
+
+//print()
+
+
+//print("Other Struct tests")
+
+//struct Other {
+//  array<int> a;
+//};
+
+//Other tb  = {a: [5,6,7]};
+//Other tc = tb;
+//print(tb, tc)
+//tc.a = [8,9,10];
+//print(tb, tc)
+
+
+
+
+
+//print()
+
+
+print("Array tests")
+array<int> a = [5,6];
+array<int> b = copy(a);
+print(a, b)
+addr(a, b)
+b[1] = 20;
+//b = [44,55];
+print(a, b)

@@ -9,6 +9,7 @@
 #include "include/AST_Types.h"
 #include "include/Lexer.h"
 #include "include/Parser.h"
+#include "include/TurshellLog.h"
 #include "include/Visitors.h"
 #include "include/Interpretor.h"
 #include "include/NativeFunctions.h"
@@ -120,12 +121,22 @@ int main(int argc, char* argv[]) {
         /* ast->accept(printer); */
         /* std::cout << "========= End of Parser =========\n\n"; */
 
+
+        //Loger for Interpretor
+        TurshellLog::setSettings(TurshellLog::LOG_MEMORY_INFO);
+
         // Interpretation
         Interpreter interpreter;
         interpreter.setScriptDir(scriptDir);
 
         //Variable number of arguments of any type, printed seperated by space with a newline at end
         interpreter.registerNativeFunction("print", nativePrint);
+
+        //Prints out address of variable
+        interpreter.registerNativeFunction("addr", nativePrintAddr);
+
+        // Preforms a deep copy of whatever passed in
+        interpreter.registerNativeFunction("copy", nativeCopy);
 
         //Print out type of variables passed in seperated by space with a new line at end
         interpreter.registerNativeFunction("type", nativeType);
@@ -139,7 +150,7 @@ int main(int argc, char* argv[]) {
         //Take 1 argument array, returns the # of items in the array as an int
         interpreter.registerNativeFunction("len", nativeLen);
 
-        interpreter.registerNativeFunction("read", nativeFileRead);
+        interpreter.registerNativeFunction("readFile", nativeFileRead);
 
         interpreter.registerNativeFunction("abs", nativeMathAbs);
         interpreter.registerNativeFunction("random", nativeRandom);

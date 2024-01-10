@@ -3,6 +3,7 @@
 #include "include/AST_Types.h"
 #include "include/Enviorment.h"
 #include "include/Runtime.h"
+#include "include/TurshellLog.h"
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -225,7 +226,12 @@ void Interpreter::visit(BinaryExpressionNode& node) {
     }
 
     void Interpreter::visit(IntLiteralNode& node) {
-      evaluationStack.push(std::make_shared<IntValue>(node.value));
+      auto value = std::make_shared<IntValue>(node.value);
+
+      TurshellLog::Log("IntLiteralNode created at " + pointerAddrToString(value.get()) + " of value " + std::to_string(node.value), TurshellLog::LOG_MEMORY_INFO);
+      evaluationStack.push(value);
+
+      //evaluationStack.push(std::make_shared<IntValue>(node.value));
     }
 
     void Interpreter::visit(FloatLiteralNode& node) {
@@ -277,6 +283,7 @@ void Interpreter::handleArrayValidation(std::shared_ptr<RuntimeVal> arr, const s
 
 void Interpreter::visit(ChainedAssignmentNode& node) {
   std::shared_ptr<RuntimeVal> valueToAssign = evaluateExpression(node.value);
+  /* std::cout << "Chained Assigment value to assign: " <<  valueToAssign << " of value " << valueToAssign->toString() << "\n"; */
 
     auto chainedAccess = dynamic_cast<ChainedAccessNode*>(node.accesses);
     if(chainedAccess == nullptr){
@@ -536,6 +543,9 @@ void Interpreter::visit(ArrayLiteralNode& node) {
     // Create an instance of ArrayValue to store the elements
     auto arrayVal = std::make_shared<ArrayValue>(elementTypes, arrayValues);
 
+    TurshellLog::Log("ArrayLiteralNode created at " +  pointerAddrToString(arrayVal.get()) + " of value " + arrayVal->toString(), TurshellLog::LOG_MEMORY_INFO);
+
+
     // Push the populated ArrayValue onto the evaluation stack
     evaluationStack.push(arrayVal);
 }
@@ -554,22 +564,16 @@ void Interpreter::visit(BinaryLiteralNode& node) {
 void Interpreter::visit(VariableDeclarationNode& node) {
 
 
-
-
-
+      /* std::cout << "Varaible Declaration Started for variable '"  << node.variableName << "'\n"; */
     std::shared_ptr<RuntimeVal> value = evaluateExpression(node.initializer);
 
 
-
+    TurshellLog::Log("Variable declaration of '" + node.variableName +  "' : initilizer evaluated at: " + pointerAddrToString(value.get()) + " of value " + value->toString(), TurshellLog::LOG_MEMORY_INFO);
 
     // Handle array literals with struct initializer lists
     if (auto arrayVal = dynamic_cast<ArrayValue*>(value.get())) {
       handleArrayValidation(value, node.variableType);
     }
-
-
-
-
 
 
     if (isStructType(node.variableType) && !validateAndSetStructType(value, node.variableType)) {
@@ -585,20 +589,23 @@ void Interpreter::visit(VariableDeclarationNode& node) {
       }
 
 
-        currentScope()->setVariable(node.variableName, value, VariableSettings::Declaration);
-    }
+      currentScope()->setVariable(node.variableName, value, VariableSettings::Declaration);
+}
 
 
 
-
-    // ==========VariableAssignmentNode===========
-    void Interpreter::visit(VariableAssignmentNode& node) {
-
+// ==========VariableAssignmentNode===========
+void Interpreter::visit(VariableAssignmentNode& node) {
 
 
+      /* std::cout << "Varaible Assigment Started to variable '" << node.variableName << "'\n"; */
 
       std::shared_ptr<RuntimeVal> assignTo = currentScope()->getVariable(node.variableName);
       std::shared_ptr<RuntimeVal> value = evaluateExpression(node.value);
+
+
+
+    TurshellLog::Log("Varible Assignment: assigning value at " + pointerAddrToString(value.get()) + " of " + value->toString() + " to " + node.variableName + " at " + pointerAddrToString(assignTo.get()) + " with prev value of " + assignTo->toString() , TurshellLog::LOG_MEMORY_INFO);
 
 
     // Handle array literals with struct initializer lists
@@ -852,6 +859,7 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
 
 
         if(isNativeFunction){
+          std::cout << "Started Native Function!\n";
           std::vector<std::shared_ptr<RuntimeVal>> arguments;
           for(int i = 0; i < node.arguments.size(); i++){
             arguments.push_back(evaluateExpression(node.arguments[i]));
@@ -886,6 +894,7 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
 
              
 
+            std::cout << "Setting param for function: " << paramName << " " << argValue << "\n";
             currentScope()->setVariable(paramName, argValue, VariableSettings::Declaration);
 
         }
@@ -987,9 +996,9 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
     void Interpreter::visit(VariableExpressionNode& node) {
         
 
-
- 
       std::shared_ptr<RuntimeVal> value = currentScope()->getVariable(node.variableName);
+
+      TurshellLog::Log("VaribleExpressionNode, getting varible " + node.variableName + " located at addr " + pointerAddrToString(value.get()) + " of value " + value->toString(), TurshellLog::LOG_MEMORY_INFO);
 
       /* std::cout << "Varaible Expression Node pushed: " << value->getType() << "  " << value->toString() << "\n"; */
       evaluationStack.push(value);
