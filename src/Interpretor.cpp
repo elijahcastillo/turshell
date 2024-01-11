@@ -727,8 +727,6 @@ void Interpreter::visit(StructMethodCallNode& node) {
 
   //Push struct name to eval stack to funcCall node can get it
   evaluationStack.push(std::make_shared<StringValue>(structValue->getType()));
-  std::cout << "Pushing to eval for stuct method " << structValue->getType() << "\n";
-  std::cout << "After eval push " << node.methodName << "\n";
 
   //Call method
   visit(*funcCall);
@@ -749,15 +747,9 @@ void Interpreter::visit(StructMethodDeclarationNode& node) {
 
   auto funcDeclNode = dynamic_cast<FunctionDeclarationNode*>(node.methodDeclaration);
 
-  std::cout << "Setting Method Declartion " << node.methodName << " to " << node.structName << std::endl;
+  /* std::cout << "Setting Method Declartion " << node.methodName << " to " << node.structName << std::endl; */
 
   structTable[node.structName].methods[node.methodName] = funcDeclNode;
-
-
-      for(const auto& elem : structInfo.methods)
-      {
-         std::cout << "PRINTING METHODS222 " <<  elem.first << "\n";
-      }
 
 
 }
@@ -897,12 +889,11 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
         bool isNativeFunction = false;
 
         if(node.isStructMethod){
-          std::cout << "isStructMethod = true\n";
+          /* std::cout << "isStructMethod = true\n"; */
 
           //Get struct type
           std::string structType = evaluationStack.top()->toString();
 
-          std::cout << "HOPE: " << structType << " " << node.functionName << std::endl;
 
           evaluationStack.pop();
           if(!isStructType(structType)){
@@ -911,16 +902,11 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
 
           StructDeclInfo structDecl = structTable[structType]; 
 
-          std::cout << "Got StructDeclInfo\n";
 
-      for(const auto& elem : structDecl.methods)
-      {
-         std::cout << "PRINTING METHODS" <<  elem.first << "\n";
-      }
+
           
           // Check if the function is declared by user
           if (structDecl.methods.find(node.functionName) != structDecl.methods.end()) {
-            std::cout << "Getting struct method decl\n";
             functionDecl = structDecl.methods[node.functionName];
           }
 
@@ -939,7 +925,7 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
         }
 
 
-        std::cout << "FunctionDecl = " << (functionDecl == nullptr) << " \n";
+        /* std::cout << "FunctionDecl = " << (functionDecl == nullptr) << " \n"; */
 
         //No function
         if(functionDecl == nullptr && isNativeFunction == false){

@@ -458,7 +458,6 @@ std::string getArrayType() {
     ASTNode* parseFunctionCall(std::string name, bool isStructMethod = false) {
 
         std::string functionName = name;
-        std::cout << "INSIDE: " << peek().value << "\n";
         
         consume(TokenType::LParen, "Expected '(' after Identifier for func call");
         std::vector<ASTNode*> arguments;
@@ -491,7 +490,6 @@ ASTNode* parseChainedAccess(const std::string& baseName) {
     accesses.push_back(new VariableExpressionNode(baseName)); // Starting point of the chain
 
     while (check(TokenType::Dot) || check(TokenType::LBracket) || check(TokenType::LParen)) {
-        std::cout << "Checking " << peek().value << "\n";
         if (match(TokenType::Dot)) {
             std::string propertyName = consume(TokenType::Identifier, "Expected property name after '.'").value;
 
@@ -627,7 +625,6 @@ ASTNode* parseChainedAccess(const std::string& baseName) {
 
         // Check for function call (identifier followed by '(')
         if (peek().type == TokenType::LParen) {
-            std::cout << "Noraml Func call\n";
             return parseFunctionCall(baseName);
         }
 
