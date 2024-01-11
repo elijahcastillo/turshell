@@ -153,6 +153,7 @@ struct ArrayValue : public RuntimeVal {
 
     ArrayValue(std::string elementType, std::vector<std::shared_ptr<RuntimeVal>>& elements)
         : RuntimeVal("array<" + elementType + ">"), elementType(elementType), elements(elements) {
+          elements.resize(20);
         }
 
     void addElement(std::shared_ptr<RuntimeVal> element) {
@@ -167,7 +168,7 @@ struct ArrayValue : public RuntimeVal {
 
     std::shared_ptr<RuntimeVal> getElement(int index) {
         if (index < 0 || index >= elements.size()) {
-            throw std::runtime_error("Array index out of bounds");
+            throw std::runtime_error("Array index out of bounds2");
         }
         return elements[index];
     }
@@ -176,10 +177,10 @@ struct ArrayValue : public RuntimeVal {
         /* std::cout << "Array setElement at index '" << index << "' at addr " << element << " of value " << element->toString() << "\n"; */
 
 
-
+        /* std::cout << elements.capacity() << "\n"; */
         // Optional: Check if the element's type matches elementType
         if (index < 0 || index >= elements.size()) {
-            throw std::runtime_error("Array index out of bounds");
+            throw std::runtime_error("Array index out of bounds1");
         }
         elements[index] = element;
     }

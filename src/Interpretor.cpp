@@ -481,7 +481,7 @@ void Interpreter::visit(ArrayAccessNode& node) {
     // Check if the arrayVal is indeed an array and perform the access
     if (ArrayValue* array = dynamic_cast<ArrayValue*>(arrayVal.get())) {
         if (index < 0 || index >= array->elements.size()) {
-            runtimeError("Array index out of bounds");
+            runtimeError("Array index out of bounds3");
             return;
         }
         evaluationStack.push(array->getElement(index));

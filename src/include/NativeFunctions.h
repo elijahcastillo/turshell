@@ -12,6 +12,7 @@ std::shared_ptr<RuntimeVal> nativePrint(Interpreter& interpreter, std::vector<st
 std::shared_ptr<RuntimeVal> nativeType(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args);
 
 
+std::shared_ptr<RuntimeVal> nativeInit(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args);
 
 std::shared_ptr<RuntimeVal> nativeCopy(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args);
 

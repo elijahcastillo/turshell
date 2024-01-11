@@ -10,6 +10,46 @@
 
 
 
+// Function to fill an array with a given item
+void fillArray(std::vector<std::shared_ptr<RuntimeVal>>& array, int size, std::shared_ptr<RuntimeVal>& item) {
+    array.clear(); // Clear the current contents of the array
+    array.resize(size); // Resize the array to the specified size
+
+    // Fill the array with the item
+    for (size_t i = 0; i < size; ++i) {
+        array[i] = item->copy(); // Assign the item to each element in the array
+    }
+}
+
+
+std::shared_ptr<RuntimeVal> nativeInit(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+      if (args.size() != 3) {
+        throw std::runtime_error("nativeInit expects 3 argument");
+    }
+
+    auto array = dynamic_cast<ArrayValue*>(args[0].get());
+    if(array == nullptr){
+      throw std::runtime_error("nativeInit 1st argument must be an array");
+    }
+
+    auto size = dynamic_cast<IntValue*>(args[1].get());
+    if(size == nullptr){
+      throw std::runtime_error("nativeInit 2nd argument must be an int");
+    }
+
+
+    int fill_size = size->value;
+
+    /* std::cout << "Filling array " << fill_size << " " << args[2]->toString() << "\n"; */
+    fillArray(array->elements, fill_size, args[2]);
+
+    //Type checking
+    interpreter.handleArrayValidation(args[0], array->getType());
+
+    return nullptr;
+}
+
+
 
 
 // Example hash function
@@ -49,6 +89,8 @@ std::shared_ptr<RuntimeVal> nativeHash(Interpreter& interpreter, std::vector<std
     if (args.size() != 1) {
         throw std::runtime_error("nativeHash expects one argument");
     }
+
+
 
     std::string str = args[0]->toString();
 

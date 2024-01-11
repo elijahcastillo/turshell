@@ -134,6 +134,9 @@ int main(int argc, char* argv[]) {
         // Preforms a deep copy of whatever passed in
         interpreter.registerNativeFunction("copy", nativeCopy);
 
+        // Initalizes an array of a size with an initlizer
+        interpreter.registerNativeFunction("init", nativeInit);
+
         //Print out type of variables passed in seperated by space with a new line at end
         interpreter.registerNativeFunction("type", nativeType);
 

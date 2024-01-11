@@ -6,6 +6,9 @@ struct KeyValue {
 int hash_capacity = 10;
 int hash_size = 0;
 array<KeyValue> hash_data = [];
+init(hash_data, 10, {value: 0, key: "a", isOccupied: false})
+
+//print(hash_data)
 
 func makeKV(string k, int v) KeyValue {
   KeyValue val = {value: v, key: k, isOccupied: true};
@@ -27,7 +30,9 @@ func hash_get(string key) int{
 
 hash_add("Elijah", 19)
 hash_add("Matthew", 20)
+print(hash_get("Matthew"))
 
-print(hash_data)
+print(len(hash_data))
+
 
 
