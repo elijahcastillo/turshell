@@ -708,22 +708,58 @@ void Interpreter::visit(VariableAssignmentNode& node) {
 
 
 void Interpreter::visit(StructMethodCallNode& node) {
+
+  std::shared_ptr<RuntimeVal> structValue = evaluationStack.top();
+  auto structRuntime = dynamic_cast<StructValue*>(structValue.get());
+  if(structRuntime == nullptr){
+    runtimeError("Cannot call a struct method on a on struct type");
+  }
+
+  FunctionCallNode* funcCall = dynamic_cast<FunctionCallNode*>(node.functionCall);
+
+  //Set self as varaible
+  currentScope()->setVariable("SECRET_SELF", structValue, VariableSettings::Declaration);
+
+  //Grab self variable
+  //Insert struct parameter at begining
+  ASTNode* selfParam = new VariableExpressionNode("SECRET_SELF");
+  funcCall->arguments.insert(funcCall->arguments.begin(), selfParam);
+
+  //Push struct name to eval stack to funcCall node can get it
+  evaluationStack.push(std::make_shared<StringValue>(structValue->getType()));
+  std::cout << "Pushing to eval for stuct method " << structValue->getType() << "\n";
+  std::cout << "After eval push " << node.methodName << "\n";
+
+  //Call method
+  visit(*funcCall);
 }
 
 void Interpreter::visit(StructMethodDeclarationNode& node) {
-  //Do something Here not sure yet, its a user defined type
-    /* if (structTable.find(node.structName) != structTable.end()) { */
-    /*     // Function with the same name already exists */
-    /*     runtimeError("Struct '" + node.structName + "' is already declared."); */
-    /* } */
-    /* StructDeclInfo info(node.structName, node.properties.size()); */
-    /* for (auto& prop : node.properties) { */
-    /*   ParameterNode* declParam = static_cast<ParameterNode*>(prop); */
-    /*  */
-    /*     info.addProperty(declParam->name, declParam->type); */
-    /* } */
-    /*  */
-    /* structTable[node.structName] = info; */
+
+  if(!isStructType(node.structName)){
+    runtimeError("Struct type dosent exist '" + node.structName +"'");
+  }  
+
+  auto structInfo = structTable[node.structName];
+
+  if (structInfo.methods.find(node.methodName) != structInfo.methods.end()) {
+      // Function with the same name already exists
+      runtimeError("Struct method'" + node.methodName + "' is already declared.");
+  }
+
+  auto funcDeclNode = dynamic_cast<FunctionDeclarationNode*>(node.methodDeclaration);
+
+  std::cout << "Setting Method Declartion " << node.methodName << " to " << node.structName << std::endl;
+
+  structTable[node.structName].methods[node.methodName] = funcDeclNode;
+
+
+      for(const auto& elem : structInfo.methods)
+      {
+         std::cout << "PRINTING METHODS222 " <<  elem.first << "\n";
+      }
+
+
 }
 
 
@@ -743,6 +779,8 @@ void Interpreter::visit(StructDeclarationNode& node) {
 
     structTable[node.structName] = info;
 }
+
+
 
 void Interpreter::visit(StructInitalizerListNode& node) {
     std::string structType = ""; // This should be determined from the context or passed to the node.
@@ -858,15 +896,50 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
         FunctionDeclarationNode* functionDecl = nullptr;
         bool isNativeFunction = false;
 
-        // Check if the function is declared by user
-        if (functionTable.find(node.functionName) != functionTable.end()) {
-          functionDecl = functionTable[node.functionName];
+        if(node.isStructMethod){
+          std::cout << "isStructMethod = true\n";
+
+          //Get struct type
+          std::string structType = evaluationStack.top()->toString();
+
+          std::cout << "HOPE: " << structType << " " << node.functionName << std::endl;
+
+          evaluationStack.pop();
+          if(!isStructType(structType)){
+            runtimeError("Struct type does not exist for method");
+          }
+
+          StructDeclInfo structDecl = structTable[structType]; 
+
+          std::cout << "Got StructDeclInfo\n";
+
+      for(const auto& elem : structDecl.methods)
+      {
+         std::cout << "PRINTING METHODS" <<  elem.first << "\n";
+      }
+          
+          // Check if the function is declared by user
+          if (structDecl.methods.find(node.functionName) != structDecl.methods.end()) {
+            std::cout << "Getting struct method decl\n";
+            functionDecl = structDecl.methods[node.functionName];
+          }
+
+        } else {
+
+            // Check if the function is declared by user
+            if (functionTable.find(node.functionName) != functionTable.end()) {
+              functionDecl = functionTable[node.functionName];
+            }
+
+            // Check if the function is a native function
+            if (nativeFunctions.find(node.functionName) != nativeFunctions.end()) {
+              isNativeFunction = true;
+            }
+
         }
 
-        // Check if the function is a native function
-        if (nativeFunctions.find(node.functionName) != nativeFunctions.end()) {
-          isNativeFunction = true;
-        }
+
+        std::cout << "FunctionDecl = " << (functionDecl == nullptr) << " \n";
 
         //No function
         if(functionDecl == nullptr && isNativeFunction == false){
@@ -905,7 +978,9 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
         for (size_t i = 0; i < node.arguments.size(); ++i) {
             
             ParameterNode* declParam = dynamic_cast<ParameterNode*>(functionDecl->parameters[i]);
-            /* ParameterNode* callParam = dynamic_cast<ParameterNode*>(node.arguments[i]); */
+            if(declParam == nullptr){
+              runtimeError("Function decl parameters not valid");
+            }
 
             
 

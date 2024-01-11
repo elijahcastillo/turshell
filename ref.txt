@@ -3,12 +3,31 @@ struct Test {
   int g;
 };
 
-impl Test -> age(Test self) int {
-  return g + 1;
+struct Person {
+  int income_per_hour;
+  int hours_worked;
+  array<Test> things;
+};
+
+impl Test -> age(Test self, int x) int {
+  return self.g + x;
+}
+
+impl Person -> money(Person self) int {
+  int x = self.income_per_hour * self.hours_worked;
+  print(self.things[0].age(4))
+  return x;
 }
 
 
-Test a = {g: 5};
-a.age()
-//int b = a.age();
+
+
+Person a = {
+  income_per_hour: 14, 
+  hours_worked: 32, 
+  things: [{g: 3}, {g:4}]
+};
+
+int b = a.money();
+print(b)
 

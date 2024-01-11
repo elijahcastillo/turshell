@@ -15,6 +15,7 @@ struct StructDeclInfo{
   std::string structName;
   size_t numProperties;
   std::unordered_map<std::string, std::string> properties;
+  std::unordered_map<std::string, FunctionDeclarationNode*> methods;
 
   StructDeclInfo(std::string structName, size_t numProperties): structName(structName), numProperties(numProperties) {
   };

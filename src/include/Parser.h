@@ -71,10 +71,11 @@ private:
           std::string structName = consume(TokenType::Identifier, "Expected struct name for impl").value;
           consume(TokenType::Minus, "Expected '->' after struct impl  Ex: impl Struct -> ...");
           consume(TokenType::GreaterThan, "Expected '->' after struct impl  Ex: impl Struct -> ...");
+          std::string functionName = peek().value;
 
           ASTNode* functionDeclaration = parseFunctionDeclaration();
 
-          return new StructMethodDeclarationNode(structName, functionDeclaration);
+          return new StructMethodDeclarationNode(structName, functionName, functionDeclaration);
         }
 
 
@@ -454,7 +455,7 @@ std::string getArrayType() {
         return node;
     }
 
-    ASTNode* parseFunctionCall(std::string name) {
+    ASTNode* parseFunctionCall(std::string name, bool isStructMethod = false) {
 
         std::string functionName = name;
         std::cout << "INSIDE: " << peek().value << "\n";
@@ -480,7 +481,7 @@ std::string getArrayType() {
         //If function call is part of statmet int a = add(3,2); then it would look for another ;
         /* consume(TokenType::Semicolon, "Expected ';' after arguments"); */
 
-        return new FunctionCallNode(functionName, arguments);
+        return new FunctionCallNode(functionName, arguments, isStructMethod);
     }
 
 
@@ -496,7 +497,16 @@ ASTNode* parseChainedAccess(const std::string& baseName) {
 
             //Struct function call   a.test()
             if(peek().type == TokenType::LParen){
-              ASTNode* funcCall = parseFunctionCall(propertyName);
+              ASTNode* funcCall = parseFunctionCall(propertyName, true);
+
+              //Need to get prev access: Ex: a.test.person.age()
+              //We call the function on person
+              /* if(accesses.size() == 0){ */
+              /*   throw std::runtime_error("Cannot get Struct Method Call, Struct name"); */
+              /* } */
+
+
+
               accesses.push_back(new StructMethodCallNode(propertyName, funcCall)); // You need to create this node type
               continue;
             }

@@ -157,19 +157,20 @@ struct PropertyAccessNode: public ExpressionNode {
 //===============
 struct StructMethodDeclarationNode: public ExpressionNode {
   std::string structName;
-  ASTNode* functionDeclaration;
+  std::string  methodName;
+  ASTNode* methodDeclaration;
 
-  StructMethodDeclarationNode(std::string& structName, ASTNode* functionDeclaration) : structName(structName), functionDeclaration(functionDeclaration) {};
+  StructMethodDeclarationNode(std::string& structName, std::string& methodName, ASTNode* methodDeclaration) : structName(structName), methodName(methodName), methodDeclaration(methodDeclaration) {};
 
     void accept(Visitor &v) override;
 };
 
 
 struct StructMethodCallNode: public ExpressionNode {
-  std::string structName;
+  std::string methodName;
   ASTNode* functionCall;
 
-  StructMethodCallNode(std::string& structName, ASTNode* functionCall) : structName(structName), functionCall(functionCall) {};
+  StructMethodCallNode(std::string& methodName, ASTNode* functionCall) : methodName(methodName), functionCall(functionCall) {};
 
     void accept(Visitor &v) override;
 };
@@ -270,11 +271,12 @@ struct IfStatementNode : public StatementNode {
 
 
 struct FunctionCallNode : public ExpressionNode {
+    bool isStructMethod;
     std::string functionName;
     std::vector<ASTNode*> arguments;
 
-    FunctionCallNode(const std::string& functionName, const std::vector<ASTNode*>& arguments)
-        : functionName(functionName), arguments(arguments) {}
+    FunctionCallNode(const std::string& functionName, const std::vector<ASTNode*>& arguments, bool isStructMethod = false)
+        : functionName(functionName), arguments(arguments), isStructMethod(isStructMethod) {}
 
     void accept(Visitor &v) override;
 };
