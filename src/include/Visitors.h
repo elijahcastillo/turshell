@@ -26,6 +26,8 @@ public:
     virtual void visit(ChainedAccessNode& node) = 0;
     virtual void visit(ChainedAssignmentNode& node) = 0;
 
+    virtual void visit(StructMethodDeclarationNode& node) = 0;
+    virtual void visit(StructMethodCallNode& node) = 0;
     virtual void visit(StructDeclarationNode& node) = 0;
     virtual void visit(StructInitalizerListNode& node) = 0;
     virtual void visit(StructPropertyAccessNode& node) = 0;
@@ -66,6 +68,8 @@ public:
     void visit(ChainedAccessNode& node) override; 
     void visit(ChainedAssignmentNode& node) override; 
 
+    void visit(StructMethodDeclarationNode& node) override; 
+    void visit(StructMethodCallNode& node) override; 
     void visit(StructDeclarationNode& node) override; 
     void visit(StructInitalizerListNode& node) override; 
     void visit(StructPropertyAccessNode& node) override; 

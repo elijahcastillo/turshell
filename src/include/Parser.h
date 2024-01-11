@@ -67,6 +67,18 @@ private:
           return parseFunctionDeclaration();
         }
 
+        if(token.value == "impl"){
+          std::string structName = consume(TokenType::Identifier, "Expected struct name for impl").value;
+          consume(TokenType::Minus, "Expected '->' after struct impl  Ex: impl Struct -> ...");
+          consume(TokenType::GreaterThan, "Expected '->' after struct impl  Ex: impl Struct -> ...");
+
+          ASTNode* functionDeclaration = parseFunctionDeclaration();
+
+          return new StructMethodDeclarationNode(structName, functionDeclaration);
+        }
+
+
+
         if(token.value == "struct"){
           return parseStruct();
         }
@@ -445,6 +457,7 @@ std::string getArrayType() {
     ASTNode* parseFunctionCall(std::string name) {
 
         std::string functionName = name;
+        std::cout << "INSIDE: " << peek().value << "\n";
         
         consume(TokenType::LParen, "Expected '(' after Identifier for func call");
         std::vector<ASTNode*> arguments;
@@ -476,15 +489,24 @@ ASTNode* parseChainedAccess(const std::string& baseName) {
     std::vector<ASTNode*> accesses;
     accesses.push_back(new VariableExpressionNode(baseName)); // Starting point of the chain
 
-    while (check(TokenType::Dot) || check(TokenType::LBracket)) {
+    while (check(TokenType::Dot) || check(TokenType::LBracket) || check(TokenType::LParen)) {
+        std::cout << "Checking " << peek().value << "\n";
         if (match(TokenType::Dot)) {
             std::string propertyName = consume(TokenType::Identifier, "Expected property name after '.'").value;
+
+            //Struct function call   a.test()
+            if(peek().type == TokenType::LParen){
+              ASTNode* funcCall = parseFunctionCall(propertyName);
+              accesses.push_back(new StructMethodCallNode(propertyName, funcCall)); // You need to create this node type
+              continue;
+            }
+
             accesses.push_back(new PropertyAccessNode(propertyName)); // You need to create this node type
         } else if (match(TokenType::LBracket)) {
             ASTNode* index = parseExpression();
             consume(TokenType::RBracket, "Expected ']' after index");
             accesses.push_back(new ArrayAccessNode(index)); // Reuse your existing ArrayAccessNode
-        }
+        } 
     }
 
     return new ChainedAccessNode(accesses);
@@ -561,17 +583,17 @@ ASTNode* parseChainedAccess(const std::string& baseName) {
 
 
     // Handle Chained Access or Assignment   struct.names[1].age
-    if (check(TokenType::Identifier) && (peekNext().type == TokenType::Dot || peekNext().type == TokenType::LBracket)) {
-        ASTNode* access = parseChainedAccess(consume(TokenType::Identifier, "Expected identifier").value);
-
-        if (match(TokenType::Equals)) {
-            ASTNode* value = parseExpression();
-            consume(TokenType::Semicolon, "Expect ';' after assignment");
-            return new ChainedAssignmentNode(access, value);
-        }
-
-        return access;
-    }
+    /* if (check(TokenType::Identifier) && (peekNext().type == TokenType::Dot || peekNext().type == TokenType::LBracket)) { */
+    /*     ASTNode* access = parseChainedAccess(consume(TokenType::Identifier, "Expected identifier").value); */
+    /*  */
+    /*     if (match(TokenType::Equals)) { */
+    /*         ASTNode* value = parseExpression(); */
+    /*         consume(TokenType::Semicolon, "Expect ';' after assignment"); */
+    /*         return new ChainedAssignmentNode(access, value); */
+    /*     } */
+    /*  */
+    /*     return access; */
+    /* } */
 
 
     // Handle Identifiers (e.g., variable names or function calls)
@@ -595,6 +617,7 @@ ASTNode* parseChainedAccess(const std::string& baseName) {
 
         // Check for function call (identifier followed by '(')
         if (peek().type == TokenType::LParen) {
+            std::cout << "Noraml Func call\n";
             return parseFunctionCall(baseName);
         }
 

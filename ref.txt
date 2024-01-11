@@ -1,25 +1,14 @@
 
-func test() void {
-    int i = 0;
-     
-    while(i < 10){
-      
-      if(i == 7){
-        break;
-      }
-      print(i)
-      i = i + 1;
-    }
+struct Test {
+  int g;
+};
 
-
-    print(78)
-
+impl Test -> age(Test self) int {
+  return g + 1;
 }
 
 
-test()
-
-
-
-
+Test a = {g: 5};
+a.age()
+//int b = a.age();
 

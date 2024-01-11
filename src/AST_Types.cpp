@@ -54,9 +54,14 @@ void ChainedAssignmentNode::accept(Visitor& v){
   v.visit(*this);
 }
 
+void StructMethodDeclarationNode::accept(Visitor& v){
+  v.visit(*this);
+}
 
 
-
+void StructMethodCallNode::accept(Visitor& v){
+  v.visit(*this);
+}
 
 
 void StructDeclarationNode::accept(Visitor& v){

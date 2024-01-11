@@ -90,7 +90,17 @@ void PrintVisitor::visit(ChainedAssignmentNode& node) {
 
 
 //=======
+void PrintVisitor::visit(StructMethodDeclarationNode& node){
+  std::cout << "impl " << node.structName << "->";
+  node.functionDeclaration->accept(*this);
 
+};
+
+void PrintVisitor::visit(StructMethodCallNode& node){
+  std::cout << "Struct Method " << node.structName << ".";
+  node.functionCall->accept(*this);
+
+};
 
 void PrintVisitor::visit(StructDeclarationNode& node){
   std::cout << "struct " << node.structName << "{\n";

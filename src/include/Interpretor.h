@@ -92,6 +92,8 @@ void printEnvParent();
 
 
 
+    void visit(StructMethodDeclarationNode& node) override;
+    void visit(StructMethodCallNode& node) override;
     void visit(StructDeclarationNode& node) override;
     void visit(StructInitalizerListNode& node) override;
     void visit(StructPropertyAccessNode& node) override;

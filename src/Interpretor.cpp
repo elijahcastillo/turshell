@@ -707,21 +707,42 @@ void Interpreter::visit(VariableAssignmentNode& node) {
 
 
 
-    void Interpreter::visit(StructDeclarationNode& node) {
-      //Do something Here not sure yet, its a user defined type
-        if (structTable.find(node.structName) != structTable.end()) {
-            // Function with the same name already exists
-            runtimeError("Struct '" + node.structName + "' is already declared.");
-        }
-        StructDeclInfo info(node.structName, node.properties.size());
-        for (auto& prop : node.properties) {
-          ParameterNode* declParam = static_cast<ParameterNode*>(prop);
+void Interpreter::visit(StructMethodCallNode& node) {
+}
 
-            info.addProperty(declParam->name, declParam->type);
-        }
+void Interpreter::visit(StructMethodDeclarationNode& node) {
+  //Do something Here not sure yet, its a user defined type
+    /* if (structTable.find(node.structName) != structTable.end()) { */
+    /*     // Function with the same name already exists */
+    /*     runtimeError("Struct '" + node.structName + "' is already declared."); */
+    /* } */
+    /* StructDeclInfo info(node.structName, node.properties.size()); */
+    /* for (auto& prop : node.properties) { */
+    /*   ParameterNode* declParam = static_cast<ParameterNode*>(prop); */
+    /*  */
+    /*     info.addProperty(declParam->name, declParam->type); */
+    /* } */
+    /*  */
+    /* structTable[node.structName] = info; */
+}
 
-        structTable[node.structName] = info;
+
+
+void Interpreter::visit(StructDeclarationNode& node) {
+  //Do something Here not sure yet, its a user defined type
+    if (structTable.find(node.structName) != structTable.end()) {
+        // Function with the same name already exists
+        runtimeError("Struct '" + node.structName + "' is already declared.");
     }
+    StructDeclInfo info(node.structName, node.properties.size());
+    for (auto& prop : node.properties) {
+      ParameterNode* declParam = static_cast<ParameterNode*>(prop);
+
+        info.addProperty(declParam->name, declParam->type);
+    }
+
+    structTable[node.structName] = info;
+}
 
 void Interpreter::visit(StructInitalizerListNode& node) {
     std::string structType = ""; // This should be determined from the context or passed to the node.

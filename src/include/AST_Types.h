@@ -155,6 +155,24 @@ struct PropertyAccessNode: public ExpressionNode {
 
 
 //===============
+struct StructMethodDeclarationNode: public ExpressionNode {
+  std::string structName;
+  ASTNode* functionDeclaration;
+
+  StructMethodDeclarationNode(std::string& structName, ASTNode* functionDeclaration) : structName(structName), functionDeclaration(functionDeclaration) {};
+
+    void accept(Visitor &v) override;
+};
+
+
+struct StructMethodCallNode: public ExpressionNode {
+  std::string structName;
+  ASTNode* functionCall;
+
+  StructMethodCallNode(std::string& structName, ASTNode* functionCall) : structName(structName), functionCall(functionCall) {};
+
+    void accept(Visitor &v) override;
+};
 
 
 struct StructDeclarationNode: public ExpressionNode {

@@ -161,7 +161,7 @@ public:
   }
 
 bool isKeyword(const std::string& identifier) {
-    static const std::set<std::string> keywords = {"true", "false", "if", "else", "while", "break", "return", "func", "struct"};
+    static const std::set<std::string> keywords = {"true", "false", "impl", "if", "else", "while", "break", "return", "func", "struct"};
     return keywords.find(identifier) != keywords.end();  
 }
 
