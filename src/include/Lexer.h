@@ -109,6 +109,10 @@ public:
     char currentChar = source[position];
 
 
+    if(currentChar == '#'){
+      consumeSingleLineComment();
+      return nextToken(); // After consuming comment, move to the next token
+    }
 
     // Handle single-line comments
     if (currentChar == '/' && position + 1 < source.size() && source[position + 1] == '/') {

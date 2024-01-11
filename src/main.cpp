@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include <filesystem> // For path manipulation and retrieval
 #include <cstdlib>    // For getenv
@@ -17,12 +18,20 @@
 
 namespace fs = std::filesystem;
 
+
+std::string extractIncludeFileName(const std::string& includeLine) {
+    // Extract the filename from the include directive line
+    // Assuming the format is: #include "filename"
+    size_t start = includeLine.find("\"") + 1;
+    size_t end = includeLine.find("\"", start);
+    return includeLine.substr(start, end - start);
+}
+
+
+
 fs::path getAbsolutePath() {
     // Retrieve the current working directory
     fs::path cwd = fs::current_path();
-
-    // Combine the CWD with the relative path to get the absolute path
-    /* fs::path absolutePath = cwd / relativePath; */
 
     // Convert to absolute path
     return fs::absolute(cwd);
@@ -77,6 +86,29 @@ std::string readFileToString(const std::string& filepath) {
     return str;
 }
 
+std::string preprocessIncludes(const std::string& scriptContent, const fs::path& baseDir, std::unordered_set<std::string>& includedFiles) {
+    std::istringstream stream(scriptContent);
+    std::ostringstream processedScript;
+    std::string line;
+
+    while (std::getline(stream, line)) {
+        if (line.find("#include") == 0) {
+            std::string includeFileName = extractIncludeFileName(line); // Implement this function to extract the filename
+            fs::path includeFilePath = baseDir / includeFileName;
+
+            if (includedFiles.count(includeFilePath.string()) == 0) {
+                includedFiles.insert(includeFilePath.string());
+                std::string fileContent = readFileToString(includeFilePath.string());
+                processedScript << preprocessIncludes(fileContent, includeFilePath.parent_path(), includedFiles);
+            }
+
+        } else {
+            processedScript << line << '\n';
+        }
+    }
+    return processedScript.str();
+}
+
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -98,8 +130,15 @@ int main(int argc, char* argv[]) {
         std::string filepath = argv[1];
         std::string buffer = readFileToString(filepath);
 
+
+
+        // Preprocess the script for #include directives
+        std::unordered_set<std::string> includedFiles;
+        std::string preprocessedScript = preprocessIncludes(buffer, scriptDir, includedFiles);
+
+
         // Tokenization
-        Tokenizer tokenizer(buffer);
+        Tokenizer tokenizer(preprocessedScript);
         std::vector<Token> tokens;
         Token token;
         while (token.type != TokenType::EndOfFile) {
