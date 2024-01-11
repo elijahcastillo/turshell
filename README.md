@@ -28,59 +28,82 @@ To get started with Turshell, you'll need to install the Turshell interpreter an
 <!--  -->
 <!-- 3. Once installed, you can start writing and executing Turshell code right away! -->
 
-# Lets learn how to write some turshell code!
-## Types
 
-There are 3 default data types in turshell these are:
- - int
- - string
- - bool
+## Language Basics
 
-## Variables
-You can define variables with these types ,    **these types are enforced at runtime**
+### Data Types
+
+
+Primary data types in Turshell:
+- **int**: Integer numbers.
+- **string**: Textual data.
+- **bool**: Boolean values (true/false).
+- **float**: 3.1415
+- **array**: store data of the same type
+
+### Variable Declaration
+Strongly typed variables in Turshell:
+```turshell
+int year = 2024;
+string message = "Turshell rocks!";
+bool isValid = true;
+float pi = 3.1415;
+array<int> arr = [1,2,3];
 ```
-int a = 2024;
-string b = "turshell is awesome!"
-bool c = true;
-```
 
-## Comments
-
-
-## Control Flow
-If you have ever written in other languages like javascript, go, c++ these will be familiar
-
-
-- If Statements
-```
-int a = 3;
-if(a == 3){
-  print(a)
+### Control Flow
+Turshell includes familiar control structures:
+```turshell
+// If Statements
+int temp = 22;
+if(temp > 20){
+  print("Warm weather")
 }
-``` 
 
-- While Loops
-```
-int b = 0;
-while(b <= 10){
-	if(b % 2 == 0){
-		print(b)
-	}
-	b = b + 1;
+// While Loops
+int count = 0;
+while(count < 3){
+  print("Count is " + count)
+  count = count + 1;
 }
 ```
 
-## Functions
-Here is an example of how you would declare and call a function in turshell
-```
-func isEven(int n) bool {
-  if(n % 2 == 0){
-    return true;
-  }
-
-  return false;
+### Functions
+Defining and invoking functions:
+```turshell
+func add(int a, int b) int {
+  return a + b;
 }
 
-int a = 4;
-print(isEven(a))
+int result = add(5, 3);
+print("Result: " + result)
 ```
+
+### Structs and Methods
+Object-oriented features in Turshell:
+```turshell
+struct Vehicle {
+  string model;
+  int year;
+};
+
+impl Vehicle -> displayInfo(Vehicle self) void {
+  print(self.model + " made in " + self.year)
+}
+
+Vehicle myCar = {model: "TurboX", year: 2023};
+myCar.displayInfo();
+```
+
+### Advanced Features
+Turshell supports recursion, enhanced control flow, struct operations, native functions, and string handling, enabling complex and efficient programming solutions.
+
+### Sample Programs
+Discover various algorithms and problem-solving techniques with Turshell through our sample programs section.
+
+## Community and Support
+Engage with the Turshell community for support, collaboration, and knowledge sharing. Visit [Turshell Community](https://turshell-lang.com/community) for more.
+
+---
+
+Embark on a coding adventure with Turshell and unlock new programming possibilities! 🐢🚀
