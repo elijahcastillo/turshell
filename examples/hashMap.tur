@@ -8,7 +8,6 @@ int hash_size = 0;
 array<KeyValue> hash_data = [];
 init(hash_data, 10, {value: 0, key: "a", isOccupied: false})
 
-//print(hash_data)
 
 func makeKV(string k, int v) KeyValue {
   KeyValue val = {value: v, key: k, isOccupied: true};

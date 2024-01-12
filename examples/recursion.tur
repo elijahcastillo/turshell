@@ -17,6 +17,5 @@ func fib(int n) int {
 }
 
 
-
 print(factorial(8))
-//print(fib(15))
+print(fib(15))
