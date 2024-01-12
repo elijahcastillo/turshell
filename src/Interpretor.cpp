@@ -445,6 +445,11 @@ void Interpreter::visit(ChainedAccessNode& node) {
     for (size_t i = 1; i < node.accesses.size(); ++i) {
         node.accesses[i]->accept(*this); // This will push the result of each access onto the stack
     }
+
+    if(evaluationStack.empty()){
+      return;
+    }
+
     currentVal = evaluationStack.top();
     evaluationStack.push(currentVal); // Push the final result onto the stack
 }
@@ -730,6 +735,7 @@ void Interpreter::visit(StructMethodCallNode& node) {
 
   //Call method
   visit(*funcCall);
+
 }
 
 void Interpreter::visit(StructMethodDeclarationNode& node) {
@@ -995,7 +1001,7 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
 
         //Evalute body of function
         bool didReturn = false;
-        std::shared_ptr<RuntimeVal> returnValue;
+        std::shared_ptr<RuntimeVal> returnValue = nullptr;
 
           try{
 
@@ -1030,21 +1036,27 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
         exitCurrentScope();
 
 
-        //Handle return of array
-        if(startsWith(functionDecl->returnType, "array<")){
-          handleArrayValidation(returnValue, functionDecl->returnType);
-        }
+        /* std::cout << "DID RETURN " << didReturn  << (returnValue == nullptr) << "\n"; */
 
-        //Handle return of struct
-        if(isStructType(functionDecl->returnType)){
-          validateAndSetStructType(returnValue, functionDecl->returnType);
+        if(functionDecl->returnType == "void" && returnValue != nullptr){
+          runtimeError("Function of return type void cannot return a value");
         }
 
 
-        if(didReturn){
-          if(functionDecl->returnType == "void" && returnValue != nullptr){
-            runtimeError("Function of return type void cannot return a value");
+        if(didReturn && returnValue != nullptr){
+
+          //Handle return of array
+          if(startsWith(functionDecl->returnType, "array<")){
+            handleArrayValidation(returnValue, functionDecl->returnType);
           }
+
+          //Handle return of struct
+          if(isStructType(functionDecl->returnType)){
+            validateAndSetStructType(returnValue, functionDecl->returnType);
+          }
+
+
+
 
           if(returnValue->getType() != functionDecl->returnType){
             runtimeError("Invalid return type of '" + returnValue->getType() + "' expected '" + functionDecl->returnType + "' in function '" + functionDecl->functionName + "'" );

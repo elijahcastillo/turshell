@@ -1,0 +1,35 @@
+
+
+// Example 1: Simple If Statement
+// ===============================
+int number = 3;
+if (number != 4) {
+    print("Number is not 4, it is:", number)
+}
+
+
+
+// Example 2: While Loop with If Statement
+// ========================================
+int counter = 0;
+while (counter <= 10) {
+    if (counter % 2 == 0) {
+        print("Even number:", counter)
+    }
+    counter = counter + 1;
+}
+
+
+
+// Example 3: While Loop with If Statement and Break Keyword
+// =========================================================
+int anotherCounter = 0;
+while (true) {  
+    if (anotherCounter > 5) {
+        print("Counter is greater than 5, breaking loop.")
+        break;  // Exits the loop
+    }
+    print("Current counter value:", anotherCounter)
+    anotherCounter = anotherCounter + 1;
+}
+

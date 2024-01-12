@@ -9,8 +9,8 @@ struct Person {
   array<Test> things;
 };
 
-impl Test -> age(Test self, int x) int {
-  return self.g + x;
+impl Test -> age(Test self, int x) void {
+  self.g = x;
 }
 
 impl Person -> money(Person self) int {
@@ -28,6 +28,9 @@ Person a = {
   things: [{g: 3}, {g:4}]
 };
 
-int b = a.money();
+Test b = {g: 12};
+print(b)
+b.age(99)
+int c = 3;
 print(b)
 

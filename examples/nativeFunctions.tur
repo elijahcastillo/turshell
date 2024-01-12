@@ -1,3 +1,22 @@
 
 int a = 17;
 print("The square root of", a, "is", sqrt(16))
+
+string name = "Elijah";
+print("Length of name is ", len(name))
+
+array<bool> b = [true, false, false, true];
+print("Length of array is ", len(b))
+
+int neg = -4 + 2;
+print("The absolute value of ", neg, " is ", abs(neg))
+
+int rand = random();
+print("A random number is ", rand)
+
+int powNum = 2;
+print(powNum, " to the power of ", 3, " is ", pow(powNum, 3))
+
+
+int sqrtNum = 16;
+print("The square root of ", sqrtNum, " is ", sqrt(sqrtNum))

@@ -180,9 +180,9 @@ std::string getArrayType() {
         ASTNode* varInitializer = nullptr;
 
         if(match(TokenType::Equals)){
-
           varInitializer = parseExpression();
         }
+
 
 
 

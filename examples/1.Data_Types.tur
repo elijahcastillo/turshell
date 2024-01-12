@@ -1,0 +1,49 @@
+// 5 Primitive Types in Turshell
+// ==============================
+
+// 1. Integer (int)
+// =================
+int myInt = 10;
+myInt = myInt + 5;  // Adds 5, now myInt is 15
+myInt = 20;         // Assigns a new value, now myInt is 20
+
+
+
+
+// 2. Floating Point Number (float)
+// ================================
+float myFloat = 3.14;
+myFloat = myFloat + 2.0;  // Adds 2.0, now myFloat is 5.14
+myFloat = 2.73;           // Assigns a new value, now myFloat is 2.73
+
+
+
+
+// 3. String
+// =========
+string myString = "turshell";
+string anotherString = " is powerful";
+string combinedString = myString + anotherString;  // Concatenates strings, now combinedString is "turshell is powerful"
+myString[0] = 'w';                                 // Changes first character, now myString is "wurshell"
+anotherString = "new string";                      // Assigns a new string, now anotherString is "new string"
+
+
+
+
+
+// 4. Boolean (bool)
+// ==================
+bool myBool = true;
+bool anotherBool = (myBool == false);  // Compares with false, now anotherBool is false
+bool isTwoEqualTwo = (2 == 2);         // Checks equality, now isTwoEqualTwo is true
+myBool = false;                        // Assigns a new value, now myBool is false
+
+
+
+
+
+// 5. Array
+// ========
+array<int> myArray = [1, 2, 3];
+myArray[1] = 5;      // Modifies second element, now myArray is [1, 5, 3]
+myArray = [4, 5, 6]; // Assigns a new array, now myArray is [4, 5, 6]

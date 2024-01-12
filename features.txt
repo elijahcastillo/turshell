@@ -1,4 +1,10 @@
- - nativeAppend with structs
+
+- variable names with numbers
+- float and int multiplcation / addition
+
+
+
+- nativeAppend with structs
  - Add functions to structs  impl Struct -> age() int {
 
                              }
