@@ -285,7 +285,7 @@ std::shared_ptr<RuntimeVal> nativeAssert(Interpreter& interpreter, std::vector<s
         throw std::runtime_error("ASSERT: " + message);
     }
 
-    return std::make_shared<BoolValue>(true);
+    return nullptr; 
 }
 
 
@@ -327,7 +327,7 @@ std::shared_ptr<RuntimeVal> nativeSleep(Interpreter& interpreter, std::vector<st
     }
     int millis = static_cast<IntValue*>(args[0].get())->getValue();
     std::this_thread::sleep_for(std::chrono::milliseconds(millis));
-    return std::make_shared<BoolValue>(true); // Return a dummy value or void
+    return nullptr; 
 }
 
 // Math: Generate a random number within a specified range
@@ -441,7 +441,7 @@ std::shared_ptr<RuntimeVal> nativeAppend(Interpreter& interpreter, std::vector<s
     arrayRuntimeValue->addElement(value);
 
     
-    return std::make_shared<BoolValue>(true); // Return a dummy value or void
+    return nullptr;
 }
 
 
@@ -488,6 +488,9 @@ std::shared_ptr<RuntimeVal> nativeMathAbs(Interpreter& interpreter, std::vector<
 
 
 std::shared_ptr<RuntimeVal> nativeRandom(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    if (args.size() != 0) {
+        throw std::runtime_error("nativeRadnom expects zero arguments");
+    }
     static std::mt19937 generator(std::random_device{}());
 
     std::uniform_int_distribution<int> distribution(0, INT_MAX);
