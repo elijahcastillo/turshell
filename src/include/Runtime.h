@@ -225,7 +225,17 @@ public:
         } else if (left->getType() == "string" && right->getType() == "string") {
             return std::make_shared<StringValue>(static_cast<StringValue*>(left.get())->getValue() +
                                                  static_cast<StringValue*>(right.get())->getValue());
+        }  else if ((left->getType() == "int" && right->getType() == "float") ||
+             (left->getType() == "float" && right->getType() == "int")) {
+        float leftVal = left->getType() == "int" ? static_cast<IntValue*>(left.get())->getValue() 
+                                                 : static_cast<FloatValue*>(left.get())->getValue();
+        float rightVal = right->getType() == "int" ? static_cast<IntValue*>(right.get())->getValue() 
+                                                   : static_cast<FloatValue*>(right.get())->getValue();
+        return std::make_shared<FloatValue>(leftVal + rightVal);
         }
+
+
+
         throw std::runtime_error("Unsupported types for addition");
     }
 
@@ -236,7 +246,18 @@ public:
         } else if (left->getType() == "float" && right->getType() == "float") {
             return std::make_shared<FloatValue>(static_cast<FloatValue*>(left.get())->getValue() -
                                                 static_cast<FloatValue*>(right.get())->getValue());
-        } 
+        } else if ((left->getType() == "int" && right->getType() == "float") ||
+             (left->getType() == "float" && right->getType() == "int")) {
+        float leftVal = left->getType() == "int" ? static_cast<IntValue*>(left.get())->getValue() 
+                                                 : static_cast<FloatValue*>(left.get())->getValue();
+        float rightVal = right->getType() == "int" ? static_cast<IntValue*>(right.get())->getValue() 
+                                                   : static_cast<FloatValue*>(right.get())->getValue();
+        return std::make_shared<FloatValue>(leftVal - rightVal);
+    }
+
+
+
+
         throw std::runtime_error("Unsupported types for subtraction");
     }
 
@@ -248,7 +269,16 @@ public:
         } else if (left->getType() == "float" && right->getType() == "float") {
             return std::make_shared<FloatValue>(static_cast<FloatValue*>(left.get())->getValue() *
                                                 static_cast<FloatValue*>(right.get())->getValue());
-        } 
+        }  else if ((left->getType() == "int" && right->getType() == "float") ||
+             (left->getType() == "float" && right->getType() == "int")) {
+        float leftVal = left->getType() == "int" ? static_cast<IntValue*>(left.get())->getValue() 
+                                                 : static_cast<FloatValue*>(left.get())->getValue();
+        float rightVal = right->getType() == "int" ? static_cast<IntValue*>(right.get())->getValue() 
+                                                   : static_cast<FloatValue*>(right.get())->getValue();
+        return std::make_shared<FloatValue>(leftVal * rightVal);
+    }
+
+
         throw std::runtime_error("Unsupported types for multiplication");
     }
 
@@ -260,7 +290,19 @@ public:
         } else if (left->getType() == "float" && right->getType() == "float") {
             return std::make_shared<FloatValue>(static_cast<FloatValue*>(left.get())->getValue() /
                                                 static_cast<FloatValue*>(right.get())->getValue());
-        } 
+        } else if ((left->getType() == "int" && right->getType() == "float") ||
+             (left->getType() == "float" && right->getType() == "int")) {
+        float leftVal = left->getType() == "int" ? static_cast<IntValue*>(left.get())->getValue() 
+                                                 : static_cast<FloatValue*>(left.get())->getValue();
+        float rightVal = right->getType() == "int" ? static_cast<IntValue*>(right.get())->getValue() 
+                                                   : static_cast<FloatValue*>(right.get())->getValue();
+        return std::make_shared<FloatValue>(leftVal / rightVal);
+    }
+
+
+
+
+
         throw std::runtime_error("Unsupported types for division");
     }
 

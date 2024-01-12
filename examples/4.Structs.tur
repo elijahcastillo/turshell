@@ -22,7 +22,7 @@ print("Counter value:", myCounter.count)
 // =========================================
 struct Employee {
     string name;
-    float hoursWorked;
+    int hoursWorked;
     float hourlyRate;
 };
 
@@ -37,7 +37,7 @@ impl Employee -> updateHourlyRate(Employee self, float newRate) void {
 }
 
 // Creating and using the Employee structure
-Employee employee = {name: "Alice", hoursWorked: 40.0, hourlyRate: 20.0};
+Employee employee = {name: "Alice", hoursWorked: 40, hourlyRate: 20.0};
 float earnings = employee.totalEarnings();
 print(employee.name, "'s total earnings:", earnings)
 

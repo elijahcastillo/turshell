@@ -1,5 +1,6 @@
 
 - variable names with numbers
+- for loop
 - float and int multiplcation / addition
 
 
