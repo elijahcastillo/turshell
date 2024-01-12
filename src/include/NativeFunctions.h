@@ -6,6 +6,15 @@
 #include <memory>
 #include <stdexcept>
 
+
+std::shared_ptr<RuntimeVal> nativeFileWrite(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args);
+
+std::shared_ptr<RuntimeVal> nativeFileAppend(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args);
+
+std::shared_ptr<RuntimeVal> nativeDirectoryList(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args); 
+
+std::shared_ptr<RuntimeVal> nativeFileExists(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args);
+
 // Example of a native function
 std::shared_ptr<RuntimeVal> nativePrint(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args);
 

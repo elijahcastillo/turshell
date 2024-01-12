@@ -7,6 +7,109 @@
 #include <chrono>
 #include <thread>
 #include <regex>
+#include <filesystem>
+
+
+
+
+
+// === File Manipulation & Access ===
+//
+
+std::shared_ptr<RuntimeVal> nativeFileWrite(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    if (args.size() != 2 || args[0]->getType() != "string" || args[1]->getType() != "string") {
+        throw std::runtime_error("nativeFileWrite expects two string arguments");
+    }
+
+    std::string filePath = static_cast<StringValue*>(args[0].get())->getValue();
+    std::string data = static_cast<StringValue*>(args[1].get())->getValue();
+
+    std::ofstream file(filePath, std::ios::out | std::ios::trunc);
+    if (!file.is_open()) {
+        throw std::runtime_error("nativeFileWrite: unable to open file " + filePath);
+    }
+
+    file << data;
+    return std::make_shared<BoolValue>(true);
+}
+
+
+
+std::shared_ptr<RuntimeVal> nativeFileAppend(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    if (args.size() != 2 || args[0]->getType() != "string" || args[1]->getType() != "string") {
+        throw std::runtime_error("nativeFileAppend expects two string arguments");
+    }
+
+    std::string filePath = static_cast<StringValue*>(args[0].get())->getValue();
+    std::string data = static_cast<StringValue*>(args[1].get())->getValue();
+
+    std::ofstream file(filePath, std::ios::out | std::ios::app);
+    if (!file.is_open()) {
+        throw std::runtime_error("nativeFileAppend: unable to open file " + filePath);
+    }
+
+    file << data;
+    return std::make_shared<BoolValue>(true);
+}
+
+std::shared_ptr<RuntimeVal> nativeDirectoryList(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    if (args.size() != 1 || args[0]->getType() != "string") {
+        throw std::runtime_error("nativeDirectoryList expects one string argument");
+    }
+
+    std::string directoryPath = static_cast<StringValue*>(args[0].get())->getValue();
+    std::vector<std::shared_ptr<RuntimeVal>> fileList;
+    for (const auto& entry : std::filesystem::directory_iterator(directoryPath)) {
+        fileList.push_back(std::make_shared<StringValue>(entry.path().string()));
+    }
+
+    return std::make_shared<ArrayValue>("string", fileList);
+}
+
+std::shared_ptr<RuntimeVal> nativeFileExists(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    if (args.size() != 1 || args[0]->getType() != "string") {
+        throw std::runtime_error("nativeFileExists expects one string argument");
+    }
+
+    std::string filePath = static_cast<StringValue*>(args[0].get())->getValue();
+    std::ifstream file(filePath);
+
+    return std::make_shared<BoolValue>(file.good());
+}
+
+
+
+std::shared_ptr<RuntimeVal> nativeFileRead(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
+    if (args.size() != 1 || args[0]->getType() != "string") {
+        throw std::runtime_error("nativeFileRead expects one string argument for the file path");
+    }
+
+    std::string relativeFilePath = static_cast<StringValue*>(args[0].get())->getValue();
+
+    // Assuming you have a member in Interpreter class like this:
+    // std::filesystem::path scriptDirectory;
+    // Construct the full path
+    std::filesystem::path fullFilePath = interpreter.scriptDir / relativeFilePath;
+
+    /* std::cout << "File native read: " << fullFilePath << "\n"; */
+
+    std::ifstream file(fullFilePath);
+    if (!file.is_open()) {
+        throw std::runtime_error("nativeFileRead: unable to open file " + fullFilePath.string());
+    }
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    return std::make_shared<StringValue>(buffer.str());
+}
+
+
+// === END File Manipulation & Access ===
+
+
+
+
+
 
 
 
@@ -418,26 +521,4 @@ std::shared_ptr<RuntimeVal> nativeMathSqrt(Interpreter& interpreter, std::vector
 }
 
 
-std::shared_ptr<RuntimeVal> nativeFileRead(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args) {
-    if (args.size() != 1 || args[0]->getType() != "string") {
-        throw std::runtime_error("nativeFileRead expects one string argument for the file path");
-    }
 
-    std::string relativeFilePath = static_cast<StringValue*>(args[0].get())->getValue();
-
-    // Assuming you have a member in Interpreter class like this:
-    // std::filesystem::path scriptDirectory;
-    // Construct the full path
-    std::filesystem::path fullFilePath = interpreter.scriptDir / relativeFilePath;
-
-    /* std::cout << "File native read: " << fullFilePath << "\n"; */
-
-    std::ifstream file(fullFilePath);
-    if (!file.is_open()) {
-        throw std::runtime_error("nativeFileRead: unable to open file " + fullFilePath.string());
-    }
-
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    return std::make_shared<StringValue>(buffer.str());
-}

@@ -164,60 +164,86 @@ int main(int argc, char* argv[]) {
         Interpreter interpreter;
         interpreter.setScriptDir(scriptDir);
 
-        //Variable number of arguments of any type, printed seperated by space with a newline at end
-        interpreter.registerNativeFunction("print", nativePrint);
 
-        //Prints out address of variable
-        interpreter.registerNativeFunction("addr", nativePrintAddr);
+// Register the native functions in your scripting language
 
-        // Preforms a deep copy of whatever passed in
-        interpreter.registerNativeFunction("copy", nativeCopy);
+// Register 'print' - Prints arguments separated by space, ending with a newline
+interpreter.registerNativeFunction("print", nativePrint);
 
-        // Initalizes an array of a size with an initlizer
-        interpreter.registerNativeFunction("init", nativeInit);
+// Register 'addr' - Prints out memory addresses of variables
+interpreter.registerNativeFunction("addr", nativePrintAddr);
 
-        //Print out type of variables passed in seperated by space with a new line at end
-        interpreter.registerNativeFunction("type", nativeType);
+// Register 'copy' - Performs a deep copy of the passed argument
+interpreter.registerNativeFunction("copy", nativeCopy);
 
-        //Takes in 2 arguments, first is the array type, second is the value to append
-        interpreter.registerNativeFunction("append", nativeAppend);
+// Register 'init' - Initializes an array of a specified size with an initializer
+interpreter.registerNativeFunction("init", nativeInit);
 
-        //Takes 1 argument of type string, returns the value gotten from IO as string or int if possible
-        interpreter.registerNativeFunction("input", nativeInput);
+// Register 'type' - Prints out the types of passed variables
+interpreter.registerNativeFunction("type", nativeType);
 
-        //Take 1 argument array, returns the # of items in the array as an int
-        interpreter.registerNativeFunction("len", nativeLen);
+// Register 'append' - Appends an element or another array to an array
+interpreter.registerNativeFunction("append", nativeAppend);
 
-        interpreter.registerNativeFunction("readFile", nativeFileRead);
+// Register 'input' - Takes a string prompt and returns user input
+interpreter.registerNativeFunction("input", nativeInput);
 
-        interpreter.registerNativeFunction("abs", nativeMathAbs);
-        interpreter.registerNativeFunction("random", nativeRandom);
-        interpreter.registerNativeFunction("pow", nativeMathPow);
-        interpreter.registerNativeFunction("sqrt", nativeMathSqrt);
+// Register 'len' - Returns the length of an array or a string
+interpreter.registerNativeFunction("len", nativeLen);
 
-        //No arguments, returns a float for the miliseconds since epoch
-        interpreter.registerNativeFunction("timeNow", nativeTimeNow);
+// Register 'abs' - Returns the absolute value of an integer
+interpreter.registerNativeFunction("abs", nativeMathAbs);
 
-        //1 argument of type int, number of milisecodns to stop execution
-        interpreter.registerNativeFunction("sleep", nativeSleep);
+// Register 'random' - Generates a random integer
+interpreter.registerNativeFunction("random", nativeRandom);
 
-        //Random int between the range
-        interpreter.registerNativeFunction("randRange", nativeMathRandRange);
+// Register 'pow' - Calculates the power of a number
+interpreter.registerNativeFunction("pow", nativeMathPow);
 
-        //Takes 1 argument of any time and creates the string represenation of it; 
-        interpreter.registerNativeFunction("toString", nativeToString);
+// Register 'sqrt' - Calculates the square root of a number
+interpreter.registerNativeFunction("sqrt", nativeMathSqrt);
 
-        //Takes 2 arguments, 1st is a string and 2nd is the regex to match the string, returns bool
-        interpreter.registerNativeFunction("regexMatch", nativeRegexMatch);
+// Register 'timeNow' - Returns the current time in milliseconds since the epoch
+interpreter.registerNativeFunction("timeNow", nativeTimeNow);
 
-        //Takes 1 or 2 argumetns, first is bool, seconds is error message is false
-        interpreter.registerNativeFunction("assert", nativeAssert);
+// Register 'sleep' - Pauses execution for a specified number of milliseconds
+interpreter.registerNativeFunction("sleep", nativeSleep);
 
-        //Takes 2 arguments of type stiing, 1st is the string to seach, second is the dilimeter, returns array of string
-        interpreter.registerNativeFunction("split", nativeStringSplit);
-        
-        //Takes in 1 argument of any type and reutrns an int of the hast of its toString
-        interpreter.registerNativeFunction("hash", nativeHash);
+// Register 'randRange' - Generates a random integer within a specified range
+interpreter.registerNativeFunction("randRange", nativeMathRandRange);
+
+// Register 'toString' - Converts any type to its string representation
+interpreter.registerNativeFunction("toString", nativeToString);
+
+// Register 'regexMatch' - Matches a string against a regular expression
+interpreter.registerNativeFunction("regexMatch", nativeRegexMatch);
+
+// Register 'assert' - Asserts a condition and optionally throws an error with a message
+interpreter.registerNativeFunction("assert", nativeAssert);
+
+// Register 'split' - Splits a string by a delimiter into an array of strings
+interpreter.registerNativeFunction("split", nativeStringSplit);
+
+// Register 'hash' - Returns a hash value of the string representation of an argument
+interpreter.registerNativeFunction("hash", nativeHash);
+
+// --- New File and Directory Manipulation Functions ---
+
+// Register 'readFile' - Reads and returns the content of a file
+interpreter.registerNativeFunction("readFile", nativeFileRead);
+
+// Register 'writeFile' - Writes data to a file
+interpreter.registerNativeFunction("writeFile", nativeFileWrite);
+
+// Register 'appendFile' - Appends data to an existing file
+interpreter.registerNativeFunction("appendFile", nativeFileAppend);
+
+// Register 'fileExists' - Checks if a file exists
+interpreter.registerNativeFunction("fileExists", nativeFileExists);
+
+// Register 'listDirectory' - Lists files and directories in a specified directory
+interpreter.registerNativeFunction("listDirectory", nativeDirectoryList);
+
 
         ast->accept(interpreter); // Execute the AST
         /* interpreter.printStack(); */
