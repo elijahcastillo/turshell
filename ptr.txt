@@ -1,10 +1,5 @@
 
-struct Test {
- int g;
-};
-
-Test a = {g: 5};
-Test b = copy(a);
-b.g = 2;
-print(a,b)
-addr(a,b)
+int i = 5;
+for(; i > 0; i--){
+  print(i)
+}

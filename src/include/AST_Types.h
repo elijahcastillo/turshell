@@ -257,6 +257,20 @@ struct WhileStatementNode : public StatementNode {
     // Constructor and accept method...
 };
 
+
+struct ForStatementNode : public StatementNode {
+    ASTNode* initializer;
+    ASTNode* condition;
+    ASTNode* update;
+    ASTNode* body;
+
+    ForStatementNode(ASTNode* initializer, ASTNode* condition, ASTNode* update, ASTNode* body)
+        : initializer(initializer), condition(condition), update(update), body(body) {}
+
+    void accept(Visitor &v) override;
+};
+
+
 struct IfStatementNode : public StatementNode {
     ASTNode* condition;
     ASTNode* thenBranch;

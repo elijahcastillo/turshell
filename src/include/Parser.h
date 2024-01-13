@@ -63,6 +63,10 @@ private:
           return parseWhileStatement();
         }
 
+        if (token.value == "for") {
+            return parseForStatement();
+        }
+
         if(token.value == "func"){
           return parseFunctionDeclaration();
         }
@@ -267,6 +271,49 @@ std::string getArrayType() {
 
       return new FunctionDeclarationNode(returnType, functionName, parameters, body);
 
+    }
+
+
+    ASTNode* parseForStatement() {
+        consume(TokenType::LParen, "Expected '(' after 'for'");
+
+        ASTNode* initializer = nullptr;
+        if (!check(TokenType::Semicolon)) {
+            if (check(TokenType::TypeIdentifier) || (check(TokenType::Identifier) && peekNext().type == TokenType::Identifier)) {
+                // If it's a variable declaration
+                std::string varType = getAnyType();  // Get the variable type
+                std::string varName = consume(TokenType::Identifier, "Expected variable name").value;  // Get the variable name
+                initializer = parseVariableDeclaration(varType, varName);
+            } else {
+                // If it's an expression
+                initializer = parseExpression();
+                /* consume(TokenType::Semicolon, "Expected ';' after loop initializer expression"); */
+            }
+        } else {
+            // Consume the semicolon if there's no initializer
+            consume(TokenType::Semicolon, "Expected ';' after empty loop initializer");
+        }
+
+
+
+
+        ASTNode* condition = nullptr;
+        if (!check(TokenType::Semicolon)) {
+            condition = parseExpression();
+        }
+
+        consume(TokenType::Semicolon, "Expected ';' after loop condition");
+
+        ASTNode* update = nullptr;
+        if (!check(TokenType::RParen)) {
+            update = parseExpression();
+        }
+
+        consume(TokenType::RParen, "Expected ')' after for clauses");
+
+        ASTNode* body = parseBlock();
+
+        return new ForStatementNode(initializer, condition, update, body);
     }
 
 
@@ -522,6 +569,31 @@ ASTNode* parseChainedAccess(const std::string& baseName) {
 
 
 
+ASTNode* parsePostfixExpression() {
+    ASTNode* node = parsePrimary();
+    while (true) {
+        if (match(Increment)) {
+            node = new UnaryExpressionNode("++", node);
+        } else if (match(Decrement)) {
+            node = new UnaryExpressionNode("--", node);
+        } else {
+            break;
+        }
+    }
+    return node;
+}
+
+ASTNode* parseUnaryExpression() {
+    if (match(Minus) || match(LogicalNot)) {
+        std::string op = previous().value;
+        ASTNode* right = parseUnaryExpression();
+        return new UnaryExpressionNode(op, right);
+    }
+    return parsePostfixExpression();
+}
+
+
+
     ASTNode* parsePrimary() {
 
         //Handle Parenthesis
@@ -563,8 +635,12 @@ ASTNode* parseChainedAccess(const std::string& baseName) {
         }
       }
 
+
+
+
+
         // Unary Negation like (-2) or !variable
-        if (check(TokenType::Minus) || (check(TokenType::LogicalOperator) && peek().value == "!")) {
+        if (check(TokenType::Minus) || check(TokenType::LogicalNot)  ) {
           std::string op = advance().value; // Consume the '-'
             ASTNode* right = parsePrimary(); // Recursively parse the right-hand side
             return new UnaryExpressionNode(op, right); // Create a node for the unary negation
@@ -626,6 +702,14 @@ ASTNode* parseChainedAccess(const std::string& baseName) {
         // Check for function call (identifier followed by '(')
         if (peek().type == TokenType::LParen) {
             return parseFunctionCall(baseName);
+        }
+
+
+        // i++   or i-- 
+        if(peek().type == TokenType::Increment || peek().type == TokenType::Decrement){
+            ASTNode* right = new VariableExpressionNode(baseName); 
+            std::string op = advance().value; // Consume the '-'
+            return new UnaryExpressionNode(op, right); // Create a node for the
         }
 
         return new VariableExpressionNode(baseName); // You need to create this node type

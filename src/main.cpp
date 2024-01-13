@@ -153,9 +153,9 @@ int main(int argc, char* argv[]) {
         ASTNode* ast = parser.parse();
 
         // Print the AST (for debugging or verification)
-        /* PrintVisitor printer; */
-        /* ast->accept(printer); */
-        /* std::cout << "========= End of Parser =========\n\n"; */
+        PrintVisitor printer;
+        ast->accept(printer);
+        std::cout << "========= End of Parser =========\n\n";
 
 
 

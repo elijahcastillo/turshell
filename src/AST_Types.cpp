@@ -102,6 +102,10 @@ void WhileStatementNode::accept(Visitor& v){
   v.visit(*this);
 }
 
+void ForStatementNode::accept(Visitor& v){
+  v.visit(*this);
+}
+
 
 void BlockNode::accept(Visitor& v){
   v.visit(*this);

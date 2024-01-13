@@ -106,6 +106,7 @@ void printEnvParent();
     void visit(VariableAssignmentNode& node) override;
 
     void visit(WhileStatementNode& node) override ;
+    void visit(ForStatementNode& node) override ;
 
     void visit(IfStatementNode& node) override;
 

@@ -13,6 +13,9 @@ enum TokenType {
     TypeIdentifier,       // int, string
     Keyword,             // Language keywords. Example: "if", "while", "return"
     Equals,               // =
+    Increment,          // ++
+    Decrement,          // --
+    LogicalNot,          // !
     Plus,                 // +
     Asterik,              // *
     Minus,                // -
@@ -165,7 +168,7 @@ public:
   }
 
 bool isKeyword(const std::string& identifier) {
-    static const std::set<std::string> keywords = {"true", "false", "impl", "if", "else", "while", "break", "return", "func", "struct"};
+    static const std::set<std::string> keywords = {"true", "false", "impl", "for", "if", "else", "while", "break", "return", "func", "struct"};
     return keywords.find(identifier) != keywords.end();  
 }
 
@@ -252,6 +255,16 @@ Token consumeSingleCharacterToken() {
       return {LogicalOperator, "||", lineNumber};
     }
 
+    if(currentChar == '+' && nextChar == '+'){
+      position++; //Skip second '&'
+      return {Increment, "++", lineNumber};
+    }
+
+    if(currentChar == '-' && nextChar == '-'){
+      position++; //Skip second '&'
+      return {Decrement, "--", lineNumber};
+    }
+
 
 
     switch (currentChar) {
@@ -261,7 +274,7 @@ Token consumeSingleCharacterToken() {
         case '*': type = Asterik; break;
         case '/': type = Division; break;
         case '%': type = Modulo; break;
-        case '!': type = LogicalOperator; break;
+        case '!': type = LogicalNot; break;
         case '>': type = GreaterThan; break;
         case '<': type = LessThan; break;
         case '(': type = LParen; break;

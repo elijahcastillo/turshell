@@ -204,6 +204,17 @@ void Interpreter::visit(BinaryExpressionNode& node) {
         if(node.op == "-"){
           return evaluationStack.push(std::make_shared<IntValue>(rightInt->getValue() * -1));
         }
+
+        if(node.op == "++"){
+          rightInt->value += 1;
+          return evaluationStack.push(right);
+        }
+
+        if(node.op == "--"){
+
+          rightInt->value -= 1;
+          return evaluationStack.push(right);
+        }
       }
 
       if(right->getType() == "bool"){
@@ -640,9 +651,72 @@ void Interpreter::visit(VariableAssignmentNode& node) {
 
       currentScope()->setVariable(node.variableName, value, VariableSettings::Assignment);
       
-    }
+}
 
-    void Interpreter::visit(WhileStatementNode& node) {
+
+
+
+void Interpreter::visit(ForStatementNode& node) {
+
+  if(node.initializer != nullptr){
+    evaluateExpression(node.initializer);
+  }
+
+  if(node.condition == nullptr){
+    runtimeError("For loop expects a condition to check");
+  }
+  
+  auto condition = evaluateExpression(node.condition);
+  BoolValue* conditionValue = dynamic_cast<BoolValue*>(condition.get());
+  if(conditionValue == nullptr){
+    runtimeError("Condition must evaluate to a boolean value");
+  }
+
+  while(conditionValue->getValue() == true){
+    
+      enterNewScope();
+
+      try{
+        //Run code inside of {}
+        evaluateExpression(node.body);
+
+      } catch(TurshellBreak e) {
+        exitCurrentScope();
+        break;
+      }
+      
+      exitCurrentScope();
+
+
+      //Call the update
+      if(node.update != nullptr){
+        evaluateExpression(node.update);
+      }
+
+
+      //Recheck condition
+      condition = evaluateExpression(node.condition);
+
+      if(condition->getType() != "bool"){
+        runtimeError("Cannot evaluate 'while' condition of on non boolean type");
+      }
+
+      conditionValue = static_cast<BoolValue*>(condition.get());
+
+
+  }
+
+
+
+}
+
+
+
+
+
+
+
+void Interpreter::visit(WhileStatementNode& node) {
         // Implement while loop logic
 
       std::shared_ptr<RuntimeVal> condition = evaluateExpression(node.condition);
@@ -680,7 +754,10 @@ void Interpreter::visit(VariableAssignmentNode& node) {
           conditionValue = static_cast<BoolValue*>(condition.get());
           
         }
-    }
+}
+
+
+
 
     void Interpreter::visit(IfStatementNode& node) {
         // Implement if statement logic

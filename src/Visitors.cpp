@@ -186,6 +186,33 @@ void PrintVisitor::visit(WhileStatementNode& node){
     std::cout << " }\n";
 };
 
+void PrintVisitor::visit(ForStatementNode& node){
+    std::cout << "ForStmt: if( ";
+    if(node.initializer){
+
+      node.initializer->accept(*this); 
+    }
+    std::cout << "; ";
+
+    node.condition->accept(*this); 
+    std::cout << "; ";
+
+
+    if(node.update){
+
+      node.update->accept(*this); 
+    }
+    std::cout << "; ";
+
+
+    std::cout << " ){\n";
+
+    node.body->accept(*this); 
+
+    std::cout << " }\n";
+};
+
+
 void PrintVisitor::visit(BlockNode& node){
     for(auto stmt: node.statements){
         stmt->accept(*this);

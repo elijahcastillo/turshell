@@ -6,6 +6,8 @@ std::string tokenTypeToString(TokenType type) {
         case Identifier:         return "Identifier";
         case TypeIdentifier:      return "TypeIdentifer";
         case Keyword:            return "Keyword";
+        case Increment:            return "Decrement";
+        case Decrement:            return "Increment";
         case Equals:             return "Equals";
         case Plus:               return "Plus";
         case Asterik:            return "Asterik";

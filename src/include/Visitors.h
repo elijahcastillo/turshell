@@ -37,6 +37,9 @@ public:
     virtual void visit(VariableAssignmentNode& node) = 0;
     virtual void visit(IfStatementNode& node) = 0;
     virtual void visit(WhileStatementNode& node) = 0;
+    virtual void visit(ForStatementNode& node) = 0;
+
+
     virtual void visit(BlockNode& node) = 0;
     virtual void visit(VariableExpressionNode& node) = 0;
     virtual void visit(FunctionDeclarationNode& node) = 0;
@@ -80,6 +83,9 @@ public:
 
     void visit(IfStatementNode& node) override;
     void visit(WhileStatementNode& node) override;
+    void visit(ForStatementNode& node) override;
+
+
     void visit(BlockNode& node) override;
     void visit(VariableExpressionNode& node) override;
     void visit(FunctionDeclarationNode& node) override;
