@@ -21,12 +21,14 @@ std::shared_ptr<RuntimeVal> nativeFileWrite(Interpreter& interpreter, std::vecto
         throw std::runtime_error("nativeFileWrite expects two string arguments");
     }
 
-    std::string filePath = static_cast<StringValue*>(args[0].get())->getValue();
+    std::string relativeFilePath = static_cast<StringValue*>(args[0].get())->getValue();
+
+    std::filesystem::path fullFilePath = interpreter.scriptDir / relativeFilePath;
     std::string data = static_cast<StringValue*>(args[1].get())->getValue();
 
-    std::ofstream file(filePath, std::ios::out | std::ios::trunc);
+    std::ofstream file(fullFilePath, std::ios::out | std::ios::trunc);
     if (!file.is_open()) {
-        throw std::runtime_error("nativeFileWrite: unable to open file " + filePath);
+        throw std::runtime_error("nativeFileWrite: unable to open file " + relativeFilePath);
     }
 
     file << data;
@@ -40,12 +42,14 @@ std::shared_ptr<RuntimeVal> nativeFileAppend(Interpreter& interpreter, std::vect
         throw std::runtime_error("nativeFileAppend expects two string arguments");
     }
 
-    std::string filePath = static_cast<StringValue*>(args[0].get())->getValue();
+    std::string relativeFilePath = static_cast<StringValue*>(args[0].get())->getValue();
+
+    std::filesystem::path fullFilePath = interpreter.scriptDir / relativeFilePath;
     std::string data = static_cast<StringValue*>(args[1].get())->getValue();
 
-    std::ofstream file(filePath, std::ios::out | std::ios::app);
+    std::ofstream file(fullFilePath, std::ios::out | std::ios::app);
     if (!file.is_open()) {
-        throw std::runtime_error("nativeFileAppend: unable to open file " + filePath);
+        throw std::runtime_error("nativeFileAppend: unable to open file " + relativeFilePath);
     }
 
     file << data;
@@ -57,9 +61,11 @@ std::shared_ptr<RuntimeVal> nativeDirectoryList(Interpreter& interpreter, std::v
         throw std::runtime_error("nativeDirectoryList expects one string argument");
     }
 
-    std::string directoryPath = static_cast<StringValue*>(args[0].get())->getValue();
+    std::string relativeFilePath = static_cast<StringValue*>(args[0].get())->getValue();
+    std::filesystem::path fullFilePath = interpreter.scriptDir / relativeFilePath;
+
     std::vector<std::shared_ptr<RuntimeVal>> fileList;
-    for (const auto& entry : std::filesystem::directory_iterator(directoryPath)) {
+    for (const auto& entry : std::filesystem::directory_iterator(fullFilePath)) {
         fileList.push_back(std::make_shared<StringValue>(entry.path().string()));
     }
 
@@ -71,8 +77,10 @@ std::shared_ptr<RuntimeVal> nativeFileExists(Interpreter& interpreter, std::vect
         throw std::runtime_error("nativeFileExists expects one string argument");
     }
 
-    std::string filePath = static_cast<StringValue*>(args[0].get())->getValue();
-    std::ifstream file(filePath);
+    std::string relativeFilePath = static_cast<StringValue*>(args[0].get())->getValue();
+
+    std::filesystem::path fullFilePath = interpreter.scriptDir / relativeFilePath;
+    std::ifstream file(fullFilePath);
 
     return std::make_shared<BoolValue>(file.good());
 }

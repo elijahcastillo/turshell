@@ -1,41 +1,41 @@
 ## File Manipulation & Access
 
-### `nativeFileWrite`
+### `writeFile`
 
-- **Description**: Writes data to a file.
+- **Description**: Writes data to a file
+- **Arguments**:
+  - `filePath` (string): Path to the file
+  - `data` (string): Data to be written to the file
+- **Returns**: `void` 
+
+### `appendFile`
+
+- **Description**: Appends data to an existing file
+- **Arguments**:
+  - `filePath` (string): Path to the file
+  - `data` (string): Data to be appended to the file
+- **Returns**: `void`
+
+### `fileExists`
+
+- **Description**: Checks if a file exists
 - **Arguments**:
   - `filePath` (string): Path to the file.
-  - `data` (string): Data to be written to the file.
-- **Returns**: `BoolValue` (true if successful).
+- **Returns**: `bool` (true if the file exists).
 
-### `nativeFileAppend`
+### `fileRead`
 
-- **Description**: Appends data to an existing file.
+- **Description**: Reads and returns the content of a file
 - **Arguments**:
   - `filePath` (string): Path to the file.
-  - `data` (string): Data to be appended to the file.
-- **Returns**: `BoolValue` (true if successful).
+- **Returns**: `string` (content of the file).
 
-### `nativeFileExists`
+### `listDirectory`
 
-- **Description**: Checks if a file exists.
+- **Description**: Lists files and directories in a specified directory
 - **Arguments**:
-  - `filePath` (string): Path to the file.
-- **Returns**: `BoolValue` (true if the file exists).
-
-### `nativeFileRead`
-
-- **Description**: Reads and returns the content of a file.
-- **Arguments**:
-  - `filePath` (string): Path to the file.
-- **Returns**: `StringValue` (content of the file).
-
-### `nativeDirectoryList`
-
-- **Description**: Lists files and directories in a specified directory.
-- **Arguments**:
-  - `directoryPath` (string): Path to the directory.
-- **Returns**: `ArrayValue` (list of files and directories).
+  - `directoryPath` (string): Path to the directory
+- **Returns**: `array<string>` (list of files and directories)
 
 ---
 
