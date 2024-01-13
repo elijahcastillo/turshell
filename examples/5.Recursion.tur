@@ -1,0 +1,54 @@
+
+// Example 1: Factorial Function
+// =============================
+func factorial(int n) int {
+    if (n <= 1) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+
+int factorialResult = factorial(4);
+print("Factorial of 4:", factorialResult)
+
+
+
+// Example 2: Fibonacci Function
+// =============================
+func fib(int n) int {
+    if (n <= 1) {
+        return n;
+    }
+    return fib(n - 1) + fib(n - 2);
+}
+
+int fibResult = fib(6);
+print("Fibonacci number at position 6:", fibResult)
+
+
+
+// Example 3: Power Function
+// ==========================
+func pow(int x, int n) int {
+    if (n == 0) {
+        return 1;  // Adding base case for n = 0
+    }
+    return x * pow(x, n - 1);
+}
+
+int powResult = pow(2, 3);
+print("2 raised to the power of 3:", powResult)
+
+
+// Example 4: Reverse a String
+// ===========================
+func reverseString(string str, int length) string {
+    if (length == 0) {
+        return "";
+    }
+    return str[length - 1] + reverseString(str, length - 1);
+}
+
+string originalString = "turshell";
+string reversedString = reverseString(originalString, len(originalString));
+print("Reversed 'turshell':", reversedString)

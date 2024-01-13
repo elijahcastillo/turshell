@@ -1,9 +1,0 @@
-
-func modify(int a) void {
-  a = 3;
-}
-
-int b = 5;
-print(b)
-modify(b)
-print(b)
