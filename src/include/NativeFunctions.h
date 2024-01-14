@@ -7,6 +7,10 @@
 #include <stdexcept>
 
 
+
+
+void registerNativeFunctions(Interpreter* interpreter);
+
 std::shared_ptr<RuntimeVal> nativeFileWrite(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args);
 
 std::shared_ptr<RuntimeVal> nativeFileAppend(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args);
@@ -76,3 +80,7 @@ std::shared_ptr<RuntimeVal> nativeMathPow(Interpreter& interpreter, std::vector<
 
 
 std::shared_ptr<RuntimeVal> nativeRandom(Interpreter& interpreter, std::vector<std::shared_ptr<RuntimeVal>>& args);
+
+
+
+
