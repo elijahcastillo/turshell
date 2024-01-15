@@ -15,14 +15,19 @@
 #include "include/Interpretor.h"
 #include "include/NativeFunctions.h"
 #include "include/TurshellHelp.h"
+#include "include/CppTransiler.h"
 
 
 
 int main(int argc, char* argv[]) {
-    if (argc != 2) {
-        std::cerr << "Usage: [program] [input_file]\n";
+    bool cppTranspilerMode = false;
+    std::string cppOutputFilename;
+
+    // Parse command line arguments
+    if (argc < 2) {
+        std::cerr << "Usage: [program] [input_file] [-c [output_cpp_file]]\n";
         return 1;
-    }        
+    }     
 
     //Logger
     /* TurshellLog::setSettings(TurshellLog::LOG_INFO); */
@@ -37,6 +42,23 @@ int main(int argc, char* argv[]) {
 
         std::string filepath = argv[1];
         std::string buffer = readFileToString(filepath);
+
+
+    // Check for the optional C++ transpiler flag
+    if (argc > 2) {
+        for (int i = 2; i < argc; ++i) {
+            if (std::string(argv[i]) == "-c") {
+                cppTranspilerMode = true;
+                if (i + 1 < argc) {
+                    cppOutputFilename = argv[i + 1];
+                } else {
+                    std::cerr << "Error: Missing output filename for C++ transpiler.\n";
+                    return 1;
+                }
+                break;
+            }
+        }
+    }
 
 
 
@@ -67,19 +89,19 @@ int main(int argc, char* argv[]) {
 
 
 
+        // If C++ transpiler mode is enabled, use the transpiler
+        if (cppTranspilerMode) {
+            CppTranspilerVisitor cppTranspiler(cppOutputFilename);
+            ast->accept(cppTranspiler);
+            std::cout << "C++ code has been generated in: " << cppOutputFilename << std::endl;
+        } else {
+            // Normal interpretation
+            Interpreter interpreter;
+            interpreter.setScriptDir(scriptDir);
+            registerNativeFunctions(&interpreter);
+            ast->accept(interpreter);
+        }
 
-        // Interpretation
-        Interpreter interpreter;
-        interpreter.setScriptDir(scriptDir);
-
-
-        // Register the native functions in your scripting language
-        registerNativeFunctions(&interpreter);
-
-
-
-        ast->accept(interpreter); // Execute the AST
-        /* interpreter.printStack(); */
 
 
 
