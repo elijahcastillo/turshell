@@ -10,8 +10,10 @@ class CppTranspilerVisitor : public Visitor {
     std::ofstream outputFile;
     std::stringstream mainBuffer;
     std::stringstream functionDeclarations;
+    std::stringstream structDeclarations;
 
     bool insideFunction = false;
+    bool insideStructDecl = false;
 
 public:
     CppTranspilerVisitor(const std::string& outputFileName) {
@@ -27,7 +29,10 @@ public:
             outputFile << "#include <string>\n";
             outputFile << "using namespace std;\n\n";
 
-            // Write function declarations first
+
+            outputFile << structDeclarations.str();
+
+            // Write function declarations third
             outputFile << functionDeclarations.str();
 
             // Then write the main function
@@ -40,14 +45,15 @@ public:
     std::ostream& getBufferType(){
       if(insideFunction){
         return functionDeclarations;
+
+      } else if (insideStructDecl){
+        return structDeclarations;
       } else {
         return mainBuffer;
       }
     }
 
-    std::string convertTurshellType(std::string type){
-      return "test"; 
-    }
+    std::string convertTurshellType(std::string type);
 
     void visit(ProgramNode& node) override; 
     void visit(BinaryExpressionNode& node) override; 

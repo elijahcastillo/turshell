@@ -1,7 +1,6 @@
 
+- Unary negative, -2 not wokring unless (-2)
 - variable names with numbers
-- for loop
-- float and int multiplcation / addition
 
 
 

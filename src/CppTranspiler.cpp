@@ -1,45 +1,49 @@
 #include "include/CppTransiler.h"
+#include "include/TurshellHelp.h"
+#include <stdexcept>
 
 
 
 
 
-
-//Helper Functions
-std::string extractInnerTypeFromArrayTypex(const std::string& arrayType) {
-    size_t start = arrayType.find('<');
-    size_t end = start;
-
-    if (start == std::string::npos) {
-        throw std::runtime_error("Invalid array type format: " + arrayType);
-    }
-
-    int bracketCount = 1;
-    // Iterate through the string to find the matching closing bracket
-    while (bracketCount > 0 && ++end < arrayType.size()) {
-        if (arrayType[end] == '<') {
-            bracketCount++;
-        } else if (arrayType[end] == '>') {
-            bracketCount--;
-        }
-    }
-
-    if (bracketCount != 0 || end == start + 1) {
-        throw std::runtime_error("Invalid array type format: " + arrayType);
-    }
-
-    return arrayType.substr(start + 1, end - start - 1);
-}
-
-bool startsWithx(const std::string& fullString, const std::string& starting) {
-    // Check if the last occurrence is at the start of the string
-    return fullString.rfind(starting, 0) == 0;
-}
 
 bool isArrayType(std::string& type){
-  return startsWithx(type, "array<");
+  return startsWith(type, "array<");
 }
 
+std::string  CppTranspilerVisitor::convertTurshellType(std::string type){
+  if(type == "int" || type == "float" || type == "bool" || type == "string"){
+    return type;
+  } else if (isArrayType(type)){
+
+    //This code is to handle arrays and nested arrays
+    std::string final_arr_type = "vector<";
+    std::string extracted = extractInnerTypeFromArrayType(type);
+
+    int num_end = 1;
+
+    while(isArrayType(extracted)){
+      final_arr_type += "vector<";
+      extracted = extractInnerTypeFromArrayType(extracted);
+      num_end++;
+    }
+
+
+    final_arr_type += extracted;
+
+    for(int i = 0; i < num_end; i++){
+      final_arr_type += ">";
+    }
+
+    return final_arr_type;
+
+
+  } else {
+    //Expected to be a struct type
+    return type;
+  }
+
+}
 
 
 
@@ -95,7 +99,7 @@ void CppTranspilerVisitor::visit(FloatLiteralNode& node) {
 
 void CppTranspilerVisitor::visit(StringLiteralNode& node) {
       std::ostream& out = getBufferType();
-      out << node.value;
+      out << "\""  << node.value << "\"";
 }
 
 void CppTranspilerVisitor::visit(BinaryLiteralNode& node) {
@@ -159,22 +163,41 @@ void CppTranspilerVisitor::visit(StructMethodCallNode& node){
 };
 
 void CppTranspilerVisitor::visit(StructDeclarationNode& node){
-  std::cout << "struct " << node.structName << "{\n";
+  insideStructDecl = true;
+  std::ostream& out = getBufferType();
+
+  out << "struct " << node.structName << "{\n";
   for(auto prop: node.properties){
         prop->accept(*this);
-        std::cout << "\n";
+        out << ";\n";
   }
-  std::cout << "}\n";
+
+  out << "};\n";
+
+  insideStructDecl = false;
 
 };
 
 
 void CppTranspilerVisitor::visit(StructInitalizerListNode& node){
-  std::cout << "StructInit{ ";
-  for(auto prop: node.properties){
-        prop->accept(*this);
+  
+  std::ostream& out = getBufferType();
+  out << "{ ";
+  for(int i = 0; i < node.properties.size(); i++){
+    out << "."; 
+    VariableAssignmentNode* varAssign = dynamic_cast<VariableAssignmentNode*>(node.properties[i]);
+    if (!varAssign) {
+        throw std::runtime_error("Invalid property in struct initializer list");
+    }
+    out << varAssign->variableName << " = ";
+    varAssign->value->accept(*this);
+
+    if(!(i == node.properties.size() - 1)){
+      out << ", ";
+    }
   }
-  std::cout << "}\n";
+
+  out << "}";
 
 };
 
@@ -208,13 +231,8 @@ void CppTranspilerVisitor::visit(StructPropertyAssignmentNode& node){
 //Ex: int a = 3;
 void CppTranspilerVisitor::visit(VariableDeclarationNode& node){
     std::ostream& out = getBufferType();
-    if(isArrayType(node.variableType)){
-      std::string extractedType = extractInnerTypeFromArrayTypex(node.variableType);
-      out << "vector<" << extractedType << "> ";
-    } else {
-      out << node.variableType;
-    }
-    out << " " << node.variableName << " = "; //Ex: int a = 
+    
+    out << convertTurshellType(node.variableType) <<  " " << node.variableName << " = "; //Ex: int a = 
     node.initializer->accept(*this);
     out << ";\n";
 
@@ -301,12 +319,32 @@ void CppTranspilerVisitor::visit(BlockNode& node){
 void CppTranspilerVisitor::visit(FunctionCallNode& node){
   std::ostream& out = getBufferType();
 
+  //TODO: Native functions support
   if(node.functionName == "print"){
     out << "cout << ";
-    node.arguments[0]->accept(*this);
-    out << "<< std::endl;\n";
-    
+  for(int i = 0; i < node.arguments.size(); i++){
+    node.arguments[i]->accept(*this);
+    if(i != node.arguments.size() - 1){
+      out << " << \" \" << ";
+    }
+
+
   }
+    out << "<< std::endl;\n";
+    return;
+  }
+
+  out << node.functionName << "( ";
+  for(int i = 0; i < node.arguments.size(); i++){
+    node.arguments[i]->accept(*this);
+
+    if(i != node.arguments.size() - 1){
+      out << ", ";
+    }
+  }
+  out << " )";
+
+
 };
 
 
@@ -320,7 +358,7 @@ void CppTranspilerVisitor::visit(FunctionDeclarationNode& node){
   insideFunction = true;
   std::ostream& out = getBufferType();
 
-  out << node.returnType << " " << node.functionName << "( ";
+  out << convertTurshellType(node.returnType) << " " << node.functionName << "( ";
 
   for(int i = 0; i < node.parameters.size(); i++){
     node.parameters[i]->accept(*this);
@@ -341,7 +379,7 @@ void CppTranspilerVisitor::visit(FunctionDeclarationNode& node){
 void CppTranspilerVisitor::visit(ParameterNode& node){
 
   std::ostream& out = getBufferType();
-  out << node.type << " " << node.name;
+  out << convertTurshellType(node.type) << " " << node.name;
 };
 
 void CppTranspilerVisitor::visit(ReturnStatementNode& node){

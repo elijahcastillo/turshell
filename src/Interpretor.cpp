@@ -4,6 +4,7 @@
 #include "include/Enviorment.h"
 #include "include/Runtime.h"
 #include "include/TurshellLog.h"
+#include "include/TurshellHelp.h"
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -40,30 +41,7 @@ class TurshellBreak : public std::exception {
 
 
 
-std::string extractInnerTypeFromArrayType(const std::string& arrayType) {
-    size_t start = arrayType.find('<');
-    size_t end = start;
 
-    if (start == std::string::npos) {
-        throw std::runtime_error("Invalid array type format: " + arrayType);
-    }
-
-    int bracketCount = 1;
-    // Iterate through the string to find the matching closing bracket
-    while (bracketCount > 0 && ++end < arrayType.size()) {
-        if (arrayType[end] == '<') {
-            bracketCount++;
-        } else if (arrayType[end] == '>') {
-            bracketCount--;
-        }
-    }
-
-    if (bracketCount != 0 || end == start + 1) {
-        throw std::runtime_error("Invalid array type format: " + arrayType);
-    }
-
-    return arrayType.substr(start + 1, end - start - 1);
-}
 
 
 
@@ -76,10 +54,6 @@ std::string extractInnerTypeFromArrayType(const std::string& arrayType) {
   }
 
 
-bool startsWith(const std::string& fullString, const std::string& starting) {
-    // Check if the last occurrence is at the start of the string
-    return fullString.rfind(starting, 0) == 0;
-}
 
 std::string Interpreter::getStructPropertyType(std::string structType, std::string propertyName){
 
@@ -1102,9 +1076,6 @@ bool Interpreter::validateAndSetStructType(std::shared_ptr<RuntimeVal> structVal
 
 
           }
-
-
-
 
 
 

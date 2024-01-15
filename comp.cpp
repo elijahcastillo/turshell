@@ -3,7 +3,11 @@
 #include <string>
 using namespace std;
 
+struct Test{
+int a;
+string b;
+};
 int main() {
-vector<int>  a = {1, 2, 3};
+Test b = { .a = 1, .b = "Elijah"};
     return 0;
 }
