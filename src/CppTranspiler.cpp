@@ -413,6 +413,7 @@ void CppTranspilerVisitor::visit(FunctionCallNode& node){
     if (it != nativeFunctionMap.end()) {
         // Native function found, call the mapped function
         it->second(node);
+        return;
     }
 
   //TODO: Native functions support
@@ -530,5 +531,39 @@ void CppTranspilerVisitor::visit(BreakStatementNode& node){
   out << "break;";
 };
 
+
+
+
+
+
+// ==============================
+//        Native Functions
+// ==============================
+void CppTranspilerVisitor::setupNativeFunctions() {
+    nativeFunctionMap["print"] = [this](FunctionCallNode& node) {
+        std::stringstream& out = getBufferType();
+        out << "cout << ";
+        for (int i = 0; i < node.arguments.size(); ++i) {
+
+            isStandaloneStatement = false;
+            node.arguments[i]->accept(*this);
+            isStandaloneStatement = true;
+
+            if (i != node.arguments.size() - 1) {
+                out << " << \" \" << "; //Add the space
+            }
+        }
+        out << "<< std::endl;";
+    };
+
+
+    nativeFunctionMap["len"] = [this](FunctionCallNode& node) {
+      //Should only work with arrays and strings
+        std::stringstream& out = getBufferType();
+       node.arguments[0]->accept(*this);
+       out << ".size()";
+    };
+
+}
 
 
