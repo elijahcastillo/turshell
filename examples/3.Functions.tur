@@ -5,6 +5,7 @@ func sum(int a, int b) int {
     return a + b;
 }
 
+sum(4,5)
 int result = sum(3, 5);
 print("Sum of 3 and 5 is:", result)
 

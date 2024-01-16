@@ -60,17 +60,19 @@ void CppTranspilerVisitor::visit(ProgramNode& node) {
 }
 
 void CppTranspilerVisitor::visit(BinaryExpressionNode& node){
-        isStandaloneStatement = false; // Set to false for expression context
+    bool wasStandalone = isStandaloneStatement;
+    isStandaloneStatement = false;
 
-        std::stringstream& out = getBufferType();
-        out << "(";
-        node.left->accept(*this);
-        out << " " << node.op << " ";
-        node.right->accept(*this);
-        out << ")";
+    std::stringstream& out = getBufferType();
+    out << "(";
+    node.left->accept(*this);
+    out << " " << node.op << " ";
+    node.right->accept(*this);
+    out << ")";
 
-        isStandaloneStatement = true; // Reset after expression is handled
+    isStandaloneStatement = wasStandalone;
 }
+
 
 
 void CppTranspilerVisitor::visit(LogicalOperatorNode& node){
@@ -416,30 +418,10 @@ void CppTranspilerVisitor::visit(FunctionCallNode& node){
         return;
     }
 
-  //TODO: Native functions support
-  /* if(node.functionName == "print"){ */
-  /*  */
-  /*   isStandaloneStatement = false; */
-  /*   out << "cout << "; */
-  /* for(int i = 0; i < node.arguments.size(); i++){ */
-  /*  */
-  /*   node.arguments[i]->accept(*this); */
-  /*   if(i != node.arguments.size() - 1){ */
-  /*     out << " << \" \" << "; */
-  /*   } */
-  /* } */
-  /*  */
-  /* isStandaloneStatement = true; */
-  /*   out << "<< std::endl;\n"; */
-  /*   return; */
-  /* } else if (node.functionName == "len"){ */
-  /*    */
-  /*   node.arguments[0]->accept(*this); */
-  /*   out << ".size()"; */
-  /*   return; */
-  /* } */
+  //In node.arguments when you visit might change statdalone value
+  bool captureStandaloneContext = isStandaloneStatement;
 
-
+  std::cout << "Caputred funcall context" << captureStandaloneContext << "\n";
 
   std::stringstream& out = getBufferType();
 
@@ -452,15 +434,18 @@ void CppTranspilerVisitor::visit(FunctionCallNode& node){
       out << ", ";
     }
   }
+
   out << " )";
 
     // Append a semicolon if it's a standalone statement
-    if (isStandaloneStatement) {
+  std::cout << "Is standalone funcCall statment " << captureStandaloneContext << "\n";
+    if (captureStandaloneContext) {
         out << ";";
     }
 
     // Reset the flag for the next node
-    isStandaloneStatement = true;
+  std::cout << "Reseting to true in func call" << "\n";
+    isStandaloneStatement = captureStandaloneContext; // ??????
 
 
 };
@@ -517,12 +502,18 @@ void CppTranspilerVisitor::visit(ParameterNode& node){
 
 void CppTranspilerVisitor::visit(ReturnStatementNode& node){
 
+  isStandaloneStatement = false;
+  std::cout << "Setting return stmt: false\n";
+
   std::stringstream& out = getBufferType();
   out << "return ";
   if(node.expression){
     node.expression->accept(*this);
   }
   out <<";\n";
+
+
+  isStandaloneStatement = true;
 };
 
 void CppTranspilerVisitor::visit(BreakStatementNode& node){
@@ -541,6 +532,9 @@ void CppTranspilerVisitor::visit(BreakStatementNode& node){
 // ==============================
 void CppTranspilerVisitor::setupNativeFunctions() {
     nativeFunctionMap["print"] = [this](FunctionCallNode& node) {
+
+      //Handle arrays, structs, bools?
+
         std::stringstream& out = getBufferType();
         out << "cout << ";
         for (int i = 0; i < node.arguments.size(); ++i) {

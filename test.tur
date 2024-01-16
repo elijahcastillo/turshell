@@ -1,47 +1,59 @@
-
-// Example 1: Implementing a Method on a Simple Structure
-// ======================================================
-struct Counter {
-    int count;
-};
-
-// Method to increment the counter
-impl Counter -> increment(Counter self) void {
-    self.count = self.count + 1;
+// Example 1: Sum of Two Numbers
+// ==============================
+func sum(int a, int b) int {
+    return a + b;
 }
 
-// Creating and using the Counter structure
-Counter myCounter = {count: 0};
-myCounter.increment()
-print("Counter value:", myCounter.count)
+sum(4,5)
+int result = sum(3, 5);
+print("Sum of 3 and 5 is:", result)
 
 
 
-
-// Example 2: Complex Structure with Methods
-// =========================================
-struct Employee {
-    string name;
-    int hoursWorked;
-    float hourlyRate;
-};
-
-// Method to calculate total earnings
-impl Employee -> totalEarnings(Employee self) float {
-    return self.hoursWorked * self.hourlyRate;
+// Example 2: Check If Number Is Positive
+// =======================================
+func isPositive(int number) bool {
+    return number > 0;
 }
 
-// Method to update hourly rate
-impl Employee -> updateHourlyRate(Employee self, float newRate) void {
-    self.hourlyRate = newRate;
+int pos = 5;
+int neg = -12;
+print("Is 5 positive?", isPositive(pos))
+print("Is -12 positive?", isPositive(neg))
+
+
+
+// Example 3: Sum of Array Elements
+// ================================
+func sumArray(array<int> arr) int {
+    int total = 0;
+    int i = 0;
+    while (i < len(arr)) {
+        total = total + arr[i];
+        i = i + 1;
+    }
+    return total;
 }
 
-// Creating and using the Employee structure
-Employee employee = {name: "Alice", hoursWorked: 40, hourlyRate: 20.0};
-float earnings = employee.totalEarnings();
-print(employee.name, "'s total earnings:", earnings)
+array<int> numbers = [6, 8, 2];
+int arraySum = sumArray(numbers);
+print("Sum of array elements:", arraySum)
 
-// Updating hourly rate
-employee.updateHourlyRate(22.5)
-float updatedEarnings = employee.totalEarnings();
-print("Updated earnings:", updatedEarnings)
+
+
+
+// Example 4: Reverse a String
+// ===========================
+func reverseString(string str) string {
+    string reversed = "";
+    int i = len(str) - 1;
+    while (i >= 0) {
+        reversed = reversed + str[i];
+        i = i - 1;
+    }
+    return reversed;
+}
+
+string originalString = "turshell";
+string reversedString = reverseString(originalString);
+print("Reversed 'turshell':", reversedString)
