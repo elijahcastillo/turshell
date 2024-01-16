@@ -1,5 +1,7 @@
-#include "include/CppTransiler.h"
+#include "include/AST_Types.h"
+#include "include/CppTranspiler.h"
 #include "include/TurshellHelp.h"
+#include <sstream>
 #include <stdexcept>
 
 
@@ -58,58 +60,74 @@ void CppTranspilerVisitor::visit(ProgramNode& node) {
 }
 
 void CppTranspilerVisitor::visit(BinaryExpressionNode& node){
-        std::ostream& out = getBufferType();
+        isStandaloneStatement = false; // Set to false for expression context
+
+        std::stringstream& out = getBufferType();
         out << "(";
         node.left->accept(*this);
         out << " " << node.op << " ";
         node.right->accept(*this);
         out << ")";
+
+        isStandaloneStatement = true; // Reset after expression is handled
 }
 
 
 void CppTranspilerVisitor::visit(LogicalOperatorNode& node){
-        std::ostream& out = getBufferType();
+
+        isStandaloneStatement = false; // Set to false for expression context
+
+        std::stringstream& out = getBufferType();
         out << "(";
         node.left->accept(*this);
         out << " " << node.op << " ";
         node.right->accept(*this);
         out << ")";
+
+
+        isStandaloneStatement = true; // Reset after expression is handled
 }
 
 
 void CppTranspilerVisitor::visit(UnaryExpressionNode& node){
 
-        std::ostream& out = getBufferType();
+
+        isStandaloneStatement = false; // Set to false for expression context
+
+        std::stringstream& out = getBufferType();
         out << "(";
         out << node.op;
         node.right->accept(*this);
         out << ")";
+
+
+        isStandaloneStatement = true; // Reset after expression is handled
 }
 
 void CppTranspilerVisitor::visit(IntLiteralNode& node) {
 
-      std::ostream& out = getBufferType();
+      std::stringstream& out = getBufferType();
       out << node.value;
 }
 
 void CppTranspilerVisitor::visit(FloatLiteralNode& node) {
-      std::ostream& out = getBufferType();
+      std::stringstream& out = getBufferType();
       out << node.value;
 }
 
 void CppTranspilerVisitor::visit(StringLiteralNode& node) {
-      std::ostream& out = getBufferType();
+      std::stringstream& out = getBufferType();
       out << "\""  << node.value << "\"";
 }
 
 void CppTranspilerVisitor::visit(BinaryLiteralNode& node) {
-      std::ostream& out = getBufferType();
+      std::stringstream& out = getBufferType();
       out << (node.value ? "true" : "false");
 }
 
 void CppTranspilerVisitor::visit(ArrayLiteralNode& node) {
 
-  std::ostream& out = getBufferType();
+  std::stringstream& out = getBufferType();
   out << "{";
   for(int i = 0; i < node.values.size(); i++){
     node.values[i]->accept(*this);
@@ -126,62 +144,136 @@ void CppTranspilerVisitor::visit(ArrayLiteralNode& node) {
 
 
 void CppTranspilerVisitor::visit(ArrayAccessNode& node) {
-  std::cout << "[";
+  std::stringstream& out = getBufferType();
+  out << "[";
   node.index->accept(*this);
-  std::cout << "]";
+  out << "]";
 }
 
 void CppTranspilerVisitor::visit(PropertyAccessNode& node) {
-  std::cout << "." << node.propertyName;
+
+
+  std::stringstream& out = getBufferType();
+  out << "." << node.propertyName;
 }
 
 void CppTranspilerVisitor::visit(ChainedAccessNode& node) {
-  std::cout << "ChainedAccess: ";
-  for(auto val: node.accesses){
-        val->accept(*this);
+
+  std::stringstream& out = getBufferType();
+
+
+  int i = 0;
+
+  if(isInsideStruct()){
+
+      VariableExpressionNode* first = dynamic_cast<VariableExpressionNode*>(node.accesses[0]);
+      PropertyAccessNode* second = dynamic_cast<PropertyAccessNode*>(node.accesses[1]);
+      if(first->variableName == "self"){
+        out << "this->";
+        
+        //Ex: self.x  ->  x
+        if(second){
+         out << second->propertyName;
+         i += 2;
+        }
+
+      }
   }
+
+
+
+  for(; i < node.accesses.size(); i++){
+        node.accesses[i]->accept(*this);
+  }
+  
+
+
 }
 
 void CppTranspilerVisitor::visit(ChainedAssignmentNode& node) {
-  std::cout << "ChainedAssignment: ";
+
+  isStandaloneStatement = false; // Set to false for expression context
+
+  std::stringstream& out = getBufferType();
   node.accesses->accept(*this);
-  std::cout << " = ";
+  out << " = ";
   node.value->accept(*this);
+  out << ";\n";
+
+  isStandaloneStatement = true; // Set to false for expression context
+
 }
 
 
 void CppTranspilerVisitor::visit(StructMethodDeclarationNode& node){
-  std::cout << "impl " << node.structName << "->";
+    for (const auto& pair : structDeclarations) {
+      std::cout << "Found struct (method)!!: " << pair.first << "\n";
+    }
+
+            
+
+
+    std::cout << "Visiting Struct Method Declaration for struct: " << node.structName << "\n";
+    if(!structDeclarationExists(node.structName)){
+        throw std::runtime_error("C++ Transpiler: struct declaration does not exist for " + node.structName);
+    }
+
+    m_currentStructName = node.structName;
+    std::cout << "Current Struct Name set to: " << m_currentStructName << "\n";
+
+
+
+
+  insideStructDecl = true;
+  std::stringstream& out = getBufferType();
+
+  //Function Declaration node
   node.methodDeclaration->accept(*this);
+
+  insideStructDecl = false;
+  m_currentStructName.clear(); // Clear the current struct name
 
 };
 
 void CppTranspilerVisitor::visit(StructMethodCallNode& node){
-  std::cout << "Struct Method " << node.methodName << ".";
-  node.functionCall->accept(*this);
 
+  std::stringstream& out = getBufferType();
+  out << ".";
+  node.functionCall->accept(*this);
 };
 
-void CppTranspilerVisitor::visit(StructDeclarationNode& node){
-  insideStructDecl = true;
-  std::ostream& out = getBufferType();
 
-  out << "struct " << node.structName << "{\n";
-  for(auto prop: node.properties){
+
+void CppTranspilerVisitor::visit(StructDeclarationNode& node) {
+    std::cout << "Visiting Struct Declaration: " << node.structName << "\n";
+    if (structDeclarationExists(node.structName)) {
+        throw std::runtime_error("Struct already declared: " + node.structName);
+    }
+
+    structDeclarations[node.structName] = std::stringstream();
+    m_currentStructName = node.structName;
+    insideStructDecl = true;
+
+    std::stringstream& out = getBufferType();
+    for (auto prop : node.properties) {
         prop->accept(*this);
         out << ";\n";
-  }
+    }
 
-  out << "};\n";
+    insideStructDecl = false;
+    m_currentStructName.clear();
+    std::cout << "Completed Struct Declaration: " << node.structName << "\n";
+}
 
-  insideStructDecl = false;
 
-};
 
 
 void CppTranspilerVisitor::visit(StructInitalizerListNode& node){
+
+
+  isStandaloneStatement = false; // Set to false for expression context
   
-  std::ostream& out = getBufferType();
+  std::stringstream& out = getBufferType();
   out << "{ ";
   for(int i = 0; i < node.properties.size(); i++){
     out << "."; 
@@ -199,42 +291,32 @@ void CppTranspilerVisitor::visit(StructInitalizerListNode& node){
 
   out << "}";
 
+
+  isStandaloneStatement = true; // Set to false for expression context
+
 };
 
 
+//These 2 are depreciated I think?
 void CppTranspilerVisitor::visit(StructPropertyAccessNode& node){
-  std::cout << node.baseName;
-  std::cout << ".";
-  for(int i = 0; i < node.propertyNames.size(); i++){
-    std::cout << node.propertyNames[i];
-    if(!(i == node.propertyNames.size() - 1)){
-      std::cout << ".";
-    }
-  }
 };
 
 void CppTranspilerVisitor::visit(StructPropertyAssignmentNode& node){
-  std::cout << node.baseName;
-  std::cout << ".";
-  for(int i = 0; i < node.propertyNames.size(); i++){
-    std::cout << node.propertyNames[i];
-    if(!(i == node.propertyNames.size() - 1)){
-      std::cout << ".";
-    }
-  }
-  std::cout << " = ";
-  node.value->accept(*this);
-  std::cout << "\n";
 };
 
 
 //Ex: int a = 3;
 void CppTranspilerVisitor::visit(VariableDeclarationNode& node){
-    std::ostream& out = getBufferType();
-    
+
+    isStandaloneStatement = false; // Set to false for expression context
+                                 
+    std::stringstream& out = getBufferType();
     out << convertTurshellType(node.variableType) <<  " " << node.variableName << " = "; //Ex: int a = 
     node.initializer->accept(*this);
     out << ";\n";
+
+
+    isStandaloneStatement = true; // Set to false for expression context
 
 
 }; 
@@ -242,18 +324,25 @@ void CppTranspilerVisitor::visit(VariableDeclarationNode& node){
 
 //Ex a = 3;
 void CppTranspilerVisitor::visit(VariableAssignmentNode& node){
-    std::ostream& out = getBufferType();
+
+    isStandaloneStatement = false; // Set to false for expression context
+    std::stringstream& out = getBufferType();
     out << node.variableName << " = "; //Ex: a = 
     node.value->accept(*this);
     out << ";\n";
+
+    isStandaloneStatement = true; // Set to false for expression context
 }; 
 
 
 void CppTranspilerVisitor::visit(IfStatementNode& node){
 
-    std::ostream& out = getBufferType();
+    std::stringstream& out = getBufferType();
     out << "if( ";
+
+    isStandaloneStatement = false; // Set to false for expression context
     node.condition->accept(*this); 
+    isStandaloneStatement = true; // Set to false for expression context
     out << " ){\n";
     node.thenBranch->accept(*this); 
     out << " }";
@@ -273,9 +362,12 @@ void CppTranspilerVisitor::visit(IfStatementNode& node){
 
 void CppTranspilerVisitor::visit(WhileStatementNode& node){
 
-    std::ostream& out = getBufferType();
+    std::stringstream& out = getBufferType();
     out << "while( ";
+
+    isStandaloneStatement = false; // Set to false for expression context
     node.condition->accept(*this); 
+    isStandaloneStatement = true; // Set to false for expression context
     out << " ){\n";
     node.body->accept(*this); 
     out << "}\n";
@@ -317,23 +409,40 @@ void CppTranspilerVisitor::visit(BlockNode& node){
 
 
 void CppTranspilerVisitor::visit(FunctionCallNode& node){
-  std::ostream& out = getBufferType();
-
-  //TODO: Native functions support
-  if(node.functionName == "print"){
-    out << "cout << ";
-  for(int i = 0; i < node.arguments.size(); i++){
-    node.arguments[i]->accept(*this);
-    if(i != node.arguments.size() - 1){
-      out << " << \" \" << ";
+    auto it = nativeFunctionMap.find(node.functionName);
+    if (it != nativeFunctionMap.end()) {
+        // Native function found, call the mapped function
+        it->second(node);
     }
 
+  //TODO: Native functions support
+  /* if(node.functionName == "print"){ */
+  /*  */
+  /*   isStandaloneStatement = false; */
+  /*   out << "cout << "; */
+  /* for(int i = 0; i < node.arguments.size(); i++){ */
+  /*  */
+  /*   node.arguments[i]->accept(*this); */
+  /*   if(i != node.arguments.size() - 1){ */
+  /*     out << " << \" \" << "; */
+  /*   } */
+  /* } */
+  /*  */
+  /* isStandaloneStatement = true; */
+  /*   out << "<< std::endl;\n"; */
+  /*   return; */
+  /* } else if (node.functionName == "len"){ */
+  /*    */
+  /*   node.arguments[0]->accept(*this); */
+  /*   out << ".size()"; */
+  /*   return; */
+  /* } */
 
-  }
-    out << "<< std::endl;\n";
-    return;
-  }
 
+
+  std::stringstream& out = getBufferType();
+
+  //Normal User defined function call
   out << node.functionName << "( ";
   for(int i = 0; i < node.arguments.size(); i++){
     node.arguments[i]->accept(*this);
@@ -344,23 +453,46 @@ void CppTranspilerVisitor::visit(FunctionCallNode& node){
   }
   out << " )";
 
+    // Append a semicolon if it's a standalone statement
+    if (isStandaloneStatement) {
+        out << ";";
+    }
+
+    // Reset the flag for the next node
+    isStandaloneStatement = true;
+
 
 };
 
 
 void CppTranspilerVisitor::visit(VariableExpressionNode& node){
-  std::ostream& out = getBufferType();
-  out << node.variableName << " ";
+  std::stringstream& out = getBufferType();
+
+  /* if(isInsideStruct() && node.variableName == "self"){ */
+  /*   return; //We dont need self in struct impl */
+  /* } */
+
+  out << node.variableName;
 };
 
 
 void CppTranspilerVisitor::visit(FunctionDeclarationNode& node){
-  insideFunction = true;
-  std::ostream& out = getBufferType();
+  //If in a struct append to struct not function buffer
+    std::cout << "Visiting Function Declaration: " << node.functionName << "\n";
+    if (!isInsideStruct()) {
+        insideFunction = true;
+    }
+
+  std::stringstream& out = getBufferType();
 
   out << convertTurshellType(node.returnType) << " " << node.functionName << "( ";
 
-  for(int i = 0; i < node.parameters.size(); i++){
+  int i = 0;
+  if(isInsideStruct()){
+   i = 1; //Skips the self
+  }
+
+  for(; i < node.parameters.size(); i++){
     node.parameters[i]->accept(*this);
 
     if(i != node.parameters.size() - 1){
@@ -378,13 +510,13 @@ void CppTranspilerVisitor::visit(FunctionDeclarationNode& node){
 
 void CppTranspilerVisitor::visit(ParameterNode& node){
 
-  std::ostream& out = getBufferType();
+  std::stringstream& out = getBufferType();
   out << convertTurshellType(node.type) << " " << node.name;
 };
 
 void CppTranspilerVisitor::visit(ReturnStatementNode& node){
 
-  std::ostream& out = getBufferType();
+  std::stringstream& out = getBufferType();
   out << "return ";
   if(node.expression){
     node.expression->accept(*this);
@@ -394,7 +526,7 @@ void CppTranspilerVisitor::visit(ReturnStatementNode& node){
 
 void CppTranspilerVisitor::visit(BreakStatementNode& node){
 
-  std::ostream& out = getBufferType();
+  std::stringstream& out = getBufferType();
   out << "break;";
 };
 

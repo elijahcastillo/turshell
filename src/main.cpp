@@ -15,7 +15,7 @@
 #include "include/Interpretor.h"
 #include "include/NativeFunctions.h"
 #include "include/TurshellHelp.h"
-#include "include/CppTransiler.h"
+#include "include/CppTranspiler.h"
 
 
 

@@ -1,8 +1,47 @@
 
-struct Test {
-  int a;
-  string b;
+// Example 1: Implementing a Method on a Simple Structure
+// ======================================================
+struct Counter {
+    int count;
 };
 
+// Method to increment the counter
+impl Counter -> increment(Counter self) void {
+    self.count = self.count + 1;
+}
 
-Test b = {a: 1, b: "Elijah"};
+// Creating and using the Counter structure
+Counter myCounter = {count: 0};
+myCounter.increment()
+print("Counter value:", myCounter.count)
+
+
+
+
+// Example 2: Complex Structure with Methods
+// =========================================
+struct Employee {
+    string name;
+    int hoursWorked;
+    float hourlyRate;
+};
+
+// Method to calculate total earnings
+impl Employee -> totalEarnings(Employee self) float {
+    return self.hoursWorked * self.hourlyRate;
+}
+
+// Method to update hourly rate
+impl Employee -> updateHourlyRate(Employee self, float newRate) void {
+    self.hourlyRate = newRate;
+}
+
+// Creating and using the Employee structure
+Employee employee = {name: "Alice", hoursWorked: 40, hourlyRate: 20.0};
+float earnings = employee.totalEarnings();
+print(employee.name, "'s total earnings:", earnings)
+
+// Updating hourly rate
+employee.updateHourlyRate(22.5)
+float updatedEarnings = employee.totalEarnings();
+print("Updated earnings:", updatedEarnings)

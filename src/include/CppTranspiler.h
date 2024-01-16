@@ -3,21 +3,28 @@
 #include "Visitors.h"
 #include "AST_Types.h"
 #include <fstream>
+#include <map>
 #include <sstream>
+#include <functional>
 #include <string>
 
 class CppTranspilerVisitor : public Visitor {
+    std::map<std::string, std::function<void(FunctionCallNode&)>> nativeFunctionMap;
     std::ofstream outputFile;
     std::stringstream mainBuffer;
     std::stringstream functionDeclarations;
-    std::stringstream structDeclarations;
+    std::map<std::string, std::stringstream> structDeclarations;
+    std::string m_currentStructName; // Add this member variable
 
     bool insideFunction = false;
     bool insideStructDecl = false;
 
+    //Just need it for function call ';'
+    bool isStandaloneStatement = true;
 public:
     CppTranspilerVisitor(const std::string& outputFileName) {
         outputFile.open(outputFileName);
+        setupNativeFunctions();
     }
 
     ~CppTranspilerVisitor() {
@@ -30,7 +37,12 @@ public:
             outputFile << "using namespace std;\n\n";
 
 
-            outputFile << structDeclarations.str();
+           // Write struct declarations
+            for (const auto& pair : structDeclarations) {
+                outputFile << "struct " << pair.first << " {\n";
+                outputFile << pair.second.str(); // This outputs the struct's declaration and methods
+                outputFile << "};\n\n";
+            }
 
             // Write function declarations third
             outputFile << functionDeclarations.str();
@@ -42,18 +54,30 @@ public:
         }
     }
 
-    std::ostream& getBufferType(){
-      if(insideFunction){
-        return functionDeclarations;
-
-      } else if (insideStructDecl){
-        return structDeclarations;
-      } else {
-        return mainBuffer;
-      }
+    std::stringstream& getBufferType() {
+        if (insideFunction) {
+            return functionDeclarations;
+        } else if (insideStructDecl) {
+            // Here, use the current struct name to get the correct buffer
+            std::cout << "Getting struct strstr: " << m_currentStructName << "\n";
+            return structDeclarations[m_currentStructName];
+        } else {
+            return mainBuffer;
+        }
     }
 
+  bool structDeclarationExists(const std::string& structName) {
+    // Check if the struct declaration already exists
+    return structDeclarations.find(structName) != structDeclarations.end();
+  }
+
+    bool isInsideStruct() const {
+        return insideStructDecl; 
+    }
+
+
     std::string convertTurshellType(std::string type);
+    void setupNativeFunctions();
 
     void visit(ProgramNode& node) override; 
     void visit(BinaryExpressionNode& node) override; 
