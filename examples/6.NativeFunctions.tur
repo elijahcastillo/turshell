@@ -1,4 +1,6 @@
 
+float tOne = timeNow();
+
 int a = 17;
 print("The square root of", a, "is", sqrt(16))
 
@@ -20,3 +22,22 @@ print(powNum, " to the power of ", 3, " is ", pow(powNum, 3))
 
 int sqrtNum = 16;
 print("The square root of ", sqrtNum, " is ", sqrt(sqrtNum))
+
+assert(1 == 1, "Nope is wrong")
+
+string name = "turshell is awesome";
+array<string> n = split(name, " ");
+print(n)
+
+int h = hash("turshell");
+print(h)
+
+int x = abs(h) % 200;
+print(x)
+
+
+
+float tTwo = timeNow();
+float diff = tTwo - tOne;
+float seconds = diff / 1000.0;
+print("Script took", seconds, "s")

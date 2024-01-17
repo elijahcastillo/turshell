@@ -388,19 +388,19 @@ std::shared_ptr<RuntimeVal> nativeInput(Interpreter& interpreter, std::vector<st
 
 
     // Try to convert to number if possible
-    try {
-        size_t pos;
-        int numValue = std::stoi(value, &pos);
-        // Check if the entire string was converted to an integer
-        if (pos == value.length()) {
-            return std::make_shared<IntValue>(numValue);
-        }
-    } catch (const std::invalid_argument& e) {
-        // If conversion fails, return the string
-        return std::make_shared<StringValue>(value);
-    } catch (const std::out_of_range& e) {
-        // Handle out-of-range numbers
-    }
+    /* try { */
+    /*     size_t pos; */
+    /*     int numValue = std::stoi(value, &pos); */
+    /*     // Check if the entire string was converted to an integer */
+    /*     if (pos == value.length()) { */
+    /*         return std::make_shared<IntValue>(numValue); */
+    /*     } */
+    /* } catch (const std::invalid_argument& e) { */
+    /*     // If conversion fails, return the string */
+    /*     return std::make_shared<StringValue>(value); */
+    /* } catch (const std::out_of_range& e) { */
+    /*     // Handle out-of-range numbers */
+    /* } */
 
     // Return as string if it's not a valid integer
     return std::make_shared<StringValue>(value);

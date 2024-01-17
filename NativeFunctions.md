@@ -53,7 +53,7 @@
 - **description**: prompts user for input 
 - **arguments**:
   - `promptString` (string)
-- **Returns**: `int | string` (the users input).
+- **Returns**: `string` (the users input).
 
 ### `random`
 - **description**: generates a random integer between 0 and INT_MAX

@@ -3,6 +3,7 @@
 #include "include/TurshellHelp.h"
 #include <sstream>
 #include <stdexcept>
+#include <string>
 
 
 
@@ -416,6 +417,8 @@ void CppTranspilerVisitor::visit(FunctionCallNode& node){
         // Native function found, call the mapped function
         it->second(node);
         return;
+
+        //TODO, some native function might need ';' at end so we need to context
     }
 
   //In node.arguments when you visit might change statdalone value
@@ -531,6 +534,28 @@ void CppTranspilerVisitor::visit(BreakStatementNode& node){
 //        Native Functions
 // ==============================
 void CppTranspilerVisitor::setupNativeFunctions() {
+
+    const char* nativeFunctionDefinitions = R"(
+
+//======== Native Functions (Remove Unessecary if needed) ===========
+
+string input(string var) {
+  cout << var;
+  string ret = "";
+  getline(cin, ret);
+  return ret;
+}
+
+
+//=============== End Native Functions= =============================
+
+)";
+
+
+    functionDeclarations << nativeFunctionDefinitions;
+
+
+
     nativeFunctionMap["print"] = [this](FunctionCallNode& node) {
 
       //Handle arrays, structs, bools?
@@ -556,6 +581,61 @@ void CppTranspilerVisitor::setupNativeFunctions() {
         std::stringstream& out = getBufferType();
        node.arguments[0]->accept(*this);
        out << ".size()";
+    };
+
+
+    nativeFunctionMap["addr"] = [this](FunctionCallNode& node) {
+      //Should only work with arrays and strings
+        std::stringstream& out = getBufferType();
+        out << "&";
+       node.arguments[0]->accept(*this);
+    };
+
+    nativeFunctionMap["sqrt"] = [this](FunctionCallNode& node) {
+      //Should only work with arrays and strings
+        std::stringstream& out = getBufferType();
+        out << "sqrt(";
+       node.arguments[0]->accept(*this);
+        out << ")";
+        if (isStandaloneStatement) {
+            out << ";";
+        }
+    };
+
+    nativeFunctionMap["pow"] = [this](FunctionCallNode& node) {
+      //Should only work with arrays and strings
+        std::stringstream& out = getBufferType();
+        out << "pow("; 
+       node.arguments[0]->accept(*this);
+        out << ")";
+        if (isStandaloneStatement) {
+            out << ";";
+        }
+    };
+
+    nativeFunctionMap["abs"] = [this](FunctionCallNode& node) {
+      //Should only work with arrays and strings
+        std::stringstream& out = getBufferType();
+        out << "abs("; 
+       node.arguments[0]->accept(*this);
+        out << ")";
+        if (isStandaloneStatement) {
+            out << ";";
+        }
+    };
+
+    nativeFunctionMap["input"] = [this](FunctionCallNode& node) {
+      //Should only work with arrays and strings
+        std::stringstream& out = getBufferType();
+        out << "input(";
+        for (auto& arg : node.arguments) {
+            arg->accept(*this); // Assuming the argument is a variable name or similar
+        }
+        out << ")";
+        if (isStandaloneStatement) {
+            out << ";";
+        }
+
     };
 
 }
